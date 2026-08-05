@@ -128,11 +128,41 @@ DATA_DIR=/var/lib/aimagegen/data
 
 NODE_ENV=production
 PORT=8080
+
+# ── Payments (Razorpay) ──
+# Live keys. Never commit these — .env is gitignored, .env.example is NOT.
+RAZORPAY_KEY_ID=rzp_live_xxxxxxxx
+RAZORPAY_KEY_SECRET=xxxxxxxxxxxxxxxx
+RAZORPAY_WEBHOOK_SECRET=a-long-random-string-you-invent
+
+# ── Invoicing ──
+# A tax invoice legally needs these. Leave SELLER_GSTIN blank if you are not
+# GST-registered — invoices then omit tax lines instead of inventing a split.
+SELLER_NAME=Your Registered Company Pvt Ltd
+SELLER_ADDRESS=Street, City, State, PIN
+SELLER_GSTIN=
+SELLER_PAN=
+SELLER_EMAIL=billing@yourdomain.com
+SELLER_STATE=Maharashtra
+INVOICE_PREFIX=INV
 ```
 
 ```bash
-chmod 600 .env      # it holds your API key
+chmod 600 .env      # it holds your API key and payment secrets
 ```
+
+### Razorpay webhook
+
+Once the site is live over HTTPS, add the webhook in the Razorpay dashboard —
+**Settings → Webhooks**:
+
+- URL: `https://yourdomain.com/api/razorpay/webhook`
+- Secret: the same `RAZORPAY_WEBHOOK_SECRET` you set above
+- Active events: `payment.captured` and `payment.failed`
+
+This is not optional. The browser-side confirmation only fires if the user stays
+on the page — a customer who pays and immediately closes the tab is credited
+**only** by this webhook.
 
 ---
 
