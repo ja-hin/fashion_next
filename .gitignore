@@ -1,0 +1,18 @@
+node_modules/
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+# secrets
+.env
+.env.local
+.env.*.local
+
+# generated images + user data (local storage driver)
+data/
+
+.DS_Store
+*.log
+npm-debug.log*

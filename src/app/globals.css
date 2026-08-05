@@ -1,0 +1,221 @@
+@import 'tailwindcss';
+
+/* ══════════════════════════════════════════════════════════════════
+   Design tokens.
+
+   Defined as plain CSS variables (so the light/dark switch is a single
+   attribute flip on <html>), then mapped into Tailwind's theme with
+   `@theme inline` so utilities like `bg-surface`, `text-muted` and
+   `border-line` resolve through the same variables and follow the theme
+   automatically.
+   ══════════════════════════════════════════════════════════════════ */
+
+:root {
+  --bg: #fbfbfa;
+  --surface: #fff;
+  --surface2: #f6f5f3;
+  --ink: #141414;
+  --muted: #7c7c80;
+  --line: #ebe9e6;
+  --field: #fff;
+  --accent: #6d3bd1;
+  --accent-soft: #f1ebfb;
+  --red: #e11d2a;
+  --red-soft: #fdecec;
+  --green: #1f7a4d;
+  --green-soft: #e6f5ed;
+  --amber: #9a5a13;
+  --amber-soft: #fdeede;
+  --genie: #6d3bd1;
+  --shadow: 0 1px 2px rgb(20 20 20 / 5%), 0 8px 24px rgb(20 20 20 / 6%);
+  --shadow-lg: 0 20px 60px rgb(20 20 20 / 18%);
+}
+
+[data-theme='dark'] {
+  --bg: #0e0e10;
+  --surface: #17171a;
+  --surface2: #1c1c20;
+  --ink: #f4f4f5;
+  --muted: #9a9aa1;
+  --line: #27272b;
+  --field: #1c1c20;
+  --accent: #9a6cf0;
+  --accent-soft: #2a1d3a;
+  --red: #ff3b40;
+  --red-soft: #2a1416;
+  --green: #4ade80;
+  --green-soft: #13291d;
+  --amber: #f0b76a;
+  --amber-soft: #2a2113;
+  --genie: #9a6cf0;
+  --shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 10px 30px rgb(0 0 0 / 50%);
+  --shadow-lg: 0 24px 70px rgb(0 0 0 / 60%);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface2: var(--surface2);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-field: var(--field);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-brand: var(--red);
+  --color-brand-soft: var(--red-soft);
+  --color-green: var(--green);
+  --color-green-soft: var(--green-soft);
+  --color-amber: var(--amber);
+  --color-amber-soft: var(--amber-soft);
+  --color-genie: var(--genie);
+
+  --shadow-card: var(--shadow);
+  --shadow-pop: var(--shadow-lg);
+
+  --radius-card: 13px;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* ── base ───────────────────────────────────────────────────────────
+   These MUST live in `@layer base`.
+
+   Tailwind v4 emits utilities into `@layer utilities`, and unlayered CSS beats
+   layered CSS in the cascade regardless of specificity. Written outside a
+   layer, a bare `button { background: none }` silently kills every `bg-*`
+   class in the app — buttons render unstyled and it looks like Tailwind is
+   broken. Keep element resets layered so utilities can always override them.
+   ─────────────────────────────────────────────────────────────────── */
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  button {
+    font: inherit;
+    cursor: pointer;
+    border: none;
+    border-radius: 9px;
+    color: inherit;
+    background: none;
+  }
+
+  button:disabled {
+    cursor: default;
+  }
+
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: var(--ink);
+    background: var(--field);
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    padding: 9px 11px;
+    width: 100%;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px var(--red-soft);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 60px;
+    line-height: 1.5;
+  }
+
+  /* Native select arrow, since the reset strips the default appearance look. */
+  select {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+      linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+    background-position: calc(100% - 15px) calc(50% + 1px), calc(100% - 10px) calc(50% + 1px);
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 28px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--line);
+    border-radius: 10px;
+    border: 3px solid var(--bg);
+  }
+}
+
+/* ── shared field label ───────────────────────────────────────────
+   In `components` so a utility class on the same element still wins. */
+
+@layer components {
+  .lbl {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 6px;
+  }
+}
+
+/* ── animations ─────────────────────────────────────────────────── */
+
+@keyframes pulse-dot {
+  0% { box-shadow: 0 0 0 0 rgb(31 122 77 / 50%); }
+  70% { box-shadow: 0 0 0 6px rgb(31 122 77 / 0%); }
+  100% { box-shadow: 0 0 0 0 rgb(31 122 77 / 0%); }
+}
+.animate-pulse-dot { animation: pulse-dot 2s infinite; }
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--surface2), var(--line), var(--surface2));
+  background-size: 200% 100%;
+  animation: shimmer 1.3s infinite;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fade-up 0.3s; }
+
+@keyframes slide-in {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.animate-slide-in { animation: slide-in 0.25s; }
+
+@keyframes spin-cs { to { transform: rotate(360deg); } }
+.animate-spin-cs { animation: spin-cs 1s linear infinite; }

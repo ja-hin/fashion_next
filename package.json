@@ -1,0 +1,39 @@
+{
+  "name": "vdofy-aimagegen",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AImageGen — on-model AI fashion photography studio (Next.js + MongoDB)",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "migrate": "node scripts/migrate.mjs"
+  },
+  "dependencies": {
+    "@google/genai": "^1.30.0",
+    "archiver": "^7.0.1",
+    "mongodb": "^6.21.0",
+    "next": "^15.5.7",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.18",
+    "@types/archiver": "^6.0.3",
+    "@types/node": "^22.19.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "tailwindcss": "^4.1.18",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "allowScripts": {
+    "sharp@0.34.5": true,
+    "mongodb-memory-server@11.2.0": true
+  }
+}
