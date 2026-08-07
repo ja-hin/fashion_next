@@ -56,6 +56,37 @@ export const PAYMENTS_ENABLED = Boolean(RAZORPAY_KEY_ID && RAZORPAY_KEY_SECRET);
 export const PAYMENT_BRAND = env('PAYMENT_BRAND', 'Vdofy Studio');
 export const PAYMENT_CURRENCY = env('PAYMENT_CURRENCY', 'INR');
 
+// ── Email ───────────────────────────────────────────────────────────
+/**
+ * Absolute base URL, used to build links inside emails. A reset link has to
+ * work when clicked from a mail client, so it can never be relative.
+ */
+export const APP_URL = env('APP_URL', 'http://localhost:3000').replace(/\/+$/, '');
+
+/**
+ * "smtp" | "resend" | "console".
+ * Defaults to console outside production — the reset link is printed to the
+ * terminal so the flow is testable without a mail account.
+ */
+export const MAIL_DRIVER = env(
+  'MAIL_DRIVER',
+  process.env.NODE_ENV === 'production' ? 'smtp' : 'console',
+).toLowerCase();
+
+export const MAIL_FROM = env('MAIL_FROM', 'AImageGen <no-reply@localhost>');
+
+export const SMTP_HOST = env('SMTP_HOST', '');
+export const SMTP_PORT = envInt('SMTP_PORT', 587);
+export const SMTP_USER = env('SMTP_USER', '');
+export const SMTP_PASS = env('SMTP_PASS', '');
+/** True for port 465 (implicit TLS); 587 uses STARTTLS and stays false. */
+export const SMTP_SECURE = env('SMTP_SECURE', SMTP_PORT === 465 ? '1' : '0') !== '0';
+
+export const RESEND_API_KEY = env('RESEND_API_KEY', '');
+
+/** How long a password-reset link stays valid. */
+export const RESET_TTL_MINUTES = envInt('RESET_TTL_MINUTES', 60);
+
 // ── Invoicing ───────────────────────────────────────────────────────
 // Printed on every GST invoice. A real tax invoice is legally required to
 // carry the seller's registered name, address and GSTIN — fill these in

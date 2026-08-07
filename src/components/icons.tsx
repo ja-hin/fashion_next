@@ -61,6 +61,22 @@ export const PlusCircleIcon = ({ className = 'w-4 h-4' }: P) => (
   </svg>
 );
 
+export const ImagesIcon = ({ className = 'w-4 h-4' }: P) => (
+  <svg viewBox="0 0 24 24" className={className} {...stroke}>
+    <rect x="3" y="3" width="14" height="14" rx="2" />
+    <path d="M7 21h12a2 2 0 0 0 2-2V7" />
+    <circle cx="8" cy="8" r="1.4" />
+    <path d="M3 13l3.5-3.5L11 14" />
+  </svg>
+);
+
+export const PersonIcon = ({ className = 'w-4 h-4' }: P) => (
+  <svg viewBox="0 0 24 24" className={className} {...stroke}>
+    <circle cx="12" cy="8" r="3.5" />
+    <path d="M4.5 20a7.5 7.5 0 0 1 15 0" />
+  </svg>
+);
+
 export const ReceiptIcon = ({ className = 'w-4 h-4' }: P) => (
   <svg viewBox="0 0 24 24" className={className} {...stroke}>
     <path d="M5 3v18l2.5-1.5L10 21l2-1.5L14 21l2.5-1.5L19 21V3z" />

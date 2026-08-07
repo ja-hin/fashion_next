@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getJson, postForm, fmt, ApiError } from '@/lib/client/api';
-import { rupees, gstBreakdown, type Pack } from '@/lib/pricing';
+import { rupees, gstBreakdown, bonusPct, type Pack } from '@/lib/pricing';
 import { useDialog } from './Dialog';
 
 const CHECKOUT_SRC = 'https://checkout.razorpay.com/v1/checkout.js';
@@ -38,6 +38,8 @@ declare global {
 interface Config {
   payments_enabled: boolean;
   paise_per_credit: number;
+  gst_rate: number;
+  custom_enabled: boolean;
   min_credits: number;
   max_credits: number;
   packs: Pack[];
@@ -85,7 +87,9 @@ export default function RechargeView({
 }) {
   const dialog = useDialog();
   const [cfg, setCfg] = useState<Config | null>(null);
-  const [selected, setSelected] = useState<string>('studio');
+  // Set once the config loads — packs are admin-managed, so no id can be
+  // assumed to exist.
+  const [selected, setSelected] = useState<string>('');
   const [custom, setCustom] = useState('');
   const [flash, setFlash] = useState('');
   const [busy, setBusy] = useState(false);
@@ -95,6 +99,9 @@ export default function RechargeView({
       .then((c) => {
         setCfg(c);
         onBalance(c.balance);
+        // Prefer whichever pack the admin flagged popular, else the first.
+        const first = c.packs.find((p) => p.popular) ?? c.packs[0];
+        setSelected(first ? first.id : c.custom_enabled ? 'custom' : '');
       })
       .catch(() => setCfg(null));
     // Runs once — onBalance is stable enough and re-running would loop.
@@ -182,7 +189,7 @@ export default function RechargeView({
     }
   }
 
-  const gst = payPaise > 0 ? gstBreakdown(payPaise) : null;
+  const gst = payPaise > 0 && cfg ? gstBreakdown(payPaise, cfg.gst_rate) : null;
 
   return (
     <div className="animate-fade-up max-w-[880px]">
@@ -216,35 +223,56 @@ export default function RechargeView({
                     key={p.id}
                     type="button"
                     onClick={() => setSelected(p.id)}
-                    className={`rounded-[11px] border-[1.5px] p-[13px] text-left transition ${
+                    className={`relative rounded-[11px] border-[1.5px] p-[13px] text-left transition ${
                       on
                         ? 'border-brand bg-brand-soft'
                         : 'border-line bg-surface hover:border-brand'
                     }`}
                   >
+                    {p.popular && (
+                      <span className="absolute -top-2 right-2 rounded-[5px] bg-brand px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] text-white">
+                        Popular
+                      </span>
+                    )}
                     <div className="text-[12.5px] font-bold">{p.name}</div>
                     <div className="mt-0.5 text-[17px] font-bold text-ink">
                       {p.credits + p.bonus}
                       <span className="ml-1 text-[11px] font-semibold text-muted">credits</span>
                     </div>
+                    {p.bonus > 0 && (
+                      <>
+                        {/* Two columns so the figures line up across every tile. */}
+                        <div className="mt-1 grid grid-cols-[auto_auto] justify-start gap-x-1.5 text-[10.5px] text-muted">
+                          <span>Base Credit:</span>
+                          <b className="text-ink">{p.credits}</b>
+                          <span>Bonus Credit:</span>
+                          <b className="text-green">{p.bonus}</b>
+                        </div>
+                        <div className="text-[10.5px] font-semibold text-green">
+                          ( {bonusPct(p)}% Extra Credits )
+                        </div>
+                      </>
+                    )}
                     <div className="mt-1 text-[13px] font-bold text-brand">{rupees(p.paise)}</div>
                     <div className="mt-0.5 text-[10.5px] text-muted">{p.blurb}</div>
                   </button>
                 );
               })}
 
-              <button
-                type="button"
-                onClick={() => setSelected('custom')}
-                className={`rounded-[11px] border-[1.5px] border-dashed p-[13px] text-left transition ${
-                  usingCustom ? 'border-brand bg-brand-soft' : 'border-line hover:border-brand'
-                }`}
-              >
-                <div className="text-[12.5px] font-bold">Custom</div>
-                <div className="mt-0.5 text-[11px] leading-[1.4] text-muted">
-                  Any amount from {cfg.min_credits} to {cfg.max_credits} credits
-                </div>
-              </button>
+              {cfg.custom_enabled && (
+                <button
+                  type="button"
+                  onClick={() => setSelected('custom')}
+                  className={`rounded-[11px] border-[1.5px] border-dashed p-[13px] text-left transition ${
+                    usingCustom ? 'border-brand bg-brand-soft' : 'border-line hover:border-brand'
+                  }`}
+                >
+                  <div className="text-[12.5px] font-bold">Custom</div>
+                  <div className="mt-0.5 text-[11px] leading-[1.4] text-muted">
+                    Any amount from {cfg.min_credits} to {cfg.max_credits} credits
+                  </div>
+                </button>
+              )}
             </div>
 
             {usingCustom && (
@@ -278,7 +306,10 @@ export default function RechargeView({
                 </div>
                 {gst && (
                   <div className="text-[10.5px] text-muted">
-                    incl. 18% GST ({rupees(gst.gst)}) · {payCredits} credits
+                    {gst.gst > 0
+                      ? `incl. ${Math.round((cfg?.gst_rate ?? 0) * 100)}% GST (${rupees(gst.gst)}) · `
+                      : ''}
+                    {payCredits} credits
                   </div>
                 )}
               </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { getJson, postForm, del, bust, ApiError } from '@/lib/client/api';
 import { EmptyState, SearchBox } from './ui';
 import { TrashIcon, DownloadIcon } from './icons';
@@ -17,17 +18,30 @@ interface Props {
 /** Every shoot with at least one image, grouped by date. */
 export default function GalleryView({ onContinueShoot, onSaveAsModel, onZoom }: Props) {
   const dialog = useDialog();
+  const router = useRouter();
+  // Admins arrive here from the users table as /gallery?user=U0007. The server
+  // ignores this for non-admins, so it can't be used to peek at someone else.
+  const userFilter = useSearchParams().get('user') ?? '';
+
   const [q, setQ] = useState('');
   const [groups, setGroups] = useState<GalleryGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [openPid, setOpenPid] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [viewing, setViewing] = useState<{ uid: string; email: string } | null>(null);
 
-  const load = useCallback(async (query: string) => {
+  const load = useCallback(async (query: string, user: string) => {
     try {
-      const j = await getJson<{ groups: GalleryGroup[] }>(
-        `/api/gallery?q=${encodeURIComponent(query)}`,
+      const j = await getJson<{
+        groups: GalleryGroup[];
+        is_admin?: boolean;
+        filtered_user?: { uid: string; email: string } | null;
+      }>(
+        `/api/gallery?q=${encodeURIComponent(query)}&user=${encodeURIComponent(user)}`,
       );
       setGroups(j.groups ?? []);
+      setIsAdmin(!!j.is_admin);
+      setViewing(j.filtered_user ?? null);
     } catch {
       setGroups([]);
     } finally {
@@ -37,9 +51,9 @@ export default function GalleryView({ onContinueShoot, onSaveAsModel, onZoom }: 
 
   // Debounced so typing in the search box doesn't fire a request per keystroke.
   useEffect(() => {
-    const t = setTimeout(() => load(q), 200);
+    const t = setTimeout(() => load(q, userFilter), 200);
     return () => clearTimeout(t);
-  }, [q, load]);
+  }, [q, userFilter, load]);
 
   async function rename(pid: string, current: string) {
     const name = await dialog.prompt(
@@ -49,7 +63,7 @@ export default function GalleryView({ onContinueShoot, onSaveAsModel, onZoom }: 
     );
     if (name === null) return;
     await postForm(`/api/product/${pid}/rename`, { name });
-    load(q);
+    load(q, userFilter);
   }
 
   async function remove(pid: string, title: string) {
@@ -61,7 +75,7 @@ export default function GalleryView({ onContinueShoot, onSaveAsModel, onZoom }: 
     if (!ok) return;
     try {
       await del(`/api/product/${pid}`);
-      load(q);
+      load(q, userFilter);
     } catch (e) {
       await dialog.alert(
         e instanceof ApiError ? e.message : 'Could not delete this shoot. Please try again.',
@@ -78,13 +92,42 @@ export default function GalleryView({ onContinueShoot, onSaveAsModel, onZoom }: 
         <SearchBox
           value={q}
           onChange={setQ}
-          placeholder="Search shoots by name, no., category, pose…"
+          placeholder={
+            isAdmin
+              ? 'Search by name, no., category, pose, user ID or email…'
+              : 'Search shoots by name, no., category, pose…'
+          }
         />
       </div>
 
+      {/* Admin only — a regular user never has a filter to be told about. */}
+      {isAdmin && userFilter && (
+        <div className="mb-[18px] flex flex-wrap items-center gap-2.5 rounded-card border border-accent-soft bg-accent-soft px-3.5 py-2.5 text-[12.5px]">
+          {viewing ? (
+            <>
+              <span className="font-bold text-accent">{viewing.uid || '—'}</span>
+              <span className="text-muted">{viewing.email}</span>
+            </>
+          ) : (
+            <span className="font-semibold text-brand">
+              No account matches &ldquo;{userFilter}&rdquo;.
+            </span>
+          )}
+          <div className="flex-1" />
+          <button
+            onClick={() => router.push('/gallery')}
+            className="rounded-lg bg-surface px-2.5 py-1.5 text-[11.5px] font-bold text-ink"
+          >
+            Show all users
+          </button>
+        </div>
+      )}
+
       {isEmpty && (
-        <EmptyState icon="🖼" title="No shoots yet">
-          Your generated shoots will be collected here as folders.
+        <EmptyState icon="🖼" title={userFilter ? 'Nothing from this user' : 'No shoots yet'}>
+          {userFilter
+            ? 'This account has not generated any shoots yet.'
+            : 'Your generated shoots will be collected here as folders.'}
         </EmptyState>
       )}
 
@@ -109,6 +152,20 @@ export default function GalleryView({ onContinueShoot, onSaveAsModel, onZoom }: 
                   <div className="absolute bottom-2 right-2 rounded-md bg-black/70 px-2 py-[3px] text-[10px] font-bold text-white">
                     {it.count} image{it.count === 1 ? '' : 's'}
                   </div>
+
+                  {/* Only admins receive owner data, so this can't leak. */}
+                  {it.owner_uid && (
+                    <button
+                      title={`Show only ${it.owner_email}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/gallery?user=${encodeURIComponent(it.owner_uid!)}`);
+                      }}
+                      className="absolute left-2 top-2 rounded-md bg-black/70 px-2 py-[3px] text-[10px] font-bold text-white hover:bg-black"
+                    >
+                      {it.owner_uid}
+                    </button>
+                  )}
                   <button
                     title="Delete shoot"
                     onClick={(e) => {
@@ -174,7 +231,7 @@ export default function GalleryView({ onContinueShoot, onSaveAsModel, onZoom }: 
             setOpenPid(null);
             onSaveAsModel(pid);
           }}
-          onChanged={() => load(q)}
+          onChanged={() => load(q, userFilter)}
         />
       )}
     </div>

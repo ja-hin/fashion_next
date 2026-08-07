@@ -38,6 +38,9 @@ function safeEqual(a: string, b: string): boolean {
 export function toPublicUser(u: UserDoc): PublicUser {
   return {
     id: u._id,
+    // Blank rather than a fake id when a legacy row hasn't been backfilled yet,
+    // so the UI shows "—" instead of inventing a number that means nothing.
+    uid: u.uid ?? '',
     email: u.email,
     name: u.name ?? '',
     is_admin: !!u.is_admin,
@@ -59,8 +62,10 @@ export async function createUser(opts: {
   const col = await users();
   const id = crypto.randomBytes(8).toString('hex');
   const salt = crypto.randomBytes(16).toString('hex');
+  const { nextUserNo } = await import('./settings');
   await col.insertOne({
     _id: id,
+    uid: await nextUserNo(),
     email: opts.email.toLowerCase().trim(),
     name: (opts.name ?? '').trim(),
     pw_hash: hashPassword(opts.password, salt),
@@ -121,6 +126,26 @@ export async function login(
   if (!u) return null;
   if (!safeEqual(hashPassword(password, u.pw_salt), u.pw_hash)) return null;
   return u;
+}
+
+/**
+ * Replace a user's password.
+ *
+ * A fresh salt is generated rather than reused, and every existing session is
+ * destroyed: after a reset, anyone still holding a stolen session cookie —
+ * including whoever prompted the reset — is logged out. Returns false when the
+ * user is unknown.
+ */
+export async function setPassword(userId: string, newPassword: string): Promise<boolean> {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const res = await (await users()).updateOne(
+    { _id: userId },
+    { $set: { pw_hash: hashPassword(newPassword, salt), pw_salt: salt } },
+  );
+  if (!res.matchedCount) return false;
+
+  await destroyAllSessions(userId);
+  return true;
 }
 
 export async function userById(id: string | null | undefined): Promise<UserDoc | null> {

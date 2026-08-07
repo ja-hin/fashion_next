@@ -1,19 +1,25 @@
 import { handler, json, requireUser, requireAdmin, formData, num, str, HttpError } from '@/lib/api';
 import { adjustBalance, getBalance, userById } from '@/lib/auth';
-import { PACKS, CUSTOM_MIN_CREDITS, CUSTOM_MAX_CREDITS, PAISE_PER_CREDIT } from '@/lib/pricing';
+import { activePacks } from '@/lib/pricing';
+import { getBilling } from '@/lib/settings';
 import { PAYMENTS_ENABLED } from '@/lib/config';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 /** What the Recharge view needs to render — packs, limits and whether we can charge. */
 export const GET = handler(async () => {
   const me = await requireUser();
+  const cfg = await getBilling();
   return json({
     payments_enabled: PAYMENTS_ENABLED,
-    paise_per_credit: PAISE_PER_CREDIT,
-    min_credits: CUSTOM_MIN_CREDITS,
-    max_credits: CUSTOM_MAX_CREDITS,
-    packs: PACKS,
+    paise_per_credit: cfg.paise_per_credit,
+    gst_rate: cfg.gst_rate,
+    custom_enabled: cfg.custom_enabled,
+    min_credits: cfg.custom_min_credits,
+    max_credits: cfg.custom_max_credits,
+    // Only what's on sale — an inactive pack must not be buyable.
+    packs: activePacks(cfg),
     balance: await getBalance(me._id),
   });
 });

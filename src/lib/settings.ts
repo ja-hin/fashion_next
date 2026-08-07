@@ -14,6 +14,7 @@ import {
   GENIE_MAX_PER_PROMPT,
 } from './config';
 import { financialYear } from './invoice';
+import { DEFAULT_BILLING, type BillingConfig } from './pricing';
 import type { SettingsDoc, PriceGrid, Resolution, ShootOpts } from './types';
 
 const DEFAULT_PRICES: PriceGrid = {
@@ -28,8 +29,37 @@ const DEFAULTS: SettingsDoc = {
   genie_price: GENIE_PRICE_PER_IMPROVE,
   genie_max: GENIE_MAX_PER_PROMPT,
   shoot_seq: 0,
+  user_seq: 0,
   prices: DEFAULT_PRICES,
+  billing: DEFAULT_BILLING,
 };
+
+/**
+ * The live top-up configuration.
+ *
+ * Every field is defaulted individually rather than falling back to
+ * DEFAULT_BILLING wholesale, so a settings document saved by an older version —
+ * or one an admin partially wrote — can't leave a rate undefined and price a
+ * charge at NaN. An empty pack list is left empty on purpose: an admin who
+ * deactivated everything meant it, and silently resurrecting the defaults would
+ * put packs back on sale.
+ */
+export async function getBilling(): Promise<BillingConfig> {
+  const s = await getSettings();
+  const b = s.billing;
+  if (!b) return DEFAULT_BILLING;
+
+  const nz = (v: unknown, dflt: number) => (Number.isFinite(Number(v)) ? Number(v) : dflt);
+
+  return {
+    paise_per_credit: nz(b.paise_per_credit, DEFAULT_BILLING.paise_per_credit),
+    gst_rate: nz(b.gst_rate, DEFAULT_BILLING.gst_rate),
+    custom_enabled: b.custom_enabled !== false,
+    custom_min_credits: nz(b.custom_min_credits, DEFAULT_BILLING.custom_min_credits),
+    custom_max_credits: nz(b.custom_max_credits, DEFAULT_BILLING.custom_max_credits),
+    packs: Array.isArray(b.packs) ? b.packs : DEFAULT_BILLING.packs,
+  };
+}
 
 /** Read settings, creating the document with defaults on first use. */
 export async function getSettings(): Promise<SettingsDoc> {
@@ -105,6 +135,35 @@ export async function nextInvoiceNo(prefix: string, now = new Date()): Promise<s
 
   const n = Number(res?.invoice_seq?.[fy] ?? 1);
   return `${prefix}/${fy}/${String(n).padStart(4, '0')}`;
+}
+
+/** Zero-padded public user id — U0001. */
+export const userNoStr = (n: number): string =>
+  'U' + String(Math.trunc(Number(n ?? 0))).padStart(4, '0');
+
+/**
+ * Claim the next public user id. $inc is atomic, so two signups landing at the
+ * same instant can't be handed the same one.
+ */
+export async function nextUserNo(): Promise<string> {
+  const col = await settings();
+
+  // Same shape as nextShootNumber: the counter is kept out of $setOnInsert
+  // because Mongo rejects an update touching one path in both $inc and
+  // $setOnInsert ("would create a conflict").
+  const { user_seq: _seq, ...defaultsWithoutSeq } = DEFAULTS;
+  await col.updateOne(
+    { _id: 'app' },
+    { $setOnInsert: { ...defaultsWithoutSeq, user_seq: 0 } },
+    { upsert: true },
+  );
+
+  const res = await col.findOneAndUpdate(
+    { _id: 'app' },
+    { $inc: { user_seq: 1 } },
+    { returnDocument: 'after' },
+  );
+  return userNoStr(Number(res?.user_seq ?? 1));
 }
 
 const VALID_RES: Resolution[] = ['1K', '2K', '4K'];

@@ -14,6 +14,8 @@ export interface MePayload {
   admin?: boolean;
   provider?: 'gemini' | 'mock';
   version?: string;
+  /** Public user id — "U0007". Shown so a customer can quote it in support. */
+  uid?: string;
   name?: string;
   email?: string;
   balance?: number;
@@ -33,6 +35,7 @@ export async function getMePayload(): Promise<MePayload> {
     admin: u.is_admin,
     provider: PROVIDER,
     version: VERSION,
+    uid: u.uid ?? '',
     name: u.name,
     email: u.email,
     balance: u.balance,

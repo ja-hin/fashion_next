@@ -5,7 +5,7 @@ import 'server-only';
 import { orders } from './mongo';
 import { HttpError } from './api';
 import { taxSplit, isInterState } from './invoice';
-import { GST_RATE } from './pricing';
+import { DEFAULT_BILLING } from './pricing';
 import {
   SELLER_NAME,
   SELLER_ADDRESS,
@@ -136,7 +136,13 @@ export async function invoiceFor(orderId: string, user: UserDoc): Promise<Invoic
     description: o.label,
     credits: o.credits,
     currency: o.currency,
-    tax: taxSplit(o.amount, s.gstRegistered ? GST_RATE : 0, inter),
+    // The rate stored on the order, not the current one — an invoice issued in
+    // the past must keep showing the tax that was actually charged.
+    tax: taxSplit(
+      o.amount,
+      s.gstRegistered ? (o.gst_rate ?? DEFAULT_BILLING.gst_rate) : 0,
+      inter,
+    ),
     amount: o.amount,
   };
 }

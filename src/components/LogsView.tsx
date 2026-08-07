@@ -25,7 +25,14 @@ export default function LogsView({
   const detailed = variant === 'logs';
 
   const load = useCallback(async () => {
-    const p = new URLSearchParams({ q, frm, to, ...(detailed ? { model } : {}) });
+    // Usage is a personal view for everyone, admins included — it asks the API
+    // to scope the result to the caller's own rows.
+    const p = new URLSearchParams({
+      q,
+      frm,
+      to,
+      ...(detailed ? { model } : { scope: 'own' }),
+    });
     try {
       setData(await getJson<LogsPayload>(`/api/logs?${p}`));
     } catch {
@@ -40,6 +47,10 @@ export default function LogsView({
 
   const rows = data?.rows ?? [];
   const summary = data?.summary;
+  // The server reports is_admin false whenever the rows are one person's own,
+  // so this is off in Usage even for an admin — the column would repeat the
+  // same id on every line.
+  const showUser = !!data?.is_admin;
 
   const fileCell = (r: LogsPayload['rows'][number]) =>
     r.img ? (
@@ -111,6 +122,7 @@ export default function LogsView({
           <thead>
             <tr>
               <Th>Date / time</Th>
+              {showUser && <Th>User ID</Th>}
               <Th>Shoot</Th>
               <Th>Pose</Th>
               <Th>Category</Th>
@@ -133,6 +145,13 @@ export default function LogsView({
             {rows.map((r, i) => (
               <tr key={i} className="hover:bg-surface2">
                 <Td mono>{fmtLogDate(r.ts)}</Td>
+                {showUser && (
+                  <Td mono>
+                    <span className="font-bold" title={r.user ?? ''}>
+                      {r.uid || '—'}
+                    </span>
+                  </Td>
+                )}
                 <Td mono>{r.shoot ?? (r.seed != null ? String(r.seed) : '')}</Td>
                 <Td>{r.pose}</Td>
                 <Td>{r.category}</Td>
@@ -157,7 +176,10 @@ export default function LogsView({
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={detailed ? 13 : 8} className="px-[14px] py-6 text-center text-muted">
+                <td
+                  colSpan={(detailed ? 13 : 8) + (showUser ? 1 : 0)}
+                  className="px-[14px] py-6 text-center text-muted"
+                >
                   No activity in this range.
                 </td>
               </tr>

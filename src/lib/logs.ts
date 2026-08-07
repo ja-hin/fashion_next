@@ -60,3 +60,25 @@ export async function logEvent(row: Partial<LogDoc> & { type: LogDoc['type'] }):
     console.error('[logs] failed to write event', e);
   }
 }
+/**
+ * Map each row's owner email to its public user id (U0007).
+ *
+ * Resolved at read time rather than stamped on write, so rows logged before
+ * user ids existed get one too — the alternative would leave every historical
+ * row blank forever. One indexed query for the whole page, not one per row.
+ */
+export async function withUserIds<T extends { user?: string }>(
+  rows: T[],
+): Promise<Array<T & { uid: string }>> {
+  const emails = [...new Set(rows.map((r) => r.user).filter(Boolean))] as string[];
+  if (!emails.length) return rows.map((r) => ({ ...r, uid: '' }));
+
+  const { users } = await import('./mongo');
+  const found = await (await users())
+    .find({ email: { $in: emails } }, { projection: { uid: 1, email: 1 } })
+    .toArray();
+
+  const byEmail = new Map(found.map((u) => [u.email, u.uid ?? '']));
+  // Deleted accounts leave rows behind — blank rather than a wrong id.
+  return rows.map((r) => ({ ...r, uid: byEmail.get(r.user ?? '') ?? '' }));
+}

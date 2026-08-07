@@ -76,7 +76,11 @@ interface RazorpayOrder {
  * The persisted `credits` is what will be granted — decided here, at order
  * time, so nothing the browser sends later can change it.
  */
-export async function createOrder(user: UserDoc, q: Quote): Promise<OrderDoc> {
+export async function createOrder(
+  user: UserDoc,
+  q: Quote,
+  gstRate: number,
+): Promise<OrderDoc> {
   assertPaymentsEnabled();
 
   // Razorpay caps receipt at 40 chars.
@@ -108,7 +112,9 @@ export async function createOrder(user: UserDoc, q: Quote): Promise<OrderDoc> {
     throw new HttpError(502, `Could not start the payment: ${detail}`);
   }
 
-  const { gst } = gstBreakdown(q.paise);
+  // Snapshotted on the order, so a later admin change to the GST rate can't
+  // retroactively alter an invoice that was already issued.
+  const { gst } = gstBreakdown(q.paise, gstRate);
   const doc: OrderDoc = {
     _id: body.id,
     user_id: user._id,
@@ -116,6 +122,7 @@ export async function createOrder(user: UserDoc, q: Quote): Promise<OrderDoc> {
     credits: q.credits,
     amount: q.paise,
     gst,
+    gst_rate: gstRate,
     currency: body.currency ?? PAYMENT_CURRENCY,
     pack_id: q.packId,
     label: q.label,

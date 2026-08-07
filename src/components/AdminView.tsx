@@ -1,10 +1,19 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { getJson, postForm, fmt, ApiError } from '@/lib/client/api';
 import { TableWrap, Th, Td } from './ui';
-import { ShieldCheckIcon, PauseIcon, PlayIcon, TrashIcon } from './icons';
+import {
+  ShieldCheckIcon,
+  PauseIcon,
+  PlayIcon,
+  TrashIcon,
+  ImagesIcon,
+  PersonIcon,
+} from './icons';
 import { useDialog } from './Dialog';
+import AdminPacks from './AdminPacks';
 import type { AdminUser, Me } from '@/lib/client/types';
 
 const MODES = ['imagine', 'saved'] as const;
@@ -127,6 +136,7 @@ export default function AdminView({
           <table className="w-full border-collapse text-[13px]">
             <thead>
               <tr>
+                <Th>User ID</Th>
                 <Th>Name</Th>
                 <Th>Email</Th>
                 <Th>Role</Th>
@@ -138,6 +148,9 @@ export default function AdminView({
             <tbody>
               {users.map((u) => (
                 <tr key={u.id} className="hover:bg-surface2">
+                  <Td mono>
+                    <span className="font-bold">{u.uid || '—'}</span>
+                  </Td>
                   <Td>{u.name || '—'}</Td>
                   <Td mono>{u.email}</Td>
                   <Td>
@@ -175,6 +188,20 @@ export default function AdminView({
                   </Td>
                   <Td>
                     <div className="flex items-center gap-1.5">
+                      <Link
+                        title={`See everything ${u.uid || u.email} has generated`}
+                        href={`/gallery?user=${encodeURIComponent(u.uid || u.id)}`}
+                        className={iconBtn}
+                      >
+                        <ImagesIcon />
+                      </Link>
+                      <Link
+                        title={`See the models ${u.uid || u.email} has saved`}
+                        href={`/models?user=${encodeURIComponent(u.uid || u.id)}`}
+                        className={iconBtn}
+                      >
+                        <PersonIcon />
+                      </Link>
                       <button
                         title={u.is_admin ? 'Revoke admin' : 'Make admin'}
                         onClick={() =>
@@ -222,7 +249,7 @@ export default function AdminView({
               ))}
               {users.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-[14px] py-6 text-center text-muted">
+                  <td colSpan={7} className="px-[14px] py-6 text-center text-muted">
                     No users yet.
                   </td>
                 </tr>
@@ -231,6 +258,8 @@ export default function AdminView({
           </table>
         </TableWrap>
       </div>
+
+      <AdminPacks />
 
       <div className="flex max-w-[880px] flex-wrap gap-[18px]">
         <div className="min-w-[300px] flex-1 rounded-card border border-line bg-surface p-[22px] shadow-card">

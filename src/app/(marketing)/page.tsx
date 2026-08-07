@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
+import { ensureBootstrapped } from '@/lib/bootstrap';
+import { getBilling } from '@/lib/settings';
+import { activePacks, packCredits, rupees, bonusPct, type Pack } from '@/lib/pricing';
 
 /**
  * The public marketing homepage.
@@ -9,6 +12,14 @@ import Script from 'next/script';
  * sheet animation by querying them. Renaming anything here silently breaks an
  * animation, so keep the hooks intact.
  */
+
+export const runtime = 'nodejs';
+/**
+ * The pricing section reads admin-managed packs, so this page must not be
+ * statically prerendered — a build-time snapshot would freeze prices and keep
+ * serving them after an admin changed them.
+ */
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'AI Fashion Photography India — ₹25/Photo On-Model Shoots | AImageGen',
@@ -37,13 +48,23 @@ const APP_LD = {
   operatingSystem: 'Web',
   description:
     'AI fashion photography SaaS: turns a single garment photo into a full on-model photoshoot with consistent AI models, custom prompts, 2K/4K output and marketplace-ready framing for Amazon, Flipkart, Myntra and Meesho.',
-  offers: [
-    { '@type': 'Offer', name: 'Sampler — 50 photo credits', price: '499', priceCurrency: 'INR', url: 'https://aimagegen.com/#pricing' },
-    { '@type': 'Offer', name: 'Studio — 500 photo credits', price: '3999', priceCurrency: 'INR', url: 'https://aimagegen.com/#pricing' },
-    { '@type': 'Offer', name: 'Brand — 1600 photo credits', price: '11999', priceCurrency: 'INR', url: 'https://aimagegen.com/#pricing' },
-    { '@type': 'Offer', name: 'Scale — 5000 photo credits', price: '34999', priceCurrency: 'INR', url: 'https://aimagegen.com/#pricing' },
-  ],
 };
+
+/**
+ * Offers for the SoftwareApplication schema, built from the live packs.
+ * Hardcoding these means Google indexes a price the admin has since changed —
+ * which is both wrong and a rich-result penalty.
+ */
+const appLd = (packs: Pack[]) => ({
+  ...APP_LD,
+  offers: packs.map((p) => ({
+    '@type': 'Offer',
+    name: `${p.name} — ${packCredits(p)} photo credits`,
+    price: String(p.paise / 100),
+    priceCurrency: 'INR',
+    url: 'https://aimagegen.com/pricing',
+  })),
+});
 
 const FAQS: Array<[string, string]> = [
   [
@@ -179,53 +200,15 @@ const ASSURANCES = [
   'Credits valid 12 months — no subscription, no lock-in',
 ];
 
-const PLANS = [
-  {
-    name: 'Sampler',
-    price: '₹499',
-    per: '≈ ₹9.98 / PHOTO',
-    cap: '50 credits — kick the tyres on a real drop.',
-    items: ['50 on-model photos', 'All South-Asian presets', 'Any pose, backdrop & mood', 'Save one model'],
-    cta: 'Start free →',
-    feat: false,
-    delay: '0s',
-  },
-  {
-    name: 'Studio',
-    price: '₹3,999',
-    per: '₹8.00 / PHOTO',
-    cap: '500 credits — a growing single-brand catalogue.',
-    items: ['500 on-model photos', 'Save up to 10 models', 'Character-sheet consistency', 'Bulk runs'],
-    cta: 'Load wallet →',
-    feat: false,
-    delay: '.06s',
-  },
-  {
-    name: 'Brand',
-    price: '₹11,999',
-    per: '₹7.50 / PHOTO',
-    cap: '1,600 credits — full seasonal catalogues.',
-    items: ['1,600 on-model photos', 'Unlimited saved models', 'Ethnic-wear tuning', 'Priority queue', 'GST invoice'],
-    cta: 'Load wallet',
-    feat: true,
-    delay: '.12s',
-  },
-  {
-    name: 'Scale',
-    price: '₹34,999',
-    per: '₹7.00 / PHOTO',
-    cap: '5,000 credits — agencies & multi-brand teams.',
-    items: ['5,000 on-model photos', 'Everything in Brand', 'Team access', 'Bulk API-ready runs'],
-    cta: 'Load wallet →',
-    feat: false,
-    delay: '.18s',
-  },
-];
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  await ensureBootstrapped();
+  const billing = await getBilling();
+  const plans = activePacks(billing);
+
   return (
     <>
-      {[ORG_LD, APP_LD, FAQ_LD].map((ld, i) => (
+      {[ORG_LD, appLd(plans), FAQ_LD].map((ld, i) => (
         <script
           key={i}
           type="application/ld+json"
@@ -248,7 +231,7 @@ export default function LandingPage() {
             <a href="#story" data-c="">Why</a>
             <a href="#features" data-c="">Features</a>
             <a href="#demo" data-c="">See it run</a>
-            <a href="#pricing" data-c="">Pricing</a>
+            <a href="/pricing" data-c="">Pricing</a>
           </nav>
           <div className="nav-right">
             <button className="mode" id="modeBtn" data-c="" aria-label="Toggle light and dark mode">
@@ -455,32 +438,71 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="plans">
-            {PLANS.map((p) => (
-              <div
-                className={`plan rv${p.feat ? ' feat' : ''}`}
-                key={p.name}
-                style={{ transitionDelay: p.delay }}
-              >
-                {p.feat && <div className="badge">Most popular</div>}
-                <div className="p-name">{p.name}</div>
-                <div className="p-price">{p.price}</div>
-                <div className="p-per">{p.per}</div>
-                <div className="p-cap">{p.cap}</div>
-                <ul>
-                  {p.items.map((i) => (
-                    <li key={i}>{i}</li>
-                  ))}
-                </ul>
-                <a
-                  href="/register"
-                  className={`btn ${p.feat ? 'btn-flame' : 'btn-line'}`}
-                  data-c=""
+            {plans.map((p, i) => {
+              const total = packCredits(p);
+              return (
+                <div
+                  className={`plan rv${p.popular ? ' feat' : ''}`}
+                  key={p.id}
+                  style={{ transitionDelay: `${i * 0.06}s` }}
                 >
-                  {p.cta}
-                  {p.feat && <span className="arw"> →</span>}
-                </a>
-              </div>
-            ))}
+                  {p.popular && <div className="badge">Most popular</div>}
+                  <div className="p-name">{p.name}</div>
+                  <div className="p-price">{rupees(p.paise)}</div>
+                  <div className="p-per">{rupees(Math.round(p.paise / total))} / PHOTO</div>
+                  <div className="p-cap">
+                    <b style={{ color: 'var(--text)', fontSize: '1rem' }}>
+                      {total.toLocaleString('en-IN')} credits
+                    </b>
+                    {p.bonus > 0 && (
+                      <>
+                        {/* Two grid columns so the figures line up down the card. */}
+                        <span
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'auto auto',
+                            justifyContent: 'start',
+                            columnGap: 8,
+                            rowGap: 2,
+                            marginTop: 6,
+                          }}
+                        >
+                          <span>Base Credit:</span>
+                          <b style={{ color: 'var(--text)' }}>
+                            {p.credits.toLocaleString('en-IN')}
+                          </b>
+                          <span>Bonus Credit:</span>
+                          <b style={{ color: 'var(--mint)' }}>
+                            {p.bonus.toLocaleString('en-IN')}
+                          </b>
+                        </span>
+                        <span
+                          style={{
+                            display: 'block',
+                            color: 'var(--mint)',
+                            fontWeight: 600,
+                            marginTop: 4,
+                          }}
+                        >
+                          ( {bonusPct(p)}% Extra Credits )
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  {/* Keeps the CTA pinned to the bottom so cards align — this
+                      is what `.plan ul { flex: 1 }` used to do. */}
+                  <div style={{ flex: 1 }} />
+                  <a
+                    href="/pricing"
+                    className={`btn ${p.popular ? 'btn-flame' : 'btn-line'}`}
+                    data-c=""
+                  >
+                    Load wallet
+                    {p.popular && <span className="arw"> →</span>}
+                  </a>
+                </div>
+              );
+            })}
           </div>
           <div className="pnote rv">
             Enterprise from ₹6/photo · Talk to us for custom volume, dedicated models &amp;
@@ -544,7 +566,7 @@ export default function LandingPage() {
             <span className="k-label">Product</span>
             <a href="#features" data-c="">Features</a>
             <a href="#demo" data-c="">See it run</a>
-            <a href="#pricing" data-c="">Pricing</a>
+            <a href="/pricing" data-c="">Pricing</a>
           </div>
           <div>
             <span className="k-label">Use cases</span>

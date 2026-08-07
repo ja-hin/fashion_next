@@ -6,6 +6,8 @@
  * a straight copy and old records stay readable.
  */
 
+import type { BillingConfig } from './pricing';
+
 export type Resolution = '1K' | '2K' | '4K';
 export type ShootMode = 'imagine' | 'saved';
 export type Gender = 'female' | 'male' | 'child';
@@ -13,6 +15,13 @@ export type Gender = 'female' | 'male' | 'child';
 // ── users ───────────────────────────────────────────────────────────
 export interface UserDoc {
   _id: string; // hex id (kept from the old SQLite `users.id`)
+  /**
+   * Short human-readable id shown in the UI and quoted in support — "U0007".
+   * Sequential and stable; `_id` stays the internal key so nothing has to be
+   * re-pointed. Optional because accounts created before this existed are
+   * backfilled at boot.
+   */
+  uid?: string;
   email: string; // always lower-cased + trimmed
   name: string;
   pw_hash: string; // pbkdf2-hmac-sha256, hex
@@ -26,12 +35,32 @@ export interface UserDoc {
 /** A user as sent to the browser — never includes the password hash/salt. */
 export interface PublicUser {
   id: string;
+  uid: string;
   email: string;
   name: string;
   is_admin: boolean;
   balance: number;
   created: string;
   active: boolean;
+}
+
+// ── password resets ─────────────────────────────────────────────────
+/**
+ * One outstanding password-reset request.
+ *
+ * `_id` is the SHA-256 of the emailed token, never the token itself — someone
+ * who reads this collection still cannot construct a working link. Rows expire
+ * via a TTL index and are deleted the moment a token is used.
+ */
+export interface ResetDoc {
+  _id: string; // sha256(token), hex
+  user_id: string;
+  email: string;
+  created: string; // ISO
+  expires: Date; // TTL index drives cleanup
+  /** Set when consumed, so a replay inside the TTL window is refused. */
+  used_at?: string;
+  requested_ip?: string;
 }
 
 // ── sessions ────────────────────────────────────────────────────────
@@ -173,9 +202,17 @@ export interface SettingsDoc {
   genie_price: number;
   genie_max: number;
   shoot_seq: number;
+  /** Counter behind the sequential user ids (U0001…). */
+  user_seq?: number;
   prices: PriceGrid;
   /** Per-financial-year invoice counters, keyed "2026-27". */
   invoice_seq?: Record<string, number>;
+  /**
+   * Top-up packs and rates, edited from the admin page. Optional because
+   * documents written before this existed won't have it — getBilling() falls
+   * back to DEFAULT_BILLING.
+   */
+  billing?: BillingConfig;
 }
 
 // ── credit top-up orders ────────────────────────────────────────────
@@ -194,6 +231,11 @@ export interface OrderDoc {
   credits: number;
   amount: number; // paise, GST-inclusive
   gst: number; // paise, the tax portion of `amount`
+  /**
+   * The rate in force when this order was placed (0.18 = 18%). Snapshotted so a
+   * later admin change can't retroactively rewrite an issued invoice.
+   */
+  gst_rate?: number;
   currency: string;
   pack_id: string | null; // null for a custom amount
   label: string;

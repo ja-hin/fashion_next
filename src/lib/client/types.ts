@@ -5,6 +5,8 @@
 export interface Me {
   authed: boolean;
   admin?: boolean;
+  /** Public user id — "U0007". */
+  uid?: string;
   provider?: 'gemini' | 'mock';
   version?: string;
   name?: string;
@@ -70,6 +72,9 @@ export interface GalleryItem {
   thumb: string;
   category: string;
   model: string;
+  /** Admin-only — the server omits these for regular users. */
+  owner_uid?: string;
+  owner_email?: string;
 }
 
 export interface GalleryGroup {
@@ -98,6 +103,9 @@ export interface SavedModel {
   has_character_sheet: boolean;
   kept_batch: string;
   refs: ModelRefPublic[];
+  /** Admin-only — the server omits these for regular users. */
+  owner_uid?: string;
+  owner_email?: string;
 }
 
 export interface ShootImage {
@@ -133,6 +141,10 @@ export interface ResumePayload {
 
 export interface LogRow {
   ts: string;
+  /** Public user id of whoever generated this row — resolved server-side. */
+  uid?: string;
+  /** Owner email. Present for admins; a user's own rows are all their own. */
+  user?: string;
   type: string;
   pid?: string;
   shoot?: string;
@@ -154,6 +166,7 @@ export interface LogRow {
 export interface LogsPayload {
   rows: LogRow[];
   models: string[];
+  is_admin?: boolean;
   summary: {
     images: number;
     credits: number;
@@ -165,6 +178,8 @@ export interface LogsPayload {
 
 export interface AdminUser {
   id: string;
+  /** Public user id shown in the UI — "U0007". Blank on un-backfilled rows. */
+  uid: string;
   email: string;
   name: string;
   is_admin: boolean;

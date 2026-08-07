@@ -1,6 +1,6 @@
 import { handler, json, requireUser } from '@/lib/api';
 import { logs } from '@/lib/mongo';
-import { rowUsd } from '@/lib/logs';
+import { rowUsd, withUserIds } from '@/lib/logs';
 import type { WithId } from 'mongodb';
 import type { LogDoc } from '@/lib/types';
 
@@ -17,10 +17,18 @@ export const GET = handler(async (req: Request) => {
   const to = sp.get('to') ?? '';
   const modelFilter = sp.get('model') ?? '';
 
-  const filter: Record<string, unknown> = {};
+  /*
+   * `scope=own` is sent by the Usage tab, which is a personal view for every
+   * account including admins — "my credits, my images". Admin-wide visibility
+   * belongs to the Logs tab alone.
+   *
+   * Admin status only ever WIDENS the filter, and only when the caller didn't
+   * ask to be scoped, so a non-admin can never escape their own rows.
+   */
+  const ownOnly = sp.get('scope') === 'own' || !me.is_admin;
 
-  // Non-admins only ever see their own rows.
-  if (!me.is_admin) filter.user = me.email;
+  const filter: Record<string, unknown> = {};
+  if (ownOnly) filter.user = me.email;
 
   // ts is an ISO string, so a lexicographic range is also a chronological one.
   // `to` gets a ￿ suffix so the whole end day is included, not just midnight.
@@ -37,11 +45,16 @@ export const GET = handler(async (req: Request) => {
     .limit(20_000)
     .toArray()) as WithId<LogDoc>[];
 
+  // User ids are attached BEFORE the search runs. The search greps the
+  // serialised row, and uid is resolved rather than stored — attaching it
+  // afterwards would make searching "U0007" silently match nothing.
+  const withIds = await withUserIds(all);
+
   // Free-text search across the whole row, matching the old behaviour of
   // grepping the serialised JSON.
   const matched = q
-    ? all.filter((r) => JSON.stringify(r).toLowerCase().includes(q))
-    : all;
+    ? withIds.filter((r) => JSON.stringify(r).toLowerCase().includes(q))
+    : withIds;
 
   // Build the AI-model dropdown from what's available BEFORE applying that filter.
   const aiModels = [...new Set(matched.map((r) => r.ai_model).filter(Boolean))].sort();
@@ -62,6 +75,9 @@ export const GET = handler(async (req: Request) => {
   return json({
     rows: shown,
     models: aiModels,
+    // False whenever the result set is one person's own rows — the User ID
+    // column would just repeat the same value on every line.
+    is_admin: !!me.is_admin && !ownOnly,
     summary: {
       images: images.length,
       credits: Math.round(filtered.reduce((a, r) => a + Number(r.cost ?? 0), 0) * 100) / 100,

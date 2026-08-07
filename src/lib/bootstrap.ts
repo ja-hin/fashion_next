@@ -8,7 +8,7 @@
 import 'server-only';
 import { ensureIndexes, users } from './mongo';
 import { createUser } from './auth';
-import { getSettings } from './settings';
+import { getSettings, nextUserNo } from './settings';
 import { ADMIN_EMAIL, ADMIN_PASSWORD, DEFAULT_BALANCE_IMAGES } from './config';
 
 declare global {
@@ -16,9 +16,34 @@ declare global {
   var _aimagegenBootstrap: Promise<void> | undefined;
 }
 
+/**
+ * Give every pre-existing account a public user id.
+ *
+ * Oldest first, so the numbering follows signup order rather than whatever
+ * order Mongo happens to return. A no-op once everyone has one, so the cost on
+ * a normal boot is a single indexed count.
+ */
+async function backfillUserIds(): Promise<void> {
+  const col = await users();
+  const pending = await col
+    .find({ $or: [{ uid: { $exists: false } }, { uid: '' }] })
+    .sort({ created: 1 })
+    .toArray();
+  if (!pending.length) return;
+
+  for (const u of pending) {
+    await col.updateOne({ _id: u._id }, { $set: { uid: await nextUserNo() } });
+  }
+  console.log(`[bootstrap] assigned user ids to ${pending.length} existing account(s)`);
+}
+
 async function bootstrap(): Promise<void> {
   await ensureIndexes();
   await getSettings(); // materialise the settings document with defaults
+
+  // Before the admin check below — that returns early once an admin exists, and
+  // a backfill placed after it would never run on an existing install.
+  await backfillUserIds();
 
   // Seed one admin the first time the app ever boots. Skipped entirely once any
   // admin exists, so this can never silently resurrect a deleted account or

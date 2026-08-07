@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { postForm, ApiError } from '@/lib/client/api';
+import AuthShell from './AuthShell';
 
 /**
  * Sign in / create account. `/login` and `/register` are separate routes, so
@@ -36,15 +37,7 @@ export default function AuthForm({ mode }: { mode: 'login' | 'register' }) {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg px-4 py-10">
-      <div className="w-full max-w-[380px]">
-        <Link
-          href="/"
-          className="mb-6 block text-center text-[26px] font-extrabold tracking-[-0.03em]"
-        >
-          <span className="text-brand">AI</span>mageGen
-        </Link>
-
+    <AuthShell>
         <form
           onSubmit={submit}
           className="rounded-2xl border border-line bg-surface p-8 shadow-pop"
@@ -89,9 +82,19 @@ export default function AuthForm({ mode }: { mode: 'login' | 'register' }) {
           </div>
 
           <div className="mb-5">
-            <label className="lbl" htmlFor="password">
-              Password
-            </label>
+            <div className="flex items-baseline justify-between">
+              <label className="lbl" htmlFor="password">
+                Password
+              </label>
+              {!isSignup && (
+                <Link
+                  href="/forgot"
+                  className="mb-1.5 text-[11.5px] font-semibold text-accent hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              )}
+            </div>
             <input
               id="password"
               type="password"
@@ -137,8 +140,7 @@ export default function AuthForm({ mode }: { mode: 'login' | 'register' }) {
               </>
             )}
           </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </AuthShell>
   );
 }

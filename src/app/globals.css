@@ -184,6 +184,24 @@
     display: block;
     margin-bottom: 6px;
   }
+
+  /* Top-bar logo. Two files swapped by theme rather than one recoloured with
+     a filter — the black mark is invisible on the dark surface. Mirrors the
+     .logo-light / .logo-dark pair in public/landing.css. */
+  .brand-logo {
+    height: 45px;
+    width: auto;
+    display: block;
+  }
+  .brand-logo-dark {
+    display: none;
+  }
+  [data-theme='dark'] .brand-logo-light {
+    display: none;
+  }
+  [data-theme='dark'] .brand-logo-dark {
+    display: block;
+  }
 }
 
 /* ── animations ─────────────────────────────────────────────────── */

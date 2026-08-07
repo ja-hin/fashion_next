@@ -1,6 +1,6 @@
 import { handler, requireUser } from '@/lib/api';
 import { logs } from '@/lib/mongo';
-import { rowUsd } from '@/lib/logs';
+import { rowUsd, withUserIds } from '@/lib/logs';
 import type { LogDoc } from '@/lib/types';
 
 export const runtime = 'nodejs';
@@ -8,6 +8,8 @@ export const dynamic = 'force-dynamic';
 
 const COLUMNS = [
   'timestamp',
+  'user_id',
+  'user_email',
   'type',
   'seed',
   'pose',
@@ -29,12 +31,16 @@ function csvCell(v: unknown): string {
   return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
-export const GET = handler(async () => {
+export const GET = handler(async (req: Request) => {
   const me = await requireUser();
 
-  // Non-admins export only their own rows — same visibility rule as the table.
-  const filter = me.is_admin ? {} : { user: me.email };
-  const rows = (await (await logs()).find(filter).sort({ ts: 1 }).toArray()) as LogDoc[];
+  // Same rule as the table: `scope=own` forces a personal export even for an
+  // admin, and a non-admin is always confined to their own rows.
+  const ownOnly = new URL(req.url).searchParams.get('scope') === 'own' || !me.is_admin;
+  const filter = ownOnly ? { user: me.email } : {};
+  const rows = await withUserIds(
+    (await (await logs()).find(filter).sort({ ts: 1 }).toArray()) as LogDoc[],
+  );
 
   const lines = [COLUMNS.join(',')];
   for (const r of rows) {
@@ -42,6 +48,8 @@ export const GET = handler(async () => {
     lines.push(
       [
         r.ts ?? '',
+        r.uid ?? '',
+        r.user ?? '',
         r.type ?? '',
         r.seed ?? '',
         r.pose ?? '',

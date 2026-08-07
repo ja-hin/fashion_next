@@ -56,7 +56,7 @@ header.nav{position:fixed;top:0;left:0;right:0;z-index:900;transition:background
 header.nav.solid{background:var(--nav-bg);backdrop-filter:blur(12px);border-color:var(--line-soft)}
 .nav-in{display:flex;align-items:center;justify-content:space-between;height:74px;gap:18px}
 .logo{display:inline-flex;align-items:center}
-.logo-img{height:38px;width:auto;display:block}
+.logo-img{height:45px;width:auto;display:block}
 .logo-dark{display:none}
 [data-theme="dark"] .logo-light{display:none}
 [data-theme="dark"] .logo-dark{display:block}

@@ -15,6 +15,7 @@ import type {
   LogDoc,
   SettingsDoc,
   OrderDoc,
+  ResetDoc,
 } from './types';
 
 declare global {
@@ -62,24 +63,31 @@ export async function settings(): Promise<Collection<SettingsDoc>> {
 export async function orders(): Promise<Collection<OrderDoc>> {
   return (await getDb()).collection<OrderDoc>('orders');
 }
+export async function passwordResets(): Promise<Collection<ResetDoc>> {
+  return (await getDb()).collection<ResetDoc>('password_resets');
+}
 
 /**
  * Create every index the app relies on. Idempotent — safe to call on each boot.
  * Called once from ensureBootstrapped() in bootstrap.ts.
  */
 export async function ensureIndexes(): Promise<void> {
-  const [u, s, sh, m, l, o] = await Promise.all([
+  const [u, s, sh, m, l, o, pr] = await Promise.all([
     users(),
     sessions(),
     shoots(),
     savedModels(),
     logs(),
     orders(),
+    passwordResets(),
   ]);
 
   await Promise.all([
     u.createIndex({ email: 1 }, { unique: true }),
     u.createIndex({ is_admin: -1, created: 1 }),
+    // Sparse: legacy rows have no uid until the boot backfill reaches them, and
+    // a plain unique index would reject all but one of them as duplicate nulls.
+    u.createIndex({ uid: 1 }, { unique: true, sparse: true }),
 
     s.createIndex({ user_id: 1 }),
     // Sessions self-destruct once `expires` passes — this replaces the old
@@ -102,5 +110,11 @@ export async function ensureIndexes(): Promise<void> {
     // until the payment lands, and unique so a replayed webhook can't attach
     // one payment to a second order.
     o.createIndex({ payment_id: 1 }, { unique: true, sparse: true }),
+
+    // Reset links self-destruct once `expires` passes, so a forgotten request
+    // can't sit around indefinitely waiting to be used.
+    pr.createIndex({ expires: 1 }, { expireAfterSeconds: 0 }),
+    pr.createIndex({ user_id: 1, created: -1 }),
+    pr.createIndex({ email: 1, created: -1 }),
   ]);
 }

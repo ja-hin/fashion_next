@@ -1,6 +1,7 @@
 import { handler, json, requireUser, formData, str, HttpError } from '@/lib/api';
 import { createOrder, assertPaymentsEnabled } from '@/lib/razorpay';
-import { quote, CUSTOM_MIN_CREDITS, CUSTOM_MAX_CREDITS } from '@/lib/pricing';
+import { quote } from '@/lib/pricing';
+import { getBilling } from '@/lib/settings';
 import { RAZORPAY_KEY_ID, PAYMENT_BRAND } from '@/lib/config';
 
 export const runtime = 'nodejs';
@@ -20,7 +21,11 @@ export const POST = handler(async (req: Request) => {
 
   if (!packId && !rawCredits) throw new HttpError(400, 'Choose a pack or enter an amount.');
 
-  const q = quote({
+  // Loaded fresh on every order: an admin may have changed a price or retired a
+  // pack since this page was rendered, and the live config wins.
+  const cfg = await getBilling();
+
+  const q = quote(cfg, {
     packId: packId || null,
     credits: rawCredits ? Number(rawCredits) : null,
   });
@@ -29,12 +34,14 @@ export const POST = handler(async (req: Request) => {
     throw new HttpError(
       400,
       packId
-        ? 'That pack no longer exists. Refresh the page and try again.'
-        : `Enter a whole number of credits between ${CUSTOM_MIN_CREDITS} and ${CUSTOM_MAX_CREDITS}.`,
+        ? 'That pack is no longer available. Refresh the page and try again.'
+        : cfg.custom_enabled
+          ? `Enter a whole number of credits between ${cfg.custom_min_credits} and ${cfg.custom_max_credits}.`
+          : 'Custom top-ups are currently unavailable. Please choose a pack.',
     );
   }
 
-  const order = await createOrder(me, q);
+  const order = await createOrder(me, q, cfg.gst_rate);
 
   // key_id is public by design — Razorpay Checkout needs it in the browser.
   return json({
