@@ -11,7 +11,7 @@ export default function GalleryPage() {
   const router = useRouter();
 
   return (
-    <main className="flex-1 overflow-y-auto px-5 py-6 sm:px-7">
+    <main className="flex-1 overflow-y-auto px-5 py-6 sm:px-7 flex justify-center">
       <GalleryView
         onZoom={s.openZoom}
         onSaveAsModel={s.openSaveModel}
