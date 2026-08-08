@@ -6,7 +6,7 @@ import LogsView from '@/components/LogsView';
 export default function LogsClient() {
   const s = useStudio();
   return (
-    <main className="flex-1 overflow-y-auto px-5 py-6 sm:px-7 flex justify-center">
+    <main className="flex-1 overflow-y-auto px-5 py-6 sm:px-7 flex">
       <LogsView variant="logs" onZoom={s.openZoom} />
     </main>
   );
