@@ -1,8 +1,15 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
-import { getBilling } from '@/lib/settings';
+import { getBilling, getSettings } from '@/lib/settings';
 import { ensureBootstrapped } from '@/lib/bootstrap';
-import { activePacks, packCredits, rupees, savingsPct, bonusPct } from '@/lib/pricing';
+import {
+  activePacks,
+  packCredits,
+  rupees,
+  savingsPct,
+  bonusPct,
+  effectiveRate,
+} from '@/lib/pricing';
 
 export const runtime = 'nodejs';
 // Packs are admin-editable, so this must never be cached into a stale price.
@@ -26,8 +33,14 @@ export const metadata: Metadata = {
 export default async function PricingPage() {
   await ensureBootstrapped();
   const cfg = await getBilling();
+  const settings = await getSettings();
   const packs = activePacks(cfg);
   const gstPct = Math.round(cfg.gst_rate * 100);
+
+  // The cheapest shoot — an imagined model at 1K — is what the "per photo"
+  // figure on each card is quoted against, so it is always a genuine floor
+  // rather than a rate some options undercut.
+  const creditsPerPhoto = Number(settings.prices?.imagine?.['1K'] ?? settings.price_per_image ?? 1);
 
   const faq = [
     [
@@ -127,6 +140,7 @@ export default async function PricingPage() {
             {packs.map((p) => {
               const total = packCredits(p);
               const save = savingsPct(p, cfg);
+              const perPhoto = Math.round(effectiveRate(p) * creditsPerPhoto);
               return (
                 <div
                   key={p.id}
@@ -146,7 +160,20 @@ export default async function PricingPage() {
                   {p.popular && <span className="badge">Most popular</span>}
 
                   <span className="k-label">{p.name}</span>
-
+                    {p.blurb && (
+                      <p
+                        style={{
+                          color: 'var(--dim)',
+                          fontSize: '.84rem',
+                          marginTop: 6,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {p.blurb}
+                      </p>
+                    )}
                   <div
                     style={{
                       fontFamily: 'var(--serif)',
@@ -177,7 +204,7 @@ export default async function PricingPage() {
                           columnGap: 8,
                           rowGap: 2,
                           marginTop: 8,
-                          fontSize: '.86rem',
+                          fontSize: '1rem',
                           color: 'var(--dim)',
                         }}
                       >
@@ -210,11 +237,33 @@ export default async function PricingPage() {
                     )}
                   </div> */}
 
-                  {p.blurb && (
-                    <p style={{ color: 'var(--dim)', fontSize: '.88rem', marginTop: 14 }}>
-                      {p.blurb}
-                    </p>
-                  )}
+                  {/*
+                    Everything above is what you buy; everything below is what
+                    it works out to. The rule marks that break so the per-photo
+                    figure reads as the takeaway, not another pack line item.
+                  */}
+                  <div
+                    style={{
+                      borderTop: '1px solid var(--line-soft)',
+                      marginTop: 18,
+                      paddingTop: 14,
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                      <span
+                        style={{
+                          fontFamily: 'var(--serif)',
+                          fontSize: '1.5rem',
+                          lineHeight: 1.1,
+                        }}
+                      >
+                        {rupees(perPhoto)}
+                      </span>
+                      <span style={{ color: 'var(--dim)', fontSize: '.88rem' }}>per photo</span>
+                    </div>
+
+                    
+                  </div>
 
                   <div style={{ flex: 1, minHeight: 18 }} />
 

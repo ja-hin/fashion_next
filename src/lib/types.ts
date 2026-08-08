@@ -30,6 +30,22 @@ export interface UserDoc {
   balance: number; // credits
   created: string; // ISO, seconds precision
   active: boolean;
+
+  /**
+   * Profile details the user maintains themselves (see lib/profile.ts). All
+   * optional — an account created before this existed simply has none of them,
+   * and nothing may assume they are present.
+   *
+   * `gstin` and `state` are billing data: they are snapshotted onto each order
+   * so an invoice keeps the details that were true when it was issued.
+   */
+  phone?: string;
+  company?: string;
+  gstin?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
 }
 
 /** A user as sent to the browser — never includes the password hash/salt. */

@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { postForm, fmt } from '@/lib/client/api';
 import {
   GearIcon,
+  PersonIcon,
   ChartIcon,
   PlusCircleIcon,
   ReceiptIcon,
@@ -158,6 +159,9 @@ export default function TopBar({ me, balance }: { me: Me; balance: number }) {
               <div className="mx-1.5 my-[5px] h-px bg-line" />
             </div>
 
+            <Link href="/profile" className={menuItem}>
+              <PersonIcon /> Profile
+            </Link>
             <Link href="/usage" className={menuItem}>
               <ChartIcon /> Usage
             </Link>

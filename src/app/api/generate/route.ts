@@ -16,6 +16,7 @@ import { loadModel } from '@/lib/saved-models';
 import { nextShootNumber, normaliseResolution } from '@/lib/settings';
 import { createJob, runBackground } from '@/lib/jobs';
 import { runProduct, randSeed, pickLook } from '@/lib/gen';
+import { sceneClause } from '@/lib/prompts';
 import { PROVIDER } from '@/lib/config';
 import type { ShootDoc, ShootOpts } from '@/lib/types';
 
@@ -58,7 +59,7 @@ export const POST = handler(async (req: Request) => {
   const opts: ShootOpts = {
     style: str(fd, 'style', 'european'),
     category,
-    scene: `${backdrop} background, ${lighting} lighting, ${mood} mood`,
+    scene: sceneClause({ backdrop, lighting, mood }),
     aspect: str(fd, 'aspect', '4:5'),
     framing: str(fd, 'framing', 'three_quarter'),
     input_family: str(fd, 'input_family', 'garment_in') as ShootOpts['input_family'],

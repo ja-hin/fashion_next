@@ -11,6 +11,7 @@ import { cookies } from 'next/headers';
 import { users, sessions } from './mongo';
 import { DEFAULT_BALANCE_IMAGES } from './config';
 import type { UserDoc, PublicUser } from './types';
+import type { Profile } from './profile';
 
 const ITERATIONS = 200_000;
 const KEYLEN = 32; // sha256 digest size — matches hashlib.pbkdf2_hmac default
@@ -146,6 +147,60 @@ export async function setPassword(userId: string, newPassword: string): Promise<
 
   await destroyAllSessions(userId);
   return true;
+}
+
+/**
+ * Verify a password against an account without logging anyone in.
+ *
+ * Used to re-authenticate for a sensitive self-service change (email address,
+ * new password) — `login()` would work, but this reads as what it is and takes
+ * the user we already have rather than looking them up again.
+ */
+export function checkPassword(u: UserDoc, password: string): boolean {
+  return safeEqual(hashPassword(password, u.pw_salt), u.pw_hash);
+}
+
+/** Save the self-editable profile fields. Never touches balance, role or auth. */
+export async function updateProfile(
+  userId: string,
+  patch: Profile,
+): Promise<void> {
+  await (await users()).updateOne(
+    { _id: userId },
+    {
+      $set: {
+        name: patch.name,
+        phone: patch.phone,
+        company: patch.company,
+        gstin: patch.gstin,
+        address: patch.address,
+        city: patch.city,
+        state: patch.state,
+        pincode: patch.pincode,
+      },
+    },
+  );
+}
+
+/**
+ * Change the address an account signs in with.
+ *
+ * Returns false when the address already belongs to someone else. The unique
+ * index on `email` is still the real guard — this check only turns the race
+ * loser's duplicate-key error into a sentence the user can act on.
+ */
+export async function changeEmail(userId: string, emailRaw: string): Promise<boolean> {
+  const email = (emailRaw ?? '').toLowerCase().trim();
+  const col = await users();
+  if (await col.findOne({ email, _id: { $ne: userId } })) return false;
+
+  try {
+    await col.updateOne({ _id: userId }, { $set: { email } });
+    return true;
+  } catch (e: unknown) {
+    if (e && typeof e === 'object' && (e as { code?: number }).code === 11000) return false;
+    throw e;
+  }
 }
 
 export async function userById(id: string | null | undefined): Promise<UserDoc | null> {

@@ -3,6 +3,7 @@ import { requireOwnedShoot } from '@/lib/shoots';
 import { normaliseResolution } from '@/lib/settings';
 import { createJob, runBackground } from '@/lib/jobs';
 import { runOne } from '@/lib/gen';
+import { sceneClause } from '@/lib/prompts';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -26,12 +27,7 @@ export const POST = handler(
 
     // Only build a scene override when the user actually changed something —
     // otherwise the pose prompt keeps the hero's background verbatim.
-    const scene =
-      backdrop || mood || lighting
-        ? `${backdrop || 'studio seamless'} background, ${
-            lighting || 'soft bright commercial'
-          } lighting, ${mood || 'clean'} mood`
-        : null;
+    const scene = backdrop || mood || lighting ? sceneClause({ backdrop, lighting, mood }) : null;
 
     const jobId = createJob(1);
     runBackground(jobId, () =>

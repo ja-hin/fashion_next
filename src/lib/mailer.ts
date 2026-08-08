@@ -136,5 +136,5 @@ export function resetEmail(opts: {
   </p>
 </div>`.trim();
 
-  return { to: opts.to, subject: 'Reset your AImageGen password', html, text };
+  return { to: opts.to, subject: 'Reset your Faishon Studio password', html, text };
 }

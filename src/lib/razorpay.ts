@@ -128,6 +128,11 @@ export async function createOrder(
     label: q.label,
     status: 'created',
     created: new Date().toISOString(),
+    // Snapshotted from the profile as it stands right now. An invoice must keep
+    // the GSTIN and place of supply that were true when the payment was made,
+    // so a later profile edit cannot rewrite tax already charged.
+    ...(user.gstin ? { buyer_gstin: user.gstin } : {}),
+    ...(user.state ? { buyer_state: user.state } : {}),
   };
 
   await (await orders()).insertOne(doc);

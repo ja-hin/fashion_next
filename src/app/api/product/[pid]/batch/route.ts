@@ -2,6 +2,7 @@ import { handler, json, formData, str, HttpError } from '@/lib/api';
 import { requireOwnedShoot } from '@/lib/shoots';
 import { createJob, runBackground } from '@/lib/jobs';
 import { runBatch, type BatchRow } from '@/lib/gen';
+import { sceneClause } from '@/lib/prompts';
 
 export const runtime = 'nodejs';
 export const maxDuration = 900;
@@ -32,9 +33,7 @@ export const POST = handler(
     // Per-row scene override, same rule as the single-add route.
     for (const r of parsed) {
       if (r.backdrop || r.mood || r.lighting) {
-        r.scene = `${r.backdrop || 'studio seamless'} background, ${
-          r.lighting || 'soft bright commercial'
-        } lighting, ${r.mood || 'clean'} mood`;
+        r.scene = sceneClause({ backdrop: r.backdrop, lighting: r.lighting, mood: r.mood });
       }
     }
 

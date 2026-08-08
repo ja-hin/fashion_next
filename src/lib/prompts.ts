@@ -98,6 +98,107 @@ export function stylePhrase(style: string, gender: string, look: string): string
   return look && gender !== 'child' ? `${base}, ${look}` : base;
 }
 
+// ── scene ───────────────────────────────────────────────────────────
+
+/**
+ * What each backdrop actually looks like, as a photographer would describe it.
+ *
+ * The dropdown value was previously dropped straight into the prompt as
+ * "<value> background", which for a word like "poolside" says nothing about
+ * where the model stands relative to the water, how far back the scene sits, or
+ * where the camera is. Gemini filled those gaps with its own idea of a poolside
+ * snapshot — shot from above, model on a narrow strip of deck with the water
+ * cutting across their feet, furniture at the wrong scale. Naming the geometry
+ * is what stops it inventing one.
+ *
+ * Keys are the stored dropdown values (see client/constants.ts BACKDROPS) and
+ * must not be renamed — a saved shoot holds the value, not the label. An
+ * unknown key (a legacy shoot, or Genie text) falls back to the old behaviour.
+ */
+const SCENE_SETTINGS: Record<string, string> = {
+  // Studio — the wall is the whole scene, so only the standoff matters.
+  'studio seamless':
+    'a seamless white studio cyclorama, the model standing well clear of the wall so no hard shadow lands on it',
+  'light grey studio seamless':
+    'a seamless light grey studio cyclorama, the model standing well clear of the wall',
+  'dark charcoal studio seamless':
+    'a seamless dark charcoal studio cyclorama, the model standing well clear of the wall',
+  'solid pastel colour studio wall':
+    'a smooth solid pastel-coloured studio wall directly behind the model, square to the camera',
+  'textured concrete wall':
+    'a flat textured concrete wall directly behind the model, square to the camera and evenly lit',
+  'editorial set':
+    'a minimal editorial studio set — a plain backdrop with one or two simple geometric props set behind and beside the model at true human scale',
+
+  // Interior — an indoor floor plus a receding back wall.
+  'lifestyle interior':
+    'a bright uncluttered lifestyle interior, the model standing in open floor space with the furniture set well behind them and the back wall square to the camera',
+  'modern loft interior with tall windows':
+    'a modern loft with tall floor-to-ceiling windows behind and to one side, daylight coming in from them, the model standing on open floor several metres in front of the glass',
+  'marble lobby interior':
+    'a polished marble lobby, the model standing on open floor with the columns and far wall receding well behind them, vertical lines kept vertical',
+
+  // Outdoor — a ground plane plus a horizon is where the angle went wrong.
+  'outdoor street':
+    'a quiet city street, the model standing on open pavement with the road and buildings receding behind them, any traffic or passers-by far enough back to read as soft background',
+  'cobblestone old-town street':
+    'a cobblestone old-town street, the model standing on level cobbles with the street receding behind them, the cobbles sized as they really are underfoot',
+  'urban rooftop with city skyline':
+    'an open rooftop terrace, the model standing on the roof deck with the city skyline far in the distance behind them and the horizon straight and level',
+  'green park with trees':
+    'a green park, the model standing on level grass or a path with mature trees receding behind them at true scale',
+  'flowering garden':
+    'a flowering garden, the model standing on a level path or lawn with the beds and shrubs behind them at true scale',
+  'sunlit beach':
+    'a sunlit beach, the model standing on firm level sand with the sea and horizon far behind them, the horizon straight and level',
+  poolside:
+    "the stone deck beside an outdoor swimming pool — the model standing squarely on dry level deck at least two metres back from the water's edge, with the pool, loungers and planting running across the frame well behind them and softly out of focus. The water's edge must not cut across the model's feet or legs, and the deck the model stands on is open, level and unobstructed",
+  'desert dunes':
+    'desert dunes, the model standing on firm level sand with the dunes and horizon receding far behind them, the horizon straight and level',
+};
+
+/**
+ * Where the camera is. The single most important line in the scene — without
+ * it Gemini shoots outdoor scenes from above, which foreshortens the legs and
+ * makes every model look short and pasted in.
+ */
+const SCENE_CAMERA =
+  'Camera: a photographer standing on the same ground as the model, camera held level at about the ' +
+  "model's chest-to-eye height and pointing straight ahead — never looking down from above, never a " +
+  'high or bird\'s-eye angle, never tilted. Shot on an 85mm portrait lens from several metres back: ' +
+  'natural perspective, no wide-angle stretching, verticals vertical.';
+
+/**
+ * Scale and contact — the difference between standing in a place and on top of
+ * it. Says nothing about the model's age or height: kidswear shoots run through
+ * the same clause, and "a normal-height adult" here would pull against the
+ * child-model wording in buildPrompt.
+ */
+const SCENE_GROUNDING =
+  'Proportion: the model stands with both feet flat on the ground and a soft contact shadow beneath ' +
+  'them, at true human scale against everything around them, with natural head-to-body proportions ' +
+  'and legs neither shortened nor stretched — a real person photographed in this place, not a ' +
+  'cut-out placed onto it.';
+
+/**
+ * Build the scene sentence shared by the hero prompt and every per-image
+ * override. One function so the three routes that offer a backdrop picker
+ * cannot drift apart. Deliberately returns no trailing full stop — callers
+ * append one.
+ */
+export function sceneClause(o: {
+  backdrop?: string | null;
+  lighting?: string | null;
+  mood?: string | null;
+}): string {
+  const backdrop = (o.backdrop || 'studio seamless').trim();
+  const lighting = (o.lighting || 'soft bright commercial').trim();
+  const mood = (o.mood || 'clean').trim();
+
+  const setting = SCENE_SETTINGS[backdrop] ?? `a ${backdrop} background`;
+  return `Setting: ${setting}. ${SCENE_CAMERA} ${SCENE_GROUNDING} ${lighting} lighting, ${mood} mood`;
+}
+
 export function buildPrompt(opts: {
   style: string;
   scene: string;
@@ -192,7 +293,13 @@ export function buildPosePrompt(pose: string, framing: string, newScene = ''): s
       'print onto the back — if no back design is known, the back of the garment is plain.';
   } else {
     const frame = FRAMING[framing] ?? FRAMING.three_quarter;
-    shot = `Change only the pose and camera framing to: ${pose}. Framing: ${frame}.`;
+    // The camera height is pinned as well as the framing. Left free, a pose
+    // regeneration drifts into a high angle shot from above — the model comes
+    // back looking short and foreshortened even though the hero was level.
+    shot =
+      `Change only the pose and camera framing to: ${pose}. Framing: ${frame}. ` +
+      "Keep the camera level at the model's chest-to-eye height, pointing straight ahead — " +
+      'never angled down from above, and keep the model at true human scale within the scene.';
   }
 
   // Seated poses name their seat (a cube block, stool, step or ledge). Without
