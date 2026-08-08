@@ -40,6 +40,22 @@ export const TrashIcon = ({ className = 'w-[15px] h-[15px]' }: P) => (
   </svg>
 );
 
+export const EyeIcon = ({ className = 'w-4 h-4' }: P) => (
+  <svg viewBox="0 0 24 24" className={className} {...stroke}>
+    <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+
+export const EyeOffIcon = ({ className = 'w-4 h-4' }: P) => (
+  <svg viewBox="0 0 24 24" className={className} {...stroke}>
+    <path d="M10.6 6.2A9.6 9.6 0 0 1 12 6c6.4 0 10 7 10 7a17 17 0 0 1-2.5 3.3" />
+    <path d="M6.3 7.7A17 17 0 0 0 2 13s3.6 7 10 7a9.4 9.4 0 0 0 4.2-1" />
+    <path d="M9.9 10.1a3 3 0 0 0 4.2 4.2" />
+    <path d="M3 3l18 18" />
+  </svg>
+);
+
 export const GearIcon = ({ className = 'w-[18px] h-[18px]' }: P) => (
   <svg viewBox="0 0 24 24" className={className} {...stroke}>
     <circle cx="12" cy="12" r="3" />

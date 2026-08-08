@@ -148,11 +148,11 @@ const SCENE_SETTINGS: Record<string, string> = {
   'green park with trees':
     'a green park, the model standing on level grass or a path with mature trees receding behind them at true scale',
   'flowering garden':
-    'a flowering garden, the model standing on a level path or lawn with the beds and shrubs behind them at true scale',
+  "An ultra realistic flowering garden, the model standing on a level path or lawn with the beds and shrubs behind them at true scale",
   'sunlit beach':
     'a sunlit beach, the model standing on firm level sand with the sea and horizon far behind them, the horizon straight and level',
   poolside:
-    "the stone deck beside an outdoor swimming pool — the model standing squarely on dry level deck at least two metres back from the water's edge, with the pool, loungers and planting running across the frame well behind them and softly out of focus. The water's edge must not cut across the model's feet or legs, and the deck the model stands on is open, level and unobstructed",
+  "the stone deck beside a premium plush outdoor swimming pool with clear blue water in it  — the model standing squarely on dry level deck at least two metres back from the water's edge, with the pool, loungers and planting running across the frame well behind them and softly out of focus. The water's edge must not cut across the model's feet or legs, and the deck the model stands on is open, level and unobstructed",
   'desert dunes':
     'desert dunes, the model standing on firm level sand with the dunes and horizon receding far behind them, the horizon straight and level',
 };

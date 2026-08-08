@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { postForm, ApiError } from '@/lib/client/api';
 import AuthShell from './AuthShell';
+import PasswordInput from './PasswordInput';
 
 /**
  * Sign in / create account. `/login` and `/register` are separate routes, so
@@ -95,12 +96,11 @@ export default function AuthForm({ mode }: { mode: 'login' | 'register' }) {
                 </Link>
               )}
             </div>
-            <input
+            <PasswordInput
               id="password"
-              type="password"
               required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={setPassword}
               autoComplete={isSignup ? 'new-password' : 'current-password'}
               placeholder={isSignup ? 'At least 6 characters' : '••••••••'}
             />

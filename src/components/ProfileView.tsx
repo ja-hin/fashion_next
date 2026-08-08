@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getJson, patchForm, postForm, fmt, ApiError, fmtLogDate } from '@/lib/client/api';
 import { EMPTY_PROFILE, INDIAN_STATES, type Profile } from '@/lib/profile';
 import { useStudio } from '@/lib/client/StudioContext';
+import PasswordInput from './PasswordInput';
 
 /** The read-only half of the payload — account facts, not editable fields. */
 interface Account {
@@ -418,16 +419,29 @@ function Input({
       <label className="lbl" htmlFor={id}>
         {label}
       </label>
-      <input
-        id={id}
-        type={type}
-        value={value}
-        required={required}
-        placeholder={placeholder}
-        inputMode={inputMode}
-        autoComplete={autoComplete}
-        onChange={(e) => onChange(e.target.value)}
-      />
+      {/* Password fields get the show/hide toggle — same component the sign-in
+          and reset screens use, so the eye behaves identically everywhere. */}
+      {type === 'password' ? (
+        <PasswordInput
+          id={id}
+          value={value}
+          onChange={onChange}
+          required={required}
+          placeholder={placeholder}
+          autoComplete={autoComplete}
+        />
+      ) : (
+        <input
+          id={id}
+          type={type}
+          value={value}
+          required={required}
+          placeholder={placeholder}
+          inputMode={inputMode}
+          autoComplete={autoComplete}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      )}
       {hint && <p className="mt-[5px] text-[11px] text-muted">{hint}</p>}
     </div>
   );

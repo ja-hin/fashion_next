@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { postForm, ApiError } from '@/lib/client/api';
+import PasswordInput from './PasswordInput';
 
 /**
  * Step 2: choose the new password.
@@ -70,14 +71,13 @@ export default function ResetForm({ token, valid }: { token: string; valid: bool
         <label className="lbl" htmlFor="password">
           New password
         </label>
-        <input
+        <PasswordInput
           id="password"
-          type="password"
           required
           autoFocus
           minLength={6}
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={setPassword}
           autoComplete="new-password"
           placeholder="At least 6 characters"
         />
@@ -87,12 +87,11 @@ export default function ResetForm({ token, valid }: { token: string; valid: bool
         <label className="lbl" htmlFor="confirm">
           Confirm password
         </label>
-        <input
+        <PasswordInput
           id="confirm"
-          type="password"
           required
           value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
+          onChange={setConfirm}
           autoComplete="new-password"
           placeholder="Type it again"
         />
