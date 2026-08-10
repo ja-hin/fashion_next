@@ -16,6 +16,8 @@ export interface Me {
   styles?: string[];
   prices?: { imagine: Record<string, number>; saved: Record<string, number> };
   genie?: { free: number; price: number; max: number };
+  /** On the free credits — generated images are served with the watermark. */
+  watermark?: boolean;
 }
 
 export interface JobResult {

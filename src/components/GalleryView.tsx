@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getJson, postForm, del, bust, ApiError } from '@/lib/client/api';
+import { getJson, postForm, del, ApiError, imgSrc } from '@/lib/client/api';
 import { EmptyState, SearchBox } from './ui';
 import { TrashIcon, DownloadIcon } from './icons';
 import { useDialog } from './Dialog';
@@ -148,7 +148,7 @@ export default function GalleryView({ onContinueShoot, onSaveAsModel, onZoom }: 
                   onClick={() => setOpenPid(it.pid)}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={bust(it.thumb)} alt="" className="h-full w-full object-cover" />
+                  <img src={imgSrc(it.thumb, 'thumb')} alt="" className="h-full w-full object-cover" />
                   <div className="absolute bottom-2 right-2 rounded-md bg-black/70 px-2 py-[3px] text-[10px] font-bold text-white">
                     {it.count} image{it.count === 1 ? '' : 's'}
                   </div>

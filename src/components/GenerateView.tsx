@@ -144,10 +144,14 @@ export default function GenerateView({
           <AddCard
             category={category}
             onAddOne={(pose, settings) => shoot.addOne(pose, settings, onBalance)}
+            // Several ticked poses run through the batch endpoint — it already
+            // generates one image per row, sequentially, which is what keeps
+            // Gemini's rate limiter happy.
+            onAddMany={(rows) => shoot.runBatch(rows, onBalance)}
             onStartBatch={() => setBatchMode(true)}
             onBalance={onBalance}
             geniePrice={geniePrice}
-            costPerImage={priceFor('')}
+            priceFor={priceFor}
           />
         )}
       </div>

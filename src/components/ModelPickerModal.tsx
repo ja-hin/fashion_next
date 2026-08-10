@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { getJson, postForm, bust, ethLabel, titleCase, fmt, ApiError } from '@/lib/client/api';
+import { getJson, postForm, ethLabel, titleCase, fmt, ApiError, imgSrc } from '@/lib/client/api';
 import { GENDER_BY_CAT } from '@/lib/client/constants';
 import { useDialog } from './Dialog';
 import { AlertIcon, SearchIcon } from './icons';
@@ -205,7 +205,7 @@ export default function ModelPickerModal({
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={bust(m.thumb)}
+                    src={imgSrc(m.thumb, 'thumb')}
                     alt=""
                     className="block aspect-[3/4] w-full bg-line object-cover"
                   />

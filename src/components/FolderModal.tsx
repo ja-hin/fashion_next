@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getJson, del, bust, ApiError } from '@/lib/client/api';
+import { getJson, del, ApiError, imgSrc } from '@/lib/client/api';
 import { CopyIcon, DownloadIcon, TrashIcon, PersonPlusIcon, PlayIcon } from './icons';
 import { useDialog } from './Dialog';
 import type { ShootImage, LbItem, ResumePayload } from '@/lib/client/types';
@@ -142,7 +142,7 @@ export default function FolderModal({
               <div className="relative aspect-[4/5] bg-surface2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={bust(im.url)}
+                  src={imgSrc(im.url, 'thumb')}
                   alt={im.pose}
                   onClick={() => onZoom(lbItems, i)}
                   className="block h-full w-full cursor-zoom-in object-cover"

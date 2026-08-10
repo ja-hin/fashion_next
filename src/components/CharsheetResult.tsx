@@ -1,6 +1,6 @@
 'use client';
 
-import { bust } from '@/lib/client/api';
+import { imgSrc } from '@/lib/client/api';
 import type { SavedModel, LbItem } from '@/lib/client/types';
 
 /**
@@ -48,7 +48,7 @@ export default function CharsheetResult({
         }`}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={bust(gridRef.url)} alt="Character sheet grid" className="block w-full" />
+        <img src={imgSrc(gridRef.url, 'thumb')} alt="Character sheet grid" className="block w-full" />
       </div>
 
       <div className="min-w-[220px] flex-1">
@@ -64,7 +64,7 @@ export default function CharsheetResult({
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={bust(r.url)}
+                src={imgSrc(r.url, 'thumb')}
                 alt={r.pose}
                 onClick={() => onZoom?.(lbItems, i + 1)}
                 className={`block h-full w-full object-cover ${onZoom ? 'cursor-zoom-in' : ''}`}

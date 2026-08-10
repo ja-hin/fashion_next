@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Select } from './ui';
 import GenieBox from './GenieBox';
+import PosePreview from './PosePreview';
 import {
   posesFor,
   FRAMINGS,
@@ -29,33 +30,80 @@ type Mode = 'tile' | 'choose' | 'one';
 export default function AddCard({
   category,
   onAddOne,
+  onAddMany,
   onStartBatch,
   onBalance,
   geniePrice,
-  costPerImage,
+  priceFor,
 }: {
   /** Drives which pose list is offered — menswear and womenswear differ. */
   category: string;
   onAddOne: (pose: string, settings: PoseSettings) => void;
+  /** Several poses at once — one image each, all sharing these settings. */
+  onAddMany: (rows: Array<PoseSettings & { pose: string }>) => void;
   onStartBatch: () => void;
   onBalance: (b: number) => void;
   geniePrice: number;
-  costPerImage: number;
+  /** Credits for one image at a resolution; '' means the shoot's own. */
+  priceFor: (resolution: string) => number;
 }) {
   const [mode, setMode] = useState<Mode>('tile');
   const [prompt, setPrompt] = useState('');
   const [s, setS] = useState<PoseSettings>({});
+  /** Pose indices, kept in the order they were ticked — that's the render order. */
+  const [selected, setSelected] = useState<number[]>([]);
 
   const poses = useMemo(() => posesFor(category), [category]);
-  const poseOpts = useMemo<Array<[string, string]>>(
-    () => [
-      ['', '— choose a pose —'],
-      ...poses.map(([label], i) => [String(i), label] as [string, string]),
-    ],
-    [poses],
-  );
 
   const set = (patch: PoseSettings) => setS((prev) => ({ ...prev, ...patch }));
+
+  // Two or more poses means the prompt box no longer maps to a single image, so
+  // each pose uses its own library text instead.
+  const multi = selected.length > 1;
+  const count = Math.max(1, selected.length);
+
+  /** The hovered pose's reference image, and which side it has room to open on. */
+  const [peek, setPeek] = useState<{ label: string; side: 'left' | 'right' } | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  function showPeek(label: string) {
+    // Opens to the right unless the card is close enough to the window edge
+    // that the popover would push the page sideways.
+    const rect = panelRef.current?.getBoundingClientRect();
+    const room = rect ? window.innerWidth - rect.right : 0;
+    setPeek({ label, side: room > 200 ? 'right' : 'left' });
+  }
+  // Priced off the panel's own resolution override, not the shoot's — picking
+  // 4K here and being quoted the 1K rate would understate the bill, and the
+  // multi-select multiplies that error by the number of poses ticked.
+  const total = count * priceFor(s.resolution ?? '');
+
+  function togglePose(i: number) {
+    const next = selected.includes(i) ? selected.filter((n) => n !== i) : [...selected, i];
+    setSelected(next);
+
+    // Landing on exactly one pose fills the editable prompt with its text, the
+    // way picking from the old dropdown did. Unticking back to none clears it
+    // again — but only while it is still the untouched library wording, so
+    // anything typed or run through the Genie survives.
+    if (next.length === 1) setPrompt(poses[next[0]][1]);
+    else if (next.length === 0 && selected.length === 1 && prompt === poses[selected[0]][1]) {
+      setPrompt('');
+    }
+  }
+
+  function generate() {
+    if (multi) {
+      onAddMany(selected.map((i) => ({ ...s, pose: poses[i][1] })));
+    } else {
+      onAddOne(prompt.trim() || 'standing front', s);
+    }
+    // Reset so the next add starts clean, matching the old behaviour.
+    setPrompt('');
+    setS({});
+    setSelected([]);
+    setMode('tile');
+  }
 
   if (mode === 'tile') {
     return (
@@ -85,9 +133,9 @@ export default function AddCard({
           >
             <span className="text-base">＋</span>
             <div>
-              <div>Add one</div>
+              <div>Add poses</div>
               <div className="mt-0.5 text-[10.5px] font-normal text-muted">
-                single pose, with options
+                pick one or many, with options
               </div>
             </div>
           </button>
@@ -113,10 +161,19 @@ export default function AddCard({
   }
 
   return (
-    <div className="w-[256px] self-start rounded-card border-[1.5px] border-dashed border-line bg-surface">
+    // `relative` anchors the hover preview. It is rendered here rather than
+    // inside the scrolling pose list because an overflow-y-auto box clips its
+    // children on BOTH axes — a popover sitting inside it would be cut off.
+    <div
+      ref={panelRef}
+      className="relative w-[256px] self-start rounded-card border-[1.5px] border-dashed border-line bg-surface"
+    >
+      {peek && (
+        <PosePreview key={peek.label} category={category} label={peek.label} side={peek.side} />
+      )}
       <div className="p-4">
         <div className="mb-3 flex items-center">
-          <b className="text-[13px]">Add one pose</b>
+          <b className="text-[13px]">{multi ? `Add ${selected.length} poses` : 'Add a pose'}</b>
           <button
             onClick={() => setMode('tile')}
             aria-label="Close"
@@ -126,13 +183,53 @@ export default function AddCard({
           </button>
         </div>
 
-        <label className="lbl">Pose</label>
-        <Select
-          value=""
-          onChange={(v) => v !== '' && setPrompt(poses[Number(v)][1])}
-          options={poseOpts}
-          className="mb-[9px]"
-        />
+        <div className="flex items-baseline">
+          <label className="lbl">Pose</label>
+          {selected.length > 0 && (
+            <button
+              onClick={() => {
+                setSelected([]);
+                setPrompt('');
+              }}
+              className="mb-1.5 ml-auto text-[10.5px] font-bold text-muted hover:text-ink"
+            >
+              clear {selected.length}
+            </button>
+          )}
+        </div>
+        {/*
+          A list of checkboxes rather than a dropdown: ticking several is the
+          whole point, and a multi-select <select> hides the count behind a
+          scroll on every browser that renders it differently.
+        */}
+        <div className="mb-[9px] max-h-[168px] overflow-y-auto rounded-[9px] border border-line bg-field p-1">
+          {poses.map(([label], i) => {
+            const on = selected.includes(i);
+            return (
+              <label
+                key={label}
+                onMouseEnter={() => showPeek(label)}
+                onMouseLeave={() => setPeek((p) => (p?.label === label ? null : p))}
+                className={`flex cursor-pointer items-center gap-2 rounded-[7px] px-2 py-[5px] text-[12px] leading-tight hover:bg-surface2 ${
+                  on ? 'font-bold text-ink' : 'text-muted'
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={on}
+                  onChange={() => togglePose(i)}
+                  // Keyboard users get the same peek as the mouse.
+                  onFocus={() => showPeek(label)}
+                  onBlur={() => setPeek((p) => (p?.label === label ? null : p))}
+                  // The base stylesheet stretches every input to full width —
+                  // a checkbox has to opt back out of it.
+                  className="h-[14px] w-[14px] flex-shrink-0 accent-brand p-0"
+                />
+                {label}
+              </label>
+            );
+          })}
+        </div>
 
         <div className="mb-[9px] flex gap-2.5">
           <div className="flex-1">
@@ -189,32 +286,37 @@ export default function AddCard({
           />
         </div>
 
-        <label className="lbl">Prompt · editable</label>
-        <div className="relative">
-          <textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Pick a pose to fill this, or write your own…"
-          />
-          <GenieBox
-            text={prompt}
-            onUse={setPrompt}
-            onBalance={onBalance}
-            geniePrice={geniePrice}
-          />
-        </div>
+        {multi ? (
+          <div className="rounded-[9px] border border-line bg-surface2 p-2.5 text-[11px] leading-[1.5] text-muted">
+            <b className="text-ink">{selected.length} poses selected</b> — each becomes its own
+            image, generated one after another with the options above. Tick a single pose to edit
+            its prompt.
+          </div>
+        ) : (
+          <>
+            <label className="lbl">Prompt · editable</label>
+            <div className="relative">
+              <textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Pick a pose to fill this, or write your own…"
+              />
+              <GenieBox
+                text={prompt}
+                onUse={setPrompt}
+                onBalance={onBalance}
+                geniePrice={geniePrice}
+              />
+            </div>
+          </>
+        )}
 
         <button
-          onClick={() => {
-            onAddOne(prompt.trim() || 'standing front', s);
-            // Reset so the next add starts clean, matching the old behaviour.
-            setPrompt('');
-            setS({});
-            setMode('tile');
-          }}
+          onClick={generate}
           className="mt-[11px] flex w-full items-center justify-center gap-2 rounded-[11px] bg-ink p-[13px] text-[14.5px] font-bold text-surface"
         >
-          Generate image · {costPerImage} credit{costPerImage === 1 ? '' : 's'}
+          Generate {count === 1 ? 'image' : `${count} images`} · {total} credit
+          {total === 1 ? '' : 's'}
         </button>
       </div>
     </div>

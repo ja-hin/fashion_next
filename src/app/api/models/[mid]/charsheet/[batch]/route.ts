@@ -1,6 +1,7 @@
 import { handler, json, HttpError } from '@/lib/api';
 import { requireOwnedModel, updateModel, loadModel, publicModel } from '@/lib/saved-models';
 import { storage, modelKey } from '@/lib/storage';
+import { removeDerivatives } from '@/lib/derivatives';
 import type { ModelRef } from '@/lib/types';
 
 export const runtime = 'nodejs';
@@ -16,7 +17,9 @@ export const DELETE = handler(
 
     for (const r of rec.refs ?? []) {
       if (r.charsheet && r.batch === batch) {
-        await storage.remove(modelKey(mid, r.file));
+        const k = modelKey(mid, r.file);
+        await storage.remove(k);
+        await removeDerivatives(k);
         removed++;
       } else {
         keep.push(r);

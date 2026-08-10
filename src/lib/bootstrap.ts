@@ -6,7 +6,7 @@
  * promise is memoised, so concurrent first requests all await the same run.
  */
 import 'server-only';
-import { ensureIndexes, users } from './mongo';
+import { ensureIndexes, users, orders } from './mongo';
 import { createUser } from './auth';
 import { getSettings, nextUserNo } from './settings';
 import { ADMIN_EMAIL, ADMIN_PASSWORD, DEFAULT_BALANCE_IMAGES } from './config';
@@ -37,6 +37,41 @@ async function backfillUserIds(): Promise<void> {
   console.log(`[bootstrap] assigned user ids to ${pending.length} existing account(s)`);
 }
 
+/**
+ * Stamp `first_paid_at` on accounts that paid before the flag existed.
+ *
+ * Without this, every existing customer would start seeing the free-tier
+ * watermark the moment this build ships, because the flag they never got is
+ * what proves they paid. Reads their earliest paid order, so the date is
+ * genuinely their first payment rather than the day of the deploy.
+ */
+async function backfillFirstPayments(): Promise<void> {
+  const ucol = await users();
+  const pending = await ucol
+    .find({ first_paid_at: { $exists: false } }, { projection: { _id: 1 } })
+    .toArray();
+  if (!pending.length) return;
+
+  const ocol = await orders();
+  let marked = 0;
+  for (const u of pending) {
+    const first = await ocol
+      .find({ user_id: u._id, status: 'paid' })
+      .sort({ paid_at: 1 })
+      .limit(1)
+      .next();
+    if (!first) continue;
+    await ucol.updateOne(
+      { _id: u._id },
+      { $set: { first_paid_at: first.paid_at ?? first.created } },
+    );
+    marked++;
+  }
+  if (marked) {
+    console.log(`[bootstrap] marked ${marked} existing account(s) as previously paid`);
+  }
+}
+
 async function bootstrap(): Promise<void> {
   await ensureIndexes();
   await getSettings(); // materialise the settings document with defaults
@@ -44,6 +79,7 @@ async function bootstrap(): Promise<void> {
   // Before the admin check below — that returns early once an admin exists, and
   // a backfill placed after it would never run on an existing install.
   await backfillUserIds();
+  await backfillFirstPayments();
 
   // Seed one admin the first time the app ever boots. Skipped entirely once any
   // admin exists, so this can never silently resurrect a deleted account or

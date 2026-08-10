@@ -1,6 +1,6 @@
 'use client';
 
-import { bust } from '@/lib/client/api';
+import { imgSrc } from '@/lib/client/api';
 import { CopyIcon, RegenIcon, DownloadIcon, TrashIcon } from './icons';
 import type { CardItem } from '@/lib/client/types';
 
@@ -52,7 +52,7 @@ export default function ResultCard({
         )}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={bust(card.img)}
+          src={imgSrc(card.img, 'thumb')}
           alt={card.pose}
           onClick={onZoom}
           className="block h-full w-full cursor-zoom-in object-cover"

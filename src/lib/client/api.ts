@@ -82,6 +82,28 @@ export async function del<T>(url: string): Promise<T> {
 export const bust = (u: string) =>
   u ? `${u}${u.includes('?') ? '&' : '?'}t=${Date.now()}` : u;
 
+/**
+ * `thumb` for grid cells and pickers, `web` for anything viewed large.
+ */
+export type ImgVariant = 'thumb' | 'web';
+
+/**
+ * Source URL for an image on screen.
+ *
+ * Display never loads the original. The serve routes return a WebP derivative
+ * for `?v=`, so a 230px gallery card fetches ~20 KB instead of a multi-megabyte
+ * master. Downloads deliberately do NOT go through here — they hit
+ * /api/product/<pid>/file/... and /api/product/<pid>/zip, which always hand back
+ * the untouched original the model produced.
+ *
+ * Images generated before derivatives existed still work: the route falls back
+ * to the original and backfills the WebP on that first request.
+ */
+export const imgSrc = (u: string, v: ImgVariant): string =>
+  // The bust() is a separate, known problem — it defeats the browser cache on
+  // every render. Routed through here so removing it is a one-line change.
+  u ? bust(`${u}${u.includes('?') ? '&' : '?'}v=${v}`) : u;
+
 /** Whole numbers stay whole; fractional credits show one decimal. */
 export const fmt = (n: number | undefined | null): string => {
   const v = Number(n ?? 0);

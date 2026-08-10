@@ -1,6 +1,7 @@
 import { handler, json, HttpError } from '@/lib/api';
 import { requireOwnedModel, updateModel, loadModel, publicModel } from '@/lib/saved-models';
 import { storage, modelKey, baseName } from '@/lib/storage';
+import { removeDerivatives } from '@/lib/derivatives';
 
 export const runtime = 'nodejs';
 
@@ -31,7 +32,9 @@ export const DELETE = handler(
     if (!next.some((r) => r.primary)) next[0].primary = true;
 
     await updateModel(mid, { refs: next });
-    await storage.remove(modelKey(mid, file));
+    const key = modelKey(mid, file);
+    await storage.remove(key);
+    await removeDerivatives(key);
 
     const fresh = await loadModel(mid);
     return json({ ok: true, model: publicModel(fresh ?? { ...rec, refs: next }) });

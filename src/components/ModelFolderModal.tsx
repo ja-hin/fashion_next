@@ -1,17 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import {
-  getJson,
-  postForm,
-  patchForm,
-  del,
-  bust,
-  ethLabel,
-  titleCase,
-  fmt,
-  ApiError,
-} from '@/lib/client/api';
+import { getJson, postForm, patchForm, del, ethLabel, titleCase, fmt, ApiError, imgSrc } from '@/lib/client/api';
 import { ETHNICITIES } from '@/lib/client/constants';
 import { useDialog } from './Dialog';
 import { GridIcon, TrashIcon } from './icons';
@@ -243,7 +233,7 @@ export default function ModelFolderModal({
           <div className="mb-[14px] aspect-[4/5] w-full overflow-hidden rounded-xl bg-line">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={bust(model.thumb)}
+              src={imgSrc(model.thumb, 'thumb')}
               alt=""
               onClick={() => {
                 const pi = regularRefs.findIndex((r) => r.primary);
@@ -343,7 +333,7 @@ export default function ModelFolderModal({
                 )}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={bust(r.url)}
+                  src={imgSrc(r.url, 'thumb')}
                   alt={r.pose}
                   onClick={() => onZoom(refLbItems, i)}
                   className="block h-[185px] w-full cursor-pointer object-cover"

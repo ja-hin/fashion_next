@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect } from 'react';
-import { bust } from '@/lib/client/api';
+import { imgSrc } from '@/lib/client/api';
 import { DownloadIcon } from './icons';
 import type { LbItem } from '@/lib/client/types';
 
@@ -56,7 +56,7 @@ export default function Lightbox({ items, index, onIndex, onClose }: Props) {
 
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={bust(item.url)}
+          src={imgSrc(item.url, 'web')}
           alt={item.pose ?? 'Generated image'}
           className="block max-h-[80vh] max-w-[82vw] rounded-[10px] shadow-pop"
         />

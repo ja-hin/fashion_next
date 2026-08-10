@@ -5,6 +5,7 @@
  */
 import 'server-only';
 import { currentUser } from './auth';
+import { shouldWatermark } from './watermark';
 import { getSettings } from './settings';
 import { PROVIDER, VERSION } from './config';
 import { STYLES } from './prompts';
@@ -23,6 +24,11 @@ export interface MePayload {
   styles?: string[];
   prices?: { imagine: Record<string, number>; saved: Record<string, number> };
   genie?: { free: number; price: number; max: number };
+  /**
+   * True while this account is on the free credits, so its images are served
+   * with the brand watermark. Flips to false permanently on the first payment.
+   */
+  watermark?: boolean;
 }
 
 export async function getMePayload(): Promise<MePayload> {
@@ -43,5 +49,6 @@ export async function getMePayload(): Promise<MePayload> {
     styles: Object.keys(STYLES),
     prices: s.prices,
     genie: { free: s.genie_free, price: s.genie_price, max: s.genie_max },
+    watermark: shouldWatermark(u),
   };
 }

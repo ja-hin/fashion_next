@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import { handler, json, requireUser, formData, str, HttpError } from '@/lib/api';
 import { getShoot, ownsShoot, shootNoStr } from '@/lib/shoots';
 import { storage, shootKey, modelKey, baseName } from '@/lib/storage';
+import { writeDerivatives } from '@/lib/derivatives';
 import { modelNameTaken, saveModelDoc, publicModel } from '@/lib/saved-models';
 import { GENDER_BY_CAT } from '@/lib/prompts';
 import { nowIso } from '@/lib/auth';
@@ -51,7 +52,9 @@ export const POST = handler(async (req: Request) => {
     const fn = baseName(raw);
     const bytes = await storage.get(shootKey(pid, fn));
     if (!bytes) continue;
-    await storage.put(modelKey(mid, fn), bytes);
+    const key = modelKey(mid, fn);
+    await storage.put(key, bytes);
+    await writeDerivatives(key, bytes);
     refs.push({ file: fn, pose: poses.get(fn) ?? 'image', primary: fn === heroFile });
   }
 

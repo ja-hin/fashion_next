@@ -101,6 +101,17 @@ export default function TopBar({ me, balance }: { me: Me; balance: number }) {
 
       <div className="flex-1" />
 
+      {/* Free tier: say why the images are marked, and make the fix one tap away. */}
+      {me.watermark && (
+        <Link
+          href="/recharge"
+          title="Your free credits produce watermarked images. Buy any pack to remove the watermark from all of them."
+          className="hidden items-center gap-1.5 rounded-[30px] border border-brand/40 bg-brand/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-brand transition-colors hover:bg-brand/20 sm:flex"
+        >
+          Watermarked · Remove
+        </Link>
+      )}
+
       <div className="flex items-center gap-[7px] rounded-[30px] bg-surface2 px-[14px] py-[7px] text-[13px] font-bold">
         {/* <span className="hidden text-[10px] text-muted sm:inline">BALANCE</span> */}
         <b className="text-[15px] tabular-nums text-brand">{fmt(balance)}</b>

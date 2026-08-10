@@ -108,9 +108,21 @@ export const ADMIN_EMAIL = env('ADMIN_EMAIL', 'admin@vdofy.app');
 export const ADMIN_PASSWORD = env('ADMIN_PASSWORD', 'vdofyadmin');
 
 // ── Wallet & limits ─────────────────────────────────────────────────
-export const DEFAULT_BALANCE_IMAGES = envInt('DEFAULT_BALANCE_IMAGES', 100);
+/** Free credits every new account starts with. Their output is watermarked. */
+export const DEFAULT_BALANCE_IMAGES = envInt('DEFAULT_BALANCE_IMAGES', 50);
 export const PRICE_PER_IMAGE = 1; // legacy flat fallback; real pricing is the admin grid
 export const MAX_IMG_PX = 1400;
+
+// ── Free-tier watermark ─────────────────────────────────────────────
+/** Kill switch — set WATERMARK=0 to serve every image clean. */
+export const WATERMARK_ENABLED = env('WATERMARK', '1') !== '0';
+/** File inside /public. */
+export const WATERMARK_LOGO = env('WATERMARK_LOGO', 'logo-black.png');
+/** 0–1. Low enough to leave the image readable, high enough to deter reuse. */
+export const WATERMARK_OPACITY = Math.min(
+  Math.max(Number(env('WATERMARK_OPACITY', '0.16')) || 0.16, 0.02),
+  1,
+);
 
 // ── Storage ─────────────────────────────────────────────────────────
 export const STORAGE_DRIVER = env('STORAGE_DRIVER', 'local');

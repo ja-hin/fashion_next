@@ -1,6 +1,7 @@
 import { handler, json, HttpError } from '@/lib/api';
 import { requireOwnedShoot, updateShoot } from '@/lib/shoots';
 import { storage, shootKey, baseName } from '@/lib/storage';
+import { removeDerivatives } from '@/lib/derivatives';
 
 export const runtime = 'nodejs';
 
@@ -31,7 +32,9 @@ export const DELETE = handler(
     }
 
     await updateShoot(pid, { manifest: next });
-    await storage.remove(shootKey(pid, file));
+    const key = shootKey(pid, file);
+    await storage.remove(key);
+    await removeDerivatives(key);
 
     return json({ ok: true, file });
   },

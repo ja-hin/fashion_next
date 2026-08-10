@@ -299,6 +299,21 @@ export async function adjustBalance(
   return res ? Number(res.balance ?? 0) : null;
 }
 
+/**
+ * Record that this account has paid for real, which is what lifts the free-tier
+ * watermark (see lib/watermark.ts).
+ *
+ * `$exists: false` in the filter keeps the FIRST payment's timestamp: later
+ * top-ups must not push the date forward, because it is the account's
+ * "customer since" marker as much as a flag.
+ */
+export async function markFirstPayment(userId: string, whenIso: string): Promise<void> {
+  await (await users()).updateOne(
+    { _id: userId, first_paid_at: { $exists: false } },
+    { $set: { first_paid_at: whenIso } },
+  );
+}
+
 // ── admin ───────────────────────────────────────────────────────────
 
 export async function listUsers(): Promise<PublicUser[]> {

@@ -4,6 +4,7 @@ import { handler } from '@/lib/api';
 import { requireOwnedShoot, shootFilePrefix } from '@/lib/shoots';
 import { storage, shootKey } from '@/lib/storage';
 import { safeName } from '@/lib/settings';
+import { applyWatermark, shouldWatermark } from '@/lib/watermark';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -11,11 +12,15 @@ export const dynamic = 'force-dynamic';
 /**
  * Download the whole shoot as a ZIP, with every image named after its pose.
  * Streamed rather than buffered, so a large shoot doesn't sit in memory.
+ *
+ * Free-tier archives are watermarked per entry — this is the bulk path, so it
+ * is the one that matters most if the mark is meant to hold.
  */
 export const GET = handler(
   async (_req: Request, ctx: { params: Promise<{ pid: string }> }) => {
     const { pid } = await ctx.params;
-    const { shoot } = await requireOwnedShoot(pid);
+    const { user, shoot } = await requireOwnedShoot(pid);
+    const wm = shouldWatermark(user);
 
     const prefix = shootFilePrefix(shoot);
     const archive = archiver('zip', { zlib: { level: 9 } });
@@ -27,8 +32,9 @@ export const GET = handler(
     void (async () => {
       try {
         for (const item of shoot.manifest ?? []) {
-          const bytes = await storage.get(shootKey(pid, item.file));
-          if (!bytes) continue;
+          const stored = await storage.get(shootKey(pid, item.file));
+          if (!stored) continue;
+          const bytes = wm ? await applyWatermark(stored) : stored;
           const base = `${prefix}_${safeName(item.pose)}`;
           const n = (used.get(base) ?? 0) + 1;
           used.set(base, n);

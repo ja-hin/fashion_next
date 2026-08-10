@@ -32,6 +32,17 @@ export interface UserDoc {
   active: boolean;
 
   /**
+   * When this account's first successful Razorpay payment was credited.
+   *
+   * Absent = still on the free credits, so their images are served with the
+   * watermark (see lib/watermark.ts). Set once and never cleared: paying once
+   * removes the mark from everything they have ever generated, and running the
+   * balance back down to zero does not bring it back. Credits granted by an
+   * admin deliberately do NOT set this — only a real payment does.
+   */
+  first_paid_at?: string; // ISO
+
+  /**
    * Profile details the user maintains themselves (see lib/profile.ts). All
    * optional — an account created before this existed simply has none of them,
    * and nothing may assume they are present.

@@ -26,7 +26,7 @@ import {
   INVOICE_PREFIX,
 } from './config';
 import { orders } from './mongo';
-import { adjustBalance } from './auth';
+import { adjustBalance, markFirstPayment } from './auth';
 import { nextInvoiceNo } from './settings';
 import { gstBreakdown, type Quote } from './pricing';
 import type { OrderDoc, UserDoc } from './types';
@@ -225,6 +225,12 @@ export async function creditOrder(
     won.invoice_no = invoiceNo;
     won.invoice_date = now.toISOString();
   }
+
+  // Lifts the free-tier watermark from every image this account has generated,
+  // past and future. Done before the balance move so that even if crediting
+  // fails and needs manual reconciliation, someone who has genuinely paid is
+  // never left looking at watermarked images.
+  await markFirstPayment(won.user_id, now.toISOString());
 
   const balance = await adjustBalance(won.user_id, won.credits);
   if (balance === null) {

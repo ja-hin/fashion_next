@@ -14,6 +14,7 @@
 import 'server-only';
 import crypto from 'node:crypto';
 import { storage, shootKey, shootUrl } from './storage';
+import { writeDerivatives } from './derivatives';
 import { produce } from './gemini';
 import { getShoot, updateShoot, pushManifest, shootFilePrefix } from './shoots';
 import { latestCharsheetFrontFrame } from './saved-models';
@@ -116,7 +117,12 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
     } = {},
   ): Promise<void> => {
     const fname = `${o.isHero ? 'hero' : 'pose'}_${uniq()}.jpg`;
-    await storage.put(shootKey(o.pid, fname), raw);
+    const key = shootKey(o.pid, fname);
+    await storage.put(key, raw);
+    // Build the display copies now, while the user is still watching the job —
+    // the ~150ms is invisible next to the generation itself, and the results
+    // grid then paints from WebP instead of paying for it on first view.
+    await writeDerivatives(key, raw);
 
     if (o.isHero) await updateShoot(o.pid, { hero_file: fname });
 
@@ -434,7 +440,9 @@ export async function runProduct(
     // "Extend" uploads a photo that ALREADY shows the model — it becomes the
     // hero directly, no generation and no charge for that first image.
     const hname = `hero_${uniq()}.jpg`;
-    await storage.put(shootKey(pid, hname), garmentBytes);
+    const hkey = shootKey(pid, hname);
+    await storage.put(hkey, garmentBytes);
+    await writeDerivatives(hkey, garmentBytes);
     await updateShoot(pid, { hero_file: hname });
     await pushManifest(pid, { file: hname, pose: 'uploaded base' });
 

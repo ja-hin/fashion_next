@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import { handler, json, formData, str, HttpError } from '@/lib/api';
 import { requireOwnedModel, updateModel, loadModel, publicModel } from '@/lib/saved-models';
 import { storage, modelKey } from '@/lib/storage';
+import { writeDerivatives, removeDerivatives } from '@/lib/derivatives';
 import { adjustBalance, getBalance } from '@/lib/auth';
 import { getSettings, shootCost } from '@/lib/settings';
 import { produce } from '@/lib/gemini';
@@ -74,7 +75,9 @@ export const POST = handler(
       const keep: ModelRef[] = [];
       for (const r of refs) {
         if (r.charsheet && r.batch === replaceBatch) {
-          await storage.remove(modelKey(mid, r.file));
+          const k = modelKey(mid, r.file);
+          await storage.remove(k);
+          await removeDerivatives(k);
         } else {
           keep.push(r);
         }
@@ -136,7 +139,9 @@ export const POST = handler(
       }
 
       const fn = `charsheet_${stamp}_${i}.jpg`;
-      await storage.put(modelKey(mid, fn), out.image);
+      const frameKey = modelKey(mid, fn);
+      await storage.put(frameKey, out.image);
+      await writeDerivatives(frameKey, out.image);
       newRefs.push({ file: fn, pose: slotLabel, primary: false, charsheet: 'frame', batch: stamp });
       frameBytes.push(out.image);
 
@@ -165,7 +170,9 @@ export const POST = handler(
     try {
       const gridBytes = await composeDisplayGrid(frameBytes);
       const gridFn = `charsheet_grid_${stamp}.jpg`;
-      await storage.put(modelKey(mid, gridFn), gridBytes);
+      const gridKey = modelKey(mid, gridFn);
+      await storage.put(gridKey, gridBytes);
+      await writeDerivatives(gridKey, gridBytes);
       newRefs.unshift({
         file: gridFn,
         pose: 'character sheet (full grid)',

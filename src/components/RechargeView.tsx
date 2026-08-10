@@ -163,7 +163,15 @@ export default function RechargeView({
               },
             );
             onBalance(j.balance);
-            setFlash(`Payment successful — ${j.credits} credits added.`);
+            setFlash(
+              `Payment successful — ${j.credits} credits added. ` +
+                'Removing the watermark from your images…',
+            );
+            // A first payment lifts the watermark from every image the account
+            // has ever generated, but the ones already on screen were fetched
+            // watermarked. Reload so `me` refreshes and each <img> revalidates
+            // and comes back clean — the moment the customer is paying for.
+            setTimeout(() => window.location.reload(), 1600);
           } catch (e) {
             // The money may well have gone through; the webhook is the backstop.
             await dialog.alert(

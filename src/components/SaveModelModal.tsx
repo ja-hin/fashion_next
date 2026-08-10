@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getJson, postMultipart, bust, ethLabel, ApiError } from '@/lib/client/api';
+import { getJson, postMultipart, ethLabel, ApiError, imgSrc } from '@/lib/client/api';
 import { SaveIcon } from './icons';
 import { useDialog } from './Dialog';
 import type { ResumePayload, SavedModel } from '@/lib/client/types';
@@ -156,7 +156,7 @@ export default function SaveModelModal({
                   {sel ? '✓' : ''}
                 </span>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={bust(im.img)} alt={im.pose} className="block h-[130px] w-full object-cover" />
+                <img src={imgSrc(im.img, 'thumb')} alt={im.pose} className="block h-[130px] w-full object-cover" />
                 <div className="truncate px-1.5 py-[5px] text-[10px] font-semibold text-muted">
                   {im.pose}
                 </div>

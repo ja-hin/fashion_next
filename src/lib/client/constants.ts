@@ -141,6 +141,33 @@ export function posesFor(category: string): Pose[] {
   return SELF_CONTAINED.has(category) ? own : [...POSES_COMMON, ...own];
 }
 
+/**
+ * File-name form of a pose label — "Cube · forward lean" → "cube-forward-lean".
+ *
+ * The fraction is spelled out rather than stripped: "¾ left" and "Side pose —
+ * left" would otherwise both slug to "left" and share one preview image.
+ */
+export const poseSlug = (label: string): string =>
+  label
+    .toLowerCase()
+    .replace(/¾/g, 'three-quarter')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+/**
+ * Where a pose's reference thumbnail lives, most specific first.
+ *
+ * Category-specific art wins, so menswear and womenswear can illustrate the
+ * same shared pose with their own model; the bare `/poses/<slug>.jpg` is the
+ * shared fallback. Nothing here asserts the file exists — the preview hides
+ * itself when every candidate 404s, so poses can be illustrated a few at a time
+ * rather than all at once.
+ */
+export const poseImageSrcs = (category: string, label: string): string[] => {
+  const slug = poseSlug(label);
+  return [`/poses/${category}/${slug}.jpg`, `/poses/${slug}.jpg`];
+};
+
 export const CATEGORIES: Array<[string, string]> = [
   ['womenswear', 'Womenswear'],
   ['menswear', 'Menswear'],

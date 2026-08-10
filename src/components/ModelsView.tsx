@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getJson, bust, ethLabel, titleCase } from '@/lib/client/api';
+import { getJson, ethLabel, titleCase, imgSrc } from '@/lib/client/api';
 import { EmptyState, SearchBox } from './ui';
 import ModelFolderModal from './ModelFolderModal';
 import type { SavedModel, LbItem } from '@/lib/client/types';
@@ -123,7 +123,7 @@ export default function ModelsView({
                   {m.source === 'studio' ? 'Studio' : 'From shoot'}
                 </span>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={bust(m.thumb)} alt="" className="h-full w-full object-cover" />
+                <img src={imgSrc(m.thumb, 'thumb')} alt="" className="h-full w-full object-cover" />
 
                 {/* Only admins receive owner data, so this can't leak. */}
                 {m.owner_uid && (

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { bust, ethLabel, titleCase } from '@/lib/client/api';
+import { ethLabel, titleCase, imgSrc } from '@/lib/client/api';
 import { Field, Select } from './ui';
 import {
   CATEGORIES,
@@ -225,7 +225,7 @@ export default function SetupPanel({
           <div className="mt-2 flex items-center gap-2.5 rounded-[10px] border-[1.5px] border-accent-soft bg-accent-soft p-[8px_10px]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={bust(selectedModel.thumb)}
+              src={imgSrc(selectedModel.thumb, 'thumb')}
               alt=""
               className="h-[38px] w-[38px] flex-shrink-0 rounded-lg object-cover"
             />
