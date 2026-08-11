@@ -142,8 +142,8 @@ export const TOKEN_RATE_DEFAULT: TokenRate = { in: 0.3, out: 30.0 };
 
 export const TOKEN_RATES_USD: Record<string, TokenRate> = (() => {
   const base: Record<string, TokenRate> = {
-    'gemini-3.1-flash-image': { in: 0.3, out: 30.0 },
-    'gemini-3.1-flash-lite-image': { in: 0.1, out: 20.0 },
+    'gemini-3.1-flash-image': { in: 0.5, out: 60.0 },
+    'gemini-3.1-flash-lite-image': { in: 0.25, out: 30.0 },
     'gemini-2.5-flash': { in: 0.3, out: 2.5 },
   };
   const raw = env('TOKEN_RATES_USD', '');
