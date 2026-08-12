@@ -193,14 +193,9 @@ export const ETHNICITIES: Array<[string, string]> = [
   ['diverse', 'Diverse (auto)'],
 ];
 
-export const FRAMINGS: Array<[string, string]> = [
-  ['full_body', 'Full body'],
-  ['three_quarter', '¾'],
-  ['knee_up', 'Knee-up'],
-  ['waist_up', 'Waist-up'],
-  ['portrait', 'Portrait'],
-  ['close_up', 'Close-up'],
-];
+// Genie picks from these too, and it runs server-side — so they live in a
+// module a route handler can import. See lib/scene-vocab.ts.
+export { FRAMINGS, BACKDROPS, MOODS, LIGHTINGS } from '../scene-vocab';
 
 export const ASPECTS = ['4:5', '1:1', '9:16', '3:4', '16:9'];
 
@@ -208,44 +203,6 @@ export const RESOLUTIONS: Array<[string, string]> = [
   ['1K', '1K · standard'],
   ['2K', '2K · high'],
   ['4K', '4K · ultra'],
-];
-
-/**
- * [prompt text, display label]. The value is interpolated by the generate route
- * as `"<value> background"`, so it must read naturally with that word appended.
- * The first four values are the original ones and must not change — saved
- * shoots store the value, and renaming one would blank its dropdown.
- */
-export const BACKDROPS: Array<[string, string]> = [
-  // Studio
-  ['studio seamless', 'Studio · white seamless'],
-  ['light grey studio seamless', 'Studio · light grey'],
-  ['dark charcoal studio seamless', 'Studio · charcoal'],
-  ['solid pastel colour studio wall', 'Studio · pastel colour'],
-  ['textured concrete wall', 'Concrete wall'],
-  ['editorial set', 'Editorial set'],
-  // Interior
-  ['lifestyle interior', 'Lifestyle interior'],
-  ['modern loft interior with tall windows', 'Loft · tall windows'],
-  ['marble lobby interior', 'Marble lobby'],
-  // Outdoor
-  ['outdoor street', 'Outdoor street'],
-  ['cobblestone old-town street', 'Old-town cobblestone'],
-  ['urban rooftop with city skyline', 'Rooftop · city skyline'],
-  ['green park with trees', 'Park · greenery'],
-  ['flowering garden', 'Garden'],
-  ['sunlit beach', 'Beach'],
-  ['poolside', 'Poolside'],
-  ['desert dunes', 'Desert dunes'],
-];
-
-export const MOODS = ['clean', 'warm editorial', 'moody', 'bright airy'];
-
-export const LIGHTINGS = [
-  'soft bright commercial',
-  'golden hour',
-  'high-key studio',
-  'dramatic',
 ];
 
 /** Mirrors the server-side GENDER_BY_CAT — used to pre-filter the model picker. */

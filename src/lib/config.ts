@@ -41,6 +41,13 @@ export const LOG_PROMPTS =
 export const BASE_MODEL_ID = env('BASE_MODEL_ID', 'gemini-3.1-flash-lite-image');
 export const HERO_MODEL_ID = env('HERO_MODEL_ID', 'gemini-3.1-flash-image');
 
+/**
+ * Text engine — Genie's art director, which reasons and returns JSON rather
+ * than pixels. The *-image models above reject `responseMimeType: application/
+ * json` with INVALID_ARGUMENT, so this deliberately is NOT one of them.
+ */
+export const TEXT_MODEL_ID = env('TEXT_MODEL_ID', 'gemini-2.5-flash');
+
 // ── Razorpay ────────────────────────────────────────────────────────
 // KEY_ID is public (it is handed to Razorpay Checkout in the browser).
 // KEY_SECRET and WEBHOOK_SECRET are server-only and must never be imported

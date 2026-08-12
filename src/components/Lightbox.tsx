@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { imgSrc } from '@/lib/client/api';
 import { DownloadIcon } from './icons';
 import type { LbItem } from '@/lib/client/types';
@@ -15,6 +15,16 @@ interface Props {
 /** Full-screen image viewer with prev/next, keyboard nav and a download button. */
 export default function Lightbox({ items, index, onIndex, onClose }: Props) {
   const item = items[index];
+
+  // imgSrc() cache-busts with Date.now(), so it has to be pinned per image —
+  // recomputing it on every render would restart the load (and the spinner).
+  const url = item?.url ?? '';
+  const src = useMemo(() => (url ? imgSrc(url, 'web') : ''), [url]);
+  const [status, setStatus] = useState<'loading' | 'ok' | 'error'>('loading');
+
+  useEffect(() => {
+    setStatus('loading');
+  }, [src]);
 
   const prev = useCallback(() => {
     if (index > 0) onIndex(index - 1);
@@ -41,8 +51,10 @@ export default function Lightbox({ items, index, onIndex, onClose }: Props) {
       className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-[14px] bg-[rgba(10,8,8,.9)]"
       onClick={onClose}
     >
+      {/* Fixed frame: the image loading, failing or being a different shape must
+          never move the nav, close or download controls. */}
       <div
-        className="relative flex items-center justify-center"
+        className="relative flex h-[76vh] w-[min(78vw,1000px)] items-center justify-center rounded-[10px] bg-transparent"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -54,12 +66,33 @@ export default function Lightbox({ items, index, onIndex, onClose }: Props) {
           ‹
         </button>
 
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={imgSrc(item.url, 'web')}
-          alt={item.pose ?? 'Generated image'}
-          className="block max-h-[80vh] max-w-[82vw] rounded-[10px] shadow-pop"
-        />
+        {status === 'loading' && (
+          <div className="animate-spin-cs absolute h-10 w-10 rounded-full border-[3px] border-white/25 border-t-white" />
+        )}
+
+        {status === 'error' ? (
+          <div className="flex flex-col items-center gap-2 text-white/60">
+            <span className="text-3xl">🖼</span>
+            <span className="text-sm">Image unavailable</span>
+          </div>
+        ) : (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            key={src}
+            // A cached image can finish before React attaches onLoad, so the ref
+            // catches the already-complete case.
+            ref={(el) => {
+              if (el?.complete) setStatus(el.naturalWidth ? 'ok' : 'error');
+            }}
+            src={src}
+            alt={item.pose ?? 'Generated image'}
+            onLoad={() => setStatus('ok')}
+            onError={() => setStatus('error')}
+            className={`block max-h-full max-w-full rounded-[10px] object-contain shadow-pop transition-opacity duration-200 ${
+              status === 'ok' ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+        )}
 
         <button
           onClick={onClose}

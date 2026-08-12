@@ -195,7 +195,13 @@ export function sceneClause(o: {
   const lighting = (o.lighting || 'soft bright commercial').trim();
   const mood = (o.mood || 'clean').trim();
 
-  const setting = SCENE_SETTINGS[backdrop] ?? `a ${backdrop} background`;
+  // A known preset expands to its full description; a short unknown value is a
+  // noun phrase and needs "a … background" around it. Genie's reference matches
+  // arrive as a whole written scene, though, and wrapping one of those produces
+  // "a The scene is a minimalist set … background" — so a long value is taken as
+  // the setting exactly as written.
+  const setting =
+    SCENE_SETTINGS[backdrop] ?? (backdrop.length > 80 ? backdrop : `a ${backdrop} background`);
   return `Setting: ${setting}. ${SCENE_CAMERA} ${SCENE_GROUNDING} ${lighting} lighting, ${mood} mood`;
 }
 

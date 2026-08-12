@@ -2,8 +2,9 @@
 
 import { useMemo, useRef, useState } from 'react';
 import { Select } from './ui';
-import GenieBox from './GenieBox';
+import GenieDrawer from './GenieDrawer';
 import PosePreview from './PosePreview';
+import { GenieIcon } from './icons';
 import {
   posesFor,
   FRAMINGS,
@@ -29,6 +30,7 @@ type Mode = 'tile' | 'choose' | 'one';
  */
 export default function AddCard({
   category,
+  pid,
   onAddOne,
   onAddMany,
   onStartBatch,
@@ -38,6 +40,8 @@ export default function AddCard({
 }: {
   /** Drives which pose list is offered — menswear and womenswear differ. */
   category: string;
+  /** Genie reads the locked model and garment from the shoot; null hides it. */
+  pid: string | null;
   onAddOne: (pose: string, settings: PoseSettings) => void;
   /** Several poses at once — one image each, all sharing these settings. */
   onAddMany: (rows: Array<PoseSettings & { pose: string }>) => void;
@@ -50,6 +54,7 @@ export default function AddCard({
   const [mode, setMode] = useState<Mode>('tile');
   const [prompt, setPrompt] = useState('');
   const [s, setS] = useState<PoseSettings>({});
+  const [genie, setGenie] = useState(false);
   /** Pose indices, kept in the order they were ticked — that's the render order. */
   const [selected, setSelected] = useState<number[]>([]);
 
@@ -264,7 +269,14 @@ export default function AddCard({
             <Select
               value={s.backdrop ?? ''}
               onChange={(v) => set({ backdrop: v })}
-              options={sameOpt(BACKDROPS)}
+              // Genie can hand back a full scene description read off a
+              // reference photo, which is deliberately not one of the presets.
+              // Offer it as its own option so the select can show what is set.
+              options={
+                s.backdrop && !BACKDROPS.some(([v]) => v === s.backdrop)
+                  ? [...sameOpt(BACKDROPS), [s.backdrop, '✦ matched from reference'] as [string, string]]
+                  : sameOpt(BACKDROPS)
+              }
             />
           </div>
           <div className="flex-1">
@@ -291,6 +303,18 @@ export default function AddCard({
             <b className="text-ink">{selected.length} poses selected</b> — each becomes its own
             image, generated one after another with the options above. Tick a single pose to edit
             its prompt.
+            {/* There is no single prompt box to hang the Genie off in this mode,
+                but a multi-select is exactly what the art director is best at:
+                it rewrites all of them at once and hands back an editable set. */}
+            <button
+              type="button"
+              onClick={() => setGenie(true)}
+              disabled={!pid}
+              className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg border border-genie/40 bg-surface px-2.5 py-[7px] text-[11px] font-bold text-genie hover:bg-genie/[.06] disabled:opacity-40"
+            >
+              <GenieIcon className="h-[15px] w-[15px]" />
+              Refine all {selected.length} with Genie
+            </button>
           </div>
         ) : (
           <>
@@ -301,12 +325,24 @@ export default function AddCard({
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="Pick a pose to fill this, or write your own…"
               />
-              <GenieBox
-                text={prompt}
-                onUse={setPrompt}
-                onBalance={onBalance}
-                geniePrice={geniePrice}
-              />
+              {/* Always the art director, whether the box is empty or already
+                  holds a pose. The inline rewrite that used to live here put its
+                  answer in a panel under the card; the drawer can do the same
+                  refinement and also take a reference image or build a set. */}
+              <button
+                type="button"
+                onClick={() => setGenie(true)}
+                disabled={!pid}
+                title="Genie — refine this pose, describe a new shot, or match a reference photo"
+                className="group absolute bottom-[7px] right-[7px] flex h-[30px] w-[30px] items-center justify-center rounded-lg transition hover:scale-110 disabled:opacity-40"
+              >
+                <GenieIcon className="h-7 w-7" />
+                <span className="pointer-events-none absolute bottom-[38px] right-0 z-[9] w-[184px] rounded-lg bg-ink px-2.5 py-2 text-[11px] leading-[1.45] text-surface opacity-0 transition group-hover:opacity-100">
+                  <b className="text-[#c9a8ff]">✦ Ask Genie</b> —{' '}
+                  {prompt.trim() ? 'refine this pose' : 'describe the shot'}, or attach a photo to
+                  match. {geniePrice > 0 ? `${geniePrice} credit each.` : 'Free.'}
+                </span>
+              </button>
             </div>
           </>
         )}
@@ -319,6 +355,42 @@ export default function AddCard({
           {total === 1 ? '' : 's'}
         </button>
       </div>
+
+      <GenieDrawer
+        open={genie}
+        onClose={() => setGenie(false)}
+        pid={pid}
+        // Several ticked poses go in as the list to rewrite; a single one is
+        // whatever is in the prompt box, which may have been edited by hand.
+        selection={
+          multi
+            ? selected.map((i) => poses[i][1])
+            : prompt.trim()
+              ? [prompt.trim()]
+              : []
+        }
+        geniePrice={geniePrice}
+        priceFor={priceFor}
+        onBalance={onBalance}
+        onApply={(pose, settings) => {
+          setPrompt(pose);
+          // Genie leaves a field '' when it means "leave this alone", which is
+          // the card's own "same" value — so this merge is safe to apply whole.
+          set(settings);
+          // A direction is for one shot; ticked library poses would override it.
+          setSelected([]);
+        }}
+        // A set runs straight through the batch endpoint — it already generates
+        // one image per row, sequentially, which is what the card does for
+        // several ticked poses.
+        onGenerate={(rows) => {
+          onAddMany(rows);
+          setPrompt('');
+          setS({});
+          setSelected([]);
+          setMode('tile');
+        }}
+      />
     </div>
   );
 }

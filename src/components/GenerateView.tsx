@@ -5,6 +5,8 @@ import { del, ApiError } from '@/lib/client/api';
 import { EmptyState, Skeleton } from './ui';
 import ResultCard from './ResultCard';
 import AddCard from './AddCard';
+import GenieCard from './GenieCard';
+import GenieDrawer from './GenieDrawer';
 import BatchPanel from './BatchPanel';
 import { PersonPlusIcon, DownloadIcon } from './icons';
 import { useDialog } from './Dialog';
@@ -34,6 +36,7 @@ export default function GenerateView({
 }: Props) {
   const dialog = useDialog();
   const [batchMode, setBatchMode] = useState(false);
+  const [genieOpen, setGenieOpen] = useState(false);
 
   const { pid, shootNo, cards, pendingCount, resumedBanner } = shoot;
   const hasResults = cards.length > 0 || pendingCount > 0;
@@ -143,6 +146,7 @@ export default function GenerateView({
         {pid && !batchMode && (
           <AddCard
             category={category}
+            pid={shoot.pid}
             onAddOne={(pose, settings) => shoot.addOne(pose, settings, onBalance)}
             // Several ticked poses run through the batch endpoint — it already
             // generates one image per row, sequentially, which is what keeps
@@ -154,7 +158,24 @@ export default function GenerateView({
             priceFor={priceFor}
           />
         )}
+
+        {pid && !batchMode && <GenieCard onClick={() => setGenieOpen(true)} />}
       </div>
+
+      {/* The grid-level Genie has no pose card to fill, so everything it hands
+          back generates straight away — a single direction through addOne, a
+          catalogue through the batch. */}
+      <GenieDrawer
+        open={genieOpen}
+        onClose={() => setGenieOpen(false)}
+        pid={shoot.pid}
+        selection={[]}
+        geniePrice={geniePrice}
+        priceFor={priceFor}
+        onBalance={onBalance}
+        onApply={(pose, settings) => shoot.addOne(pose, settings, onBalance)}
+        onGenerate={(rows) => shoot.runBatch(rows, onBalance)}
+      />
 
       {pid && batchMode && (
         <BatchPanel
