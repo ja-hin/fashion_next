@@ -287,13 +287,75 @@ export function buildSavedModelHeroPrompt(
   );
 }
 
-export function buildPosePrompt(pose: string, framing: string, newScene = ''): string {
+/**
+ * Which VIEW of the garment a pose reveals, or null when it shows the front.
+ *
+ * The hero is a front shot, so it is authoritative for the front and nothing
+ * else. Any pose that moves the camera elsewhere is asking for information the
+ * hero does not contain — and if the shoot tagged a photo of that angle, that
+ * photo should be sent rather than left to invention.
+ *
+ * Exported because gen.ts must reach the same answer: it picks the reference,
+ * this builds the sentence describing it, and a disagreement would promise an
+ * image the request never included.
+ */
+export function poseView(pose: string): 'back' | 'side' | 'detail' | null {
   const p = (pose ?? '').toLowerCase();
+  if (/\b(back view|rear view|facing away|from behind)\b/.test(p)) return 'back';
+  // "over the shoulder" is a front-facing pose with a turned head, so it is
+  // deliberately not a side — sending a side photo there fights the hero.
+  if (/\b(side|profile)\b|turned to the (left|right)/.test(p)) return 'side';
+  if (/\b(close|detail|head ?shot|portrait|crop|neckline|fabric|texture)\b/.test(p)) return 'detail';
+  return null;
+}
+
+/** Kept for readability at the call sites that only care about the back. */
+export const isBackPose = (pose: string): boolean => poseView(pose) === 'back';
+
+/** One tagged reference sent ahead of the hero, described for the prompt. */
+export interface PoseRef {
+  /** Human label, e.g. "Back". */
+  label: string;
+  /** What it is authoritative for, e.g. "the back of the garment". */
+  truth: string;
+}
+
+export function buildPosePrompt(
+  pose: string,
+  framing: string,
+  newScene = '',
+  /**
+   * Tagged references for the angle this pose reveals, in the order they are
+   * sent — they become Image 1..N, and the hero becomes Image N+1.
+   *
+   * Empty is the normal case and the prompt says the angle is unknown, which is
+   * why an untagged shoot returns a plain back. A shoot that tagged that angle
+   * knows better, and this is what lets it say so. See lib/ensemble.ts.
+   */
+  refs: PoseRef[] = [],
+): string {
+  const p = (pose ?? '').toLowerCase();
+  const hasRefs = refs.length > 0;
+  const view = poseView(p);
 
   let shot: string;
-  if (/\b(close|portrait|detail|head ?shot)\b/.test(p)) {
-    shot = 'Move the camera nearer for a chest-up crop that still shows the garment clearly.';
-  } else if (/\b(back view|rear view|facing away|from behind)\b/.test(p)) {
+  if (view === 'back' && hasRefs) {
+    shot =
+      'Show the same model and garment from BEHIND, rotated a full 180°, the back of the head ' +
+      'and the back of the garment facing the camera, reproducing the back exactly as the ' +
+      'reference images above show it. Do not invent the back, and do not carry the front ' +
+      'print around onto it.';
+  } else if (view === 'side' && hasRefs) {
+    shot =
+      'Turn the model to show the side of the garment, reproducing that profile exactly as the ' +
+      'reference images above show it — seams, drape, length and any side detail.';
+  } else if (/\b(close|portrait|detail|head ?shot)\b/.test(p)) {
+    shot = hasRefs
+      ? 'Move the camera nearer for a chest-up crop that still shows the garment clearly, and ' +
+        'reproduce the fabric, print, trims and lettering exactly as the reference images above ' +
+        'show them.'
+      : 'Move the camera nearer for a chest-up crop that still shows the garment clearly.';
+  } else if (isBackPose(p)) {
     shot =
       'Show the back of the same model and garment. IMPORTANT: do not copy the front ' +
       'print onto the back — if no back design is known, the back of the garment is plain.';
@@ -326,10 +388,17 @@ export function buildPosePrompt(pose: string, framing: string, newScene = ''): s
       'print/details exactly the same.'
     : 'Keep the same model, the same garment and its print/details, and the same background, lighting and colour grade.';
 
-  return (
-    'This is a professional fashion e-commerce photograph of a model wearing a garment. ' +
-    `${bg} ${shot}${prop} Photorealistic, natural anatomy, seamless, product-page ready.`
-  );
+  // Extra images change what "the same model" refers to, so the anchor is named
+  // explicitly and every reference is numbered with what it is good for.
+  const lead = hasRefs
+    ? 'This is a professional fashion e-commerce photograph. ' +
+      refs.map((r, i) => `Image ${i + 1} is the real ${r.label} of this exact garment — the exact truth for ${r.truth}`).join('. ') +
+      `. Image ${refs.length + 1} is the finished front shot of this exact model wearing this ` +
+      'exact outfit — reproduce that same person (face, skin tone, body, hair) and the same ' +
+      'garment with total consistency; it is the same shoot, only the camera moves. '
+    : 'This is a professional fashion e-commerce photograph of a model wearing a garment. ';
+
+  return `${lead}${bg} ${shot}${prop} Photorealistic, natural anatomy, seamless, product-page ready.`;
 }
 
 export const HEAD_COMPLETE_PROMPT =

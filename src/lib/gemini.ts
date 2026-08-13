@@ -80,12 +80,17 @@ function logPrompt(
     pose?: string;
     modelId?: string | null;
     imageSize?: Resolution | null;
+    refs?: Buffer[] | null;
   },
   attempt: number,
   tries: number,
 ): void {
   if (!LOG_PROMPTS) return;
-  const refs = [opts.garment && 'garment', opts.hero && 'hero'].filter(Boolean);
+  const refs = [
+    opts.refs?.length ? `${opts.refs.length} ensemble ref(s)` : null,
+    opts.garment && 'garment',
+    opts.hero && 'hero',
+  ].filter(Boolean);
   console.log(
     [
       '',
@@ -108,6 +113,7 @@ async function geminiGenerate(opts: {
   prompt: string;
   garment?: Buffer | null;
   hero?: Buffer | null;
+  refs?: Buffer[] | null;
   seed?: number | null;
   ar?: string | null;
   allowRevealing?: boolean;
@@ -115,12 +121,15 @@ async function geminiGenerate(opts: {
   imageSize?: Resolution | null;
 }): Promise<GenResult> {
   const parts: Array<Record<string, unknown>> = [];
-  if (opts.garment) {
-    parts.push({ inlineData: { data: opts.garment.toString('base64'), mimeType: 'image/jpeg' } });
-  }
-  if (opts.hero) {
-    parts.push({ inlineData: { data: opts.hero.toString('base64'), mimeType: 'image/jpeg' } });
-  }
+  const img = (b: Buffer) =>
+    parts.push({ inlineData: { data: b.toString('base64'), mimeType: 'image/jpeg' } });
+
+  // An ensemble hero sends several tagged product shots instead of one garment.
+  // ORDER IS LOAD-BEARING: the prompt names them as "Image 1", "Image 2"…, so
+  // these must go in ahead of anything else and keep the caller's sequence.
+  if (opts.refs?.length) opts.refs.forEach(img);
+  if (opts.garment) img(opts.garment);
+  if (opts.hero) img(opts.hero);
   parts.push({ text: opts.prompt });
 
   const model = resolveModel(opts.modelId, opts.imageSize);
@@ -181,6 +190,8 @@ export async function produce(opts: {
   prompt: string;
   garment?: Buffer | null;
   hero?: Buffer | null;
+  /** Ordered ensemble references — see geminiGenerate. */
+  refs?: Buffer[] | null;
   seed?: number | null;
   ar?: string | null;
   allowRevealing?: boolean;

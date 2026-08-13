@@ -7,6 +7,7 @@
  */
 
 import type { BillingConfig } from './pricing';
+import type { RefRole } from './ensemble';
 
 export type Resolution = '1K' | '2K' | '4K';
 export type ShootMode = 'imagine' | 'saved';
@@ -105,7 +106,7 @@ export interface ShootOpts {
   scene: string;
   aspect: string;
   framing: string;
-  input_family: 'garment_in' | 'extend' | 'recast';
+  input_family: 'garment_in' | 'extend' | 'recast' | 'ensemble';
   allow_revealing: boolean;
   model_id: string;
   resolution: Resolution;
@@ -131,6 +132,12 @@ export interface ShootDoc {
   name: string; // user-editable; falls back to the shoot number
   look: string; // per-shoot appearance variety phrase
   garment_file: string | null; // filename inside the shoot's storage folder
+  /**
+   * Ensemble shoots only: the tagged product references the hero is assembled
+   * from, in the order they were uploaded. That order IS the numbered manifest
+   * the prompt refers to, so it must never be re-sorted. See lib/ensemble.ts.
+   */
+  refs?: Array<{ file: string; role: RefRole }>;
   hero_file: string | null;
   manifest: ManifestItem[];
   created: string;

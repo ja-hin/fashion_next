@@ -164,6 +164,40 @@ export const GridIcon = ({ className = 'w-5 h-5' }: P) => (
   </svg>
 );
 
+/** The Generate tab — a wand with a spark. */
+export const WandIcon = ({ className = 'w-4 h-4' }: P) => (
+  <svg viewBox="0 0 24 24" className={className} {...stroke}>
+    <path d="M4 20L16 8" />
+    <path d="M14 6l4 4" />
+    <path d="M18 3v4M20 5h-4" />
+    <path d="M6 13v3M7.5 14.5h-3" />
+  </svg>
+);
+
+/** Credits — a stack of coins, as in the balance pill. */
+export const CoinsIcon = ({ className = 'w-4 h-4' }: P) => (
+  <svg viewBox="0 0 24 24" className={className} {...stroke}>
+    <ellipse cx="12" cy="7" rx="8" ry="3.4" />
+    <path d="M4 7v5c0 1.9 3.6 3.4 8 3.4s8-1.5 8-3.4V7" />
+    <path d="M4 12v5c0 1.9 3.6 3.4 8 3.4s8-1.5 8-3.4v-5" />
+  </svg>
+);
+
+/** Points left by default; flip with a `rotate-180` class to point right. */
+export const ChevronLeftIcon = ({ className = 'w-4 h-4' }: P) => (
+  <svg viewBox="0 0 24 24" className={className} {...stroke}>
+    <path d="M15 5l-7 7 7 7" />
+  </svg>
+);
+
+/** The classic sidebar glyph: a panel with its rail picked out. */
+export const PanelIcon = ({ className = 'w-4 h-4' }: P) => (
+  <svg viewBox="0 0 24 24" className={className} {...stroke}>
+    <rect x="3" y="4" width="18" height="16" rx="2" />
+    <path d="M9 4v16" />
+  </svg>
+);
+
 export const AlertIcon = ({ className = 'w-4 h-4' }: P) => (
   <svg viewBox="0 0 24 24" className={className} {...stroke}>
     <circle cx="12" cy="12" r="10" />
@@ -178,23 +212,24 @@ export const SaveIcon = ({ className = 'w-[15px] h-[15px]' }: P) => (
 );
 
 /**
- * The Prompt Genie mark. Drawn inline rather than shipped as the original
- * ~14 KB base64 PNG — it scales cleanly and costs nothing to load.
+ * The Genie mark — the character artwork, not a glyph.
+ *
+ * Served from /genie.webp rather than the 1.65 MB source PNG in public: this
+ * renders between 15px and 64px, and shipping a 1254px master for a 15px button
+ * would cost more than the rest of the page. The WebP is 256px / ~20 KB, which
+ * still covers the largest use at 4x DPI. Regenerate it from
+ * "New-Genie Lite.png" if the artwork changes.
+ *
+ * `object-contain` matters — every caller sizes this with square h-/w- classes,
+ * and the artwork is not square once its transparent margin is trimmed.
  */
 export const GenieIcon = ({ className = 'w-7 h-7' }: P) => (
-  <svg viewBox="0 0 32 32" className={className} aria-hidden>
-    <defs>
-      <linearGradient id="genie-g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stopColor="#a97cf5" />
-        <stop offset="100%" stopColor="#6d3bd1" />
-      </linearGradient>
-    </defs>
-    <circle cx="16" cy="16" r="15" fill="url(#genie-g)" />
-    <path
-      d="M16 7l1.9 5.1L23 14l-5.1 1.9L16 21l-1.9-5.1L9 14l5.1-1.9L16 7z"
-      fill="#fff"
-    />
-    <circle cx="23" cy="22.5" r="2" fill="#fff" opacity=".9" />
-    <circle cx="10" cy="22" r="1.3" fill="#fff" opacity=".7" />
-  </svg>
+  // eslint-disable-next-line @next/next/no-img-element
+  <img
+    src="/genie.webp"
+    alt=""
+    aria-hidden
+    draggable={false}
+    className={`${className} select-none object-contain`}
+  />
 );

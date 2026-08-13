@@ -3,6 +3,7 @@
 import { DialogProvider } from './Dialog';
 import { StudioProvider, useStudio } from '@/lib/client/StudioContext';
 import TopBar from './TopBar';
+import SideNav from './SideNav';
 import Lightbox from './Lightbox';
 import SaveModelModal from './SaveModelModal';
 import type { Me } from '@/lib/client/types';
@@ -44,7 +45,10 @@ function Chrome({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      <div className="flex flex-1 overflow-hidden">{children}</div>
+      <div className="flex flex-1 overflow-hidden">
+        <SideNav me={s.me} />
+        {children}
+      </div>
 
       {s.saveModelPid && (
         <SaveModelModal

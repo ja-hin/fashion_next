@@ -79,25 +79,8 @@ export default function TopBar({ me, balance }: { me: Me; balance: number }) {
 
       
 
-      <nav className="absolute left-1/2 top-0 hidden h-[60px] -translate-x-1/2 items-center gap-0.5 md:flex">
-        {TABS.map(([href, label]) => {
-          const active = pathname === href;
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={`relative rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
-                active ? 'text-ink' : 'text-muted hover:text-ink'
-              }`}
-            >
-              {label}
-              {active && (
-                <span className="animate-slide-in absolute -bottom-3 left-4 right-4 h-0.5 rounded-sm bg-brand" />
-              )}
-            </Link>
-          );
-        })}
-      </nav>
+      {/* Navigation lives in the SideNav on lg+; the menu below still
+          carries these links for narrower screens. */}
 
       <div className="flex-1" />
 
@@ -161,7 +144,7 @@ export default function TopBar({ me, balance }: { me: Me; balance: number }) {
             <div className="mx-1.5 my-[5px] h-px bg-line" />
 
             {/* Duplicated here so the main tabs stay reachable on small screens. */}
-            <div className="md:hidden">
+            <div className="lg:hidden">
               {TABS.map(([href, label]) => (
                 <Link key={href} href={href} className={menuItem}>
                   {label}

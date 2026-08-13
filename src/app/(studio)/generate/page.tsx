@@ -6,17 +6,24 @@ import { useDialog } from '@/components/Dialog';
 import SetupPanel from '@/components/SetupPanel';
 import GenerateView from '@/components/GenerateView';
 import ModelPickerModal from '@/components/ModelPickerModal';
+import EnsembleTagModal from '@/components/EnsembleTagModal';
 
 export default function GeneratePage() {
   const s = useStudio();
   const dialog = useDialog();
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [tagOpen, setTagOpen] = useState(false);
 
   const usingSaved = s.modelSource === 'saved' && s.setup.input_family !== 'extend';
+  const isEnsemble = s.setup.input_family === 'ensemble';
 
   async function generateHero() {
-    if (!s.file) {
-      await dialog.alert('Add a garment image first.');
+    if (!s.ensemble.length) {
+      await dialog.alert(
+        isEnsemble
+          ? 'Add at least one product image for an ensemble.'
+          : 'Add at least one garment photo first.',
+      );
       return;
     }
     if (usingSaved && !s.selectedModel) {
@@ -26,7 +33,10 @@ export default function GeneratePage() {
     s.setNoModelError(false);
 
     const fd = new FormData();
-    fd.append('garment', s.file);
+    // Files and roles are paired POSITIONALLY on the server — the prompt numbers
+    // them "Image 1", "Image 2"… — so both go in the same order.
+    for (const r of s.ensemble) fd.append('refs', r.file);
+    fd.append('roles', JSON.stringify(s.ensemble.map((r) => r.role)));
     for (const k of [
       'style',
       'category',
@@ -51,8 +61,23 @@ export default function GeneratePage() {
         <SetupPanel
           setup={s.setup}
           onSetup={s.patchSetup}
-          file={s.file}
-          onFile={s.setFile}
+          ensemble={s.ensemble}
+          // Dropping on the panel appends the files and opens the tagging
+          // window on them — the modal runs detection for whatever is new.
+          onEnsembleAdd={(files) => {
+            s.setEnsemble([
+              ...s.ensemble,
+              ...files.map((file) => ({
+                file,
+                role: 'garment' as const,
+                url: URL.createObjectURL(file),
+                detecting: true,
+                unsure: true,
+              })),
+            ]);
+            setTagOpen(true);
+          }}
+          onEnsembleOpen={() => setTagOpen(true)}
           modelSource={s.modelSource}
           onModelSource={(v) => {
             s.setModelSource(v);
@@ -67,7 +92,7 @@ export default function GeneratePage() {
           hasShoot={!!s.shoot.pid || s.shoot.generating}
           onNewShoot={() => {
             s.shoot.reset();
-            s.setFile(null);
+            s.setEnsemble([]);
           }}
         />
       </aside>
@@ -83,6 +108,15 @@ export default function GeneratePage() {
           onSaveAsModel={s.openSaveModel}
         />
       </main>
+
+      {tagOpen && (
+        <EnsembleTagModal
+          mode={isEnsemble ? 'ensemble' : 'same_garment'}
+          refs={s.ensemble}
+          onRefs={s.setEnsemble}
+          onClose={() => setTagOpen(false)}
+        />
+      )}
 
       {pickerOpen && (
         <ModelPickerModal

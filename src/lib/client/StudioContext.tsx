@@ -1,5 +1,7 @@
 'use client';
 
+import type { EnsembleRef } from './ensemble-types';
+
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { getJson } from './api';
 import { useShoot, type ShootApi } from './useShoot';
@@ -31,6 +33,9 @@ interface StudioValue {
   patchSetup: (patch: Partial<SetupState>) => void;
   file: File | null;
   setFile: (f: File | null) => void;
+  /** Ensemble mode's tagged product references, in upload order. */
+  ensemble: EnsembleRef[];
+  setEnsemble: (refs: EnsembleRef[]) => void;
   modelSource: 'imagine' | 'saved';
   setModelSource: (s: 'imagine' | 'saved') => void;
   selectedModel: SavedModel | null;
@@ -76,6 +81,7 @@ export function StudioProvider({
 
   const [setup, setSetup] = useState<SetupState>(DEFAULT_SETUP);
   const [file, setFile] = useState<File | null>(null);
+  const [ensemble, setEnsemble] = useState<EnsembleRef[]>([]);
   const [modelSource, setModelSource] = useState<'imagine' | 'saved'>('imagine');
   const [selectedModel, setSelectedModel] = useState<SavedModel | null>(null);
   const [noModelError, setNoModelError] = useState(false);
@@ -132,6 +138,8 @@ export function StudioProvider({
       patchSetup,
       file,
       setFile,
+      ensemble,
+      setEnsemble,
       modelSource,
       setModelSource,
       selectedModel,
@@ -158,6 +166,7 @@ export function StudioProvider({
       setup,
       patchSetup,
       file,
+      ensemble,
       modelSource,
       selectedModel,
       noModelError,

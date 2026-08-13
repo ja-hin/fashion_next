@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
 import { ethLabel, titleCase, imgSrc } from '@/lib/client/api';
 import { Field, Select } from './ui';
+import EnsembleUploader from './EnsembleUploader';
+import type { EnsembleRef } from '@/lib/client/ensemble-types';
 import {
   CATEGORIES,
   INPUT_FAMILIES,
@@ -43,8 +44,12 @@ export const DEFAULT_SETUP: SetupState = {
 interface Props {
   setup: SetupState;
   onSetup: (patch: Partial<SetupState>) => void;
-  file: File | null;
-  onFile: (f: File | null) => void;
+  /** Tagged references for both modes, in upload order. */
+  ensemble: EnsembleRef[];
+  /** Files dropped on the panel — the page opens the tagging window for them. */
+  onEnsembleAdd: (files: File[]) => void;
+  /** Reopen the tagging window for what is already there. */
+  onEnsembleOpen: () => void;
   modelSource: 'imagine' | 'saved';
   onModelSource: (s: 'imagine' | 'saved') => void;
   selectedModel: SavedModel | null;
@@ -66,8 +71,9 @@ interface Props {
 export default function SetupPanel({
   setup,
   onSetup,
-  file,
-  onFile,
+  ensemble,
+  onEnsembleAdd,
+  onEnsembleOpen,
   modelSource,
   onModelSource,
   selectedModel,
@@ -79,29 +85,12 @@ export default function SetupPanel({
   hasShoot,
   onNewShoot,
 }: Props) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [dragging, setDragging] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
-  // Object URLs must be revoked or the blob leaks for the life of the tab.
-  useEffect(() => {
-    if (!file) {
-      setPreviewUrl(null);
-      return;
-    }
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [file]);
-
   // "Extend" takes the model from the uploaded photo, so model choice is moot.
   const isExtend = setup.input_family === 'extend';
   const usingSaved = modelSource === 'saved' && !isExtend;
   const showResHint = (setup.resolution === '2K' || setup.resolution === '4K') && !usingSaved;
 
-  function pick(f: File | undefined | null) {
-    if (f) onFile(f);
-  }
+  const isEnsemble = setup.input_family === 'ensemble';
 
   return (
     <aside className="w-[336px] px-[22px] pb-[30px] pl-6 pt-[22px]">
@@ -122,40 +111,39 @@ export default function SetupPanel({
         </button>
       )}
 
-      <div
-        onClick={() => inputRef.current?.click()}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragging(true);
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDragging(false);
-          pick(e.dataTransfer.files?.[0]);
-        }}
-        className={`mb-4 cursor-pointer rounded-xl border-[1.5px] border-dashed p-[22px_14px] text-center text-[12.5px] transition ${
-          dragging
-            ? 'border-brand bg-brand-soft text-brand'
-            : 'border-line bg-surface2 text-muted hover:border-brand hover:bg-brand-soft hover:text-brand'
-        }`}
-      >
-        {!previewUrl && <span className="mb-1.5 block text-[22px] opacity-60">⤓</span>}
-        Drop a <b className="text-ink">garment reference</b>
-        <br />
-        <span className="text-[11px]">flat-lay, on-model, or packshot</span>
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => pick(e.target.files?.[0])}
-        />
-        {previewUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={previewUrl} alt="Garment preview" className="mt-1 max-h-[170px] max-w-full rounded-lg" />
-        )}
+      {/* Both modes send several tagged references; only the question changes —
+          which VIEW of one garment, or which ITEM of a look. The single-photo
+          dropzone is gone: one photo is just a same-garment shoot with one
+          front image, and it goes through the same path. */}
+      <div className="mb-3 flex gap-1 rounded-[10px] bg-surface2 p-1">
+        {(
+          [
+            ['garment_in', 'Same garment'],
+            ['ensemble', 'Ensemble'],
+          ] as const
+        ).map(([value, label]) => {
+          const on = isEnsemble ? value === 'ensemble' : value === 'garment_in';
+          return (
+            <button
+              key={value}
+              type="button"
+              onClick={() => onSetup({ input_family: value })}
+              className={`flex-1 rounded-[7px] px-2 py-[7px] text-[12px] font-bold transition ${
+                on ? 'bg-surface text-ink shadow-card' : 'text-muted hover:text-ink'
+              }`}
+            >
+              {label}
+            </button>
+          );
+        })}
       </div>
+
+      <EnsembleUploader
+        mode={isEnsemble ? 'ensemble' : 'same_garment'}
+        refs={ensemble}
+        onAdd={onEnsembleAdd}
+        onOpen={onEnsembleOpen}
+      />
 
       <div className="mb-[13px] flex gap-2.5">
         <div className="flex-1">
@@ -166,14 +154,19 @@ export default function SetupPanel({
             options={CATEGORIES}
           />
         </div>
-        <div className="flex-1">
-          <label className="lbl">Input</label>
-          <Select
-            value={setup.input_family}
-            onChange={(v) => onSetup({ input_family: v })}
-            options={INPUT_FAMILIES}
-          />
-        </div>
+        {/* The tabs above already set input_family for an ensemble, and
+            "ensemble" is not one of this list's options — showing it here would
+            render an empty select and let the user silently break the mode. */}
+        {!isEnsemble && (
+          <div className="flex-1">
+            <label className="lbl">Input</label>
+            <Select
+              value={setup.input_family}
+              onChange={(v) => onSetup({ input_family: v })}
+              options={INPUT_FAMILIES}
+            />
+          </div>
+        )}
       </div>
 
       <Field label="Model" dim={isExtend}>
@@ -307,11 +300,17 @@ export default function SetupPanel({
         disabled={busy}
         className="mt-1.5 flex w-full items-center justify-center gap-2 rounded-[11px] bg-brand p-[13px] text-[14.5px] font-bold text-white transition hover:-translate-y-px hover:shadow-[0_10px_26px_rgba(225,29,42,.3)] disabled:translate-y-0 disabled:opacity-50 disabled:shadow-none"
       >
-        {busy ? 'Generating…' : `Generate Hero image`}
+        {busy
+          ? 'Generating…'
+          : ensemble.length
+            ? `Generate Hero from ${ensemble.length} image${ensemble.length === 1 ? '' : 's'}`
+            : 'Generate Hero image'}
       </button>
 
       <div className="mt-2.5 text-[11px] leading-[1.5] text-muted">
-        Locks the model on this first shot, so every later pose is the same person.
+        {isEnsemble
+          ? 'Assembles every item onto one model and locks that model, so each later pose keeps the whole look.'
+          : 'Each photo is the truth for the side it shows, so the back is never invented. Locks the model too.'}
       </div>
     </aside>
   );

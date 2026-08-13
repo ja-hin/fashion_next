@@ -1,45 +1,115 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+import { smokeBurst } from '@/lib/client/smoke';
 import { GenieIcon } from './icons';
 
+/** Timings mirror the animation durations in globals.css. */
+const OVERLAY_LAG = 150; // let the poof start before the drawer sweeps in
+const POOF_MS = 470; // vanish finished — safe to hide
+const REFORM_LAG = 150; // let the drawer clear before Genie comes back
+const MATERIALIZE_MS = 640;
+
+type Phase = 'idle' | 'poof' | 'hidden' | 'materialize';
+
 /**
- * The "Ask Genie" tile that sits beside "Add pose" in the results grid.
+ * The floating "Ask Genie" tile beside "Add pose" — and the summon it performs.
  *
- * Genie is reachable from inside the Add Pose card too, but only once you have
- * opened it and only in the context of the pose you are already writing. This
- * is the way in when you have no pose in mind at all — "build me a catalogue"
- * — so it gets its own front door rather than being a button behind a button.
+ * Clicking it does not simply open a panel: the card bursts into smoke, the
+ * drawer sweeps in behind it, and closing the drawer re-forms the card out of
+ * the same smoke gathering back together. The two halves are one gesture, which
+ * is why the card owns the whole sequence and only needs to be told whether the
+ * drawer is currently open.
  *
- * Sized to match AddCard's tile exactly so the two read as a pair.
+ * All of it degrades: under prefers-reduced-motion the particles are skipped
+ * and the CSS transitions are switched off, so the card just goes and returns.
  */
-export default function GenieCard({ onClick }: { onClick: () => void }) {
+export default function GenieCard({
+  open,
+  onClick,
+}: {
+  /** Whether the Genie drawer is showing. Falling to false re-forms the card. */
+  open: boolean;
+  onClick: () => void;
+}) {
+  const cardRef = useRef<HTMLButtonElement>(null);
+  const [phase, setPhase] = useState<Phase>('idle');
+
+  // Every step is a timeout, and the user can navigate away mid-sequence — so
+  // they are tracked and cleared rather than left to fire into a dead tree.
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const after = (ms: number, fn: () => void) => {
+    timers.current.push(setTimeout(fn, ms));
+  };
+  useEffect(
+    () => () => {
+      timers.current.forEach(clearTimeout);
+      timers.current = [];
+    },
+    [],
+  );
+
+  /** Centre of the card in viewport coords — where the smoke comes from. */
+  function centre() {
+    const r = cardRef.current?.getBoundingClientRect();
+    return r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : { x: 0, y: 0 };
+  }
+
+  function summon() {
+    if (phase !== 'idle' || open) return;
+    const { x, y } = centre();
+
+    setPhase('poof');
+    smokeBurst(x, y, false);
+    after(OVERLAY_LAG, onClick);
+    after(POOF_MS, () => setPhase('hidden'));
+  }
+
+  // The drawer closing is the cue to come back. Driven off the `open` prop
+  // rather than the close button so it also fires on Escape and backdrop click.
+  useEffect(() => {
+    if (open || phase !== 'hidden') return;
+
+    after(REFORM_LAG, () => {
+      // Measured while still hidden — `visibility: hidden` keeps the slot in
+      // layout, so the centre is the same point the smoke left from.
+      const { x, y } = centre();
+      setPhase('materialize');
+      smokeBurst(x, y, true);
+      after(MATERIALIZE_MS, () => setPhase('idle'));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, phase]);
+
+  const stateClass =
+    phase === 'poof'
+      ? 'is-poof'
+      : phase === 'hidden'
+        ? 'is-hidden'
+        : phase === 'materialize'
+          ? 'is-materialize'
+          : '';
+
   return (
-    <button
-      onClick={onClick}
-      title="Ask Genie — describe a shot, build a catalogue, or match a reference photo"
-      className="group relative w-[212px] self-start overflow-hidden rounded-card border-[1.5px] border-genie/35 bg-surface shadow-card transition hover:-translate-y-[3px] hover:border-genie hover:shadow-pop"
-    >
-      {/* A soft bloom behind the orb rather than a flat fill, so the tile reads
-          as lit from within next to the plain dashed Add pose card. */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-70 transition group-hover:opacity-100"
-        style={{
-          background:
-            'radial-gradient(120% 80% at 50% 18%, color-mix(in srgb, var(--genie) 18%, transparent) 0%, transparent 62%)',
-        }}
-      />
-
-      <div className="relative flex min-h-[300px] flex-col items-center justify-center gap-4 px-5 py-6">
-        {/* GenieIcon is already the purple orb with the sparkle in it, so this
-            only adds the drop glow underneath it. */}
-        <GenieIcon className="h-[74px] w-[74px] drop-shadow-[0_10px_22px_color-mix(in_srgb,var(--genie)_45%,transparent)] transition group-hover:scale-105" />
-
-        <span className="text-center">
-          <span className="block text-[15px] font-bold">Ask Genie</span>
-          <span className="mt-1 block text-[11.5px] text-muted">tap to summon ✨</span>
+    // The outer slot keeps a fixed footprint in the flex row. Without it the
+    // bobbing card would drag its neighbours up and down with it, and the grid
+    // would reflow the moment Genie vanished.
+    <div className="flex w-[212px] flex-shrink-0 items-center justify-center self-center py-4">
+      <button
+        ref={cardRef}
+        onClick={summon}
+        aria-hidden={phase === 'hidden'}
+        tabIndex={phase === 'hidden' ? -1 : undefined}
+        title="Ask Genie — describe a shot, build a catalogue, or match a reference photo"
+        className={`genie-card group relative w-[190px] cursor-pointer rounded-[18px] border border-accent/25 px-[14px] py-4 text-center ${stateClass}`}
+      >
+        <span className="genie-orb relative mx-auto mb-2.5 flex h-[64px] w-[64px] items-center justify-center transition group-hover:scale-105">
+          <GenieIcon className="relative h-full w-full" />
         </span>
-      </div>
-    </button>
+
+        <span className="block text-[15px] font-extrabold tracking-[-0.01em]">Ask Genie</span>
+        <span className="mt-0.5 block text-[11.5px] text-muted">tap to summon ✨</span>
+      </button>
+    </div>
   );
 }

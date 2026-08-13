@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Genie · smoke summon — animation preview</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#f4f3ef;--ink:#191813;--muted:#77756c;--line:#e6e3dc;--accent:#7c5cff;--gold:#c9a24b}
+  html,body{height:100%}
+  body{font:14px/1.5 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);overflow-x:hidden}
+  .top{height:58px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px;padding:0 22px;font-weight:800;font-size:16px}
+  .top .d{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,#191813,#3a3730);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px}
+  .wrap{padding:26px 24px}
+  h2{font-size:18px;margin-bottom:4px}
+  .hint{color:var(--muted);font-size:13px;margin-bottom:20px}
+  .row{display:flex;gap:16px;align-items:stretch;flex-wrap:wrap}
+  .pcard{width:190px;height:238px;border-radius:15px;border:1px solid var(--line);background:linear-gradient(180deg,#efe9dc,#dad0bc);position:relative;overflow:hidden}
+  .pcard .fig{position:absolute;bottom:0;left:38%;width:26%;height:60%;border-radius:40% 40% 12% 12%;background:linear-gradient(180deg,#d33b34,#af2823)}
+  .pcard .head{position:absolute;bottom:54%;left:45%;width:11%;height:12%;border-radius:50%;background:#caa079}
+  .pcard .lbl{position:absolute;left:9px;bottom:9px;background:rgba(23,22,15,.72);color:#fff;font-size:11px;padding:4px 8px;border-radius:7px;font-weight:600}
+  .addcard{width:190px;height:238px;border-radius:15px;border:1.5px dashed #cfccc2;background:#fbfbf9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted)}
+  .addcard .plus{width:44px;height:44px;border-radius:12px;background:#f0eee8;display:flex;align-items:center;justify-content:center;font-size:22px;color:#8b887f}
+  .addcard .t{font-weight:700;font-size:13px}
+
+  /* floating Genie card */
+  .genie-slot{width:170px;display:flex;align-items:center;justify-content:center}
+  .genie{width:158px;border-radius:18px;padding:16px 14px;cursor:pointer;position:relative;text-align:center;
+     background:linear-gradient(160deg,#ffffff, #faf8ff);border:1px solid #e7e1fb;
+     box-shadow:0 12px 30px rgba(124,92,255,.18), 0 2px 8px rgba(0,0,0,.05);
+     animation:bob 3.4s ease-in-out infinite;transform-origin:50% 60%;will-change:transform,filter,opacity}
+  .genie::after{content:"";position:absolute;inset:-2px;border-radius:20px;padding:2px;background:linear-gradient(140deg,#7c5cff,#b98bff,#c9a24b);
+     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:.6;pointer-events:none}
+  .genie .orb{width:56px;height:56px;margin:0 auto 10px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+     background:radial-gradient(circle at 35% 30%,#a98bff,#7c5cff 55%,#c9a24b);color:#fff;
+     box-shadow:0 6px 18px rgba(124,92,255,.5), inset 0 0 12px rgba(255,255,255,.35);position:relative}
+  .genie .orb svg{width:30px;height:30px}
+  .genie .orb::before{content:"";position:absolute;inset:-6px;border-radius:50%;background:radial-gradient(circle,rgba(124,92,255,.35),transparent 70%);animation:halo 2.6s ease-in-out infinite}
+  .genie .nm{font-weight:800;font-size:15px;letter-spacing:-.01em}
+  .genie .sb{font-size:11.5px;color:var(--muted);margin-top:2px}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-1.2deg)}50%{transform:translateY(-9px) rotate(1.2deg)}}
+  @keyframes halo{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:.8;transform:scale(1.15)}}
+
+  /* vanish (poof) — quick, smooth shrink to a point + soft blur/fade; bob paused */
+  .genie.poof{animation:none;opacity:0;filter:blur(6px);
+     transform:scale(.1) translateY(-6px);
+     transition:opacity .40s ease-in, filter .40s ease-in, transform .44s cubic-bezier(.55,0,.82,.2)}
+  .genie.hidden{opacity:0;visibility:hidden}
+  /* materialize — grow back from a point with a gentle pop */
+  .genie.materialize{animation:materialize .6s cubic-bezier(.2,.9,.3,1.25)}
+  @keyframes materialize{
+    0%{opacity:0;filter:blur(9px);transform:scale(.12)}
+    60%{opacity:1;filter:blur(2px);transform:scale(1.09)}
+    100%{opacity:1;filter:blur(0);transform:scale(1)}}
+
+  /* smoke particles + ring + glow flash */
+  .smoke{position:fixed;border-radius:50%;pointer-events:none;z-index:80}
+  .ring{position:fixed;border-radius:50%;border:2px solid rgba(150,120,240,.55);pointer-events:none;z-index:79;width:120px;height:120px;box-shadow:0 0 26px rgba(140,110,240,.4)}
+  .glowcore{position:fixed;border-radius:50%;pointer-events:none;z-index:78;
+     background:radial-gradient(circle at 50% 50%, rgba(180,150,255,.65) 0%, rgba(201,162,75,.35) 40%, rgba(124,92,255,.15) 60%, transparent 72%);
+     filter:blur(6px)}
+
+  /* right overlay (plain placeholder) */
+  /* GPU-promoted layer + transform-ONLY transition = one smooth slide (no box-shadow repaint jank).
+     The soft purple edge glow is a static shadow so it never triggers a per-frame repaint. */
+  .overlay{position:fixed;top:0;right:0;bottom:0;width:404px;background:#fff;border-left:1px solid var(--line);z-index:60;
+     transform:translateX(calc(100% + 70px)) translateZ(0);transition:transform .42s cubic-bezier(.22,.9,.3,1);
+     box-shadow:-18px 0 52px rgba(124,92,255,.14);display:flex;flex-direction:column;
+     will-change:transform;backface-visibility:hidden}
+  body.open .overlay{transform:translateX(0) translateZ(0)}
+  .overlay::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,#7c5cff,#c9a24b);opacity:.55}
+  .ov-hd{display:flex;align-items:center;gap:11px;padding:16px;border-bottom:1px solid var(--line)}
+  .ov-hd .orb{width:34px;height:34px;border-radius:10px;background:radial-gradient(circle at 35% 30%,#a98bff,#7c5cff 55%,#c9a24b);color:#fff;display:flex;align-items:center;justify-content:center}
+  .ov-hd .orb svg{width:18px;height:18px}
+  .ov-hd .nm{font-weight:800;font-size:15px;flex:1}
+  .ov-hd .x{width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer;font-size:16px}
+  .ov-body{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);text-align:center;padding:24px}
+  .ov-body span{max-width:240px;font-size:13.5px}
+
+  .note{position:fixed;left:24px;bottom:20px;font-size:12px;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+</style>
+</head>
+<body>
+  <div class="top"><span class="d">✦</span> AImageGen · animation preview</div>
+  <div class="wrap">
+    <h2>Genie summon animation</h2>
+    <div class="hint">Click the floating Genie card → it poofs into smoke and the overlay sweeps in. Close the overlay → Genie re-materialises from smoke.</div>
+    <div class="row">
+      <div class="pcard"><div class="fig"></div><div class="head"></div><span class="lbl">standing front</span></div>
+      <div class="addcard"><div class="plus">＋</div><div class="t">Add pose</div></div>
+
+      <!-- floating Genie card (sits right next to +Add pose) -->
+      <div class="genie-slot">
+        <div class="genie" id="genieCard" onclick="summon()">
+          <div class="orb">
+            <!-- swap this SVG for your real genie icon image (an <img>) -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2l2.3 6.1L20.5 10l-6.2 1.9L12 18l-2.3-6.1L3.5 10l6.2-1.9z"/></svg>
+          </div>
+          <div class="nm">Ask Genie</div>
+          <div class="sb">tap to summon ✨</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- overlay (placeholder only) -->
+  <div class="overlay" id="overlay">
+    <div class="ov-hd"><div class="orb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2l2.3 6.1L20.5 10l-6.2 1.9L12 18l-2.3-6.1L3.5 10l6.2-1.9z"/></svg></div>
+      <div class="nm">Genie</div><button class="x" onclick="dismiss()">✕</button></div>
+    <div class="ov-body"><span>Overlay placeholder — the real Genie chat UI goes here.<br><br>Close me (✕) to watch Genie re-appear from smoke.</span></div>
+  </div>
+
+  <div class="note">Preview: click Genie → smoke out + overlay in · close ✕ → smoke in</div>
+
+<script>
+  const card=document.getElementById('genieCard');
+  // brighter, glowier smoke palette
+  const COLORS=['rgba(178,150,255,.7)','rgba(214,180,110,.6)','rgba(255,255,255,.8)','rgba(150,120,240,.65)','rgba(196,160,255,.7)','rgba(230,215,180,.6)'];
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+
+  function center(){const r=card.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2};}
+
+  function puffs(x,y,gather){
+    const N=18;                                   // lighter → keeps the overlay slide buttery
+    for(let i=0;i<N;i++){
+      const s=document.createElement('div');s.className='smoke';
+      const size=rnd(34,78);s.style.width=s.style.height=size+'px';
+      s.style.left=(x-size/2)+'px';s.style.top=(y-size/2)+'px';
+      const col=COLORS[i%COLORS.length];
+      // glow comes from the bright gradient core (no per-particle box-shadow = no paint jank)
+      s.style.background=`radial-gradient(circle at 50% 45%, ${col} 0%, ${col} 22%, transparent 68%)`;
+      document.body.appendChild(s);
+      const ang=rnd(0,Math.PI*2), dist=rnd(40,110);
+      const dx=Math.cos(ang)*dist, dy=Math.sin(ang)*dist - (gather?0:rnd(55,100));
+      if(gather){
+        s.animate([
+          {transform:`translate(${dx}px,${dy-20}px) scale(1.8)`,opacity:0,filter:'blur(10px)'},
+          {transform:`translate(${dx*.4}px,${dy*.4}px) scale(1.15)`,opacity:.7,offset:.45,filter:'blur(6px)'},
+          {transform:`translate(0px,8px) scale(.2)`,opacity:0,filter:'blur(2px)'}
+        ],{duration:rnd(680,880),easing:'ease-out'}).onfinish=()=>s.remove();
+      }else{
+        s.animate([
+          {transform:`translate(0,0) scale(.5)`,opacity:0,filter:'blur(2px)'},
+          {transform:`translate(${dx*.45}px,${dy*.45}px) scale(1.5)`,opacity:.9,offset:.3,filter:'blur(5px)'},
+          {transform:`translate(${dx}px,${dy}px) scale(3)`,opacity:0,filter:'blur(13px)'}
+        ],{duration:rnd(1000,1450),easing:'cubic-bezier(.15,.6,.2,1)'}).onfinish=()=>s.remove();  // longer, softer fade
+      }
+    }
+  }
+  function glowCore(x,y,gather){
+    const g=document.createElement('div');g.className='glowcore';
+    const S=190;g.style.width=g.style.height=S+'px';g.style.left=(x-S/2)+'px';g.style.top=(y-S/2)+'px';
+    document.body.appendChild(g);
+    const from=gather?{transform:'scale(1.8)',opacity:0,filter:'blur(14px)'}:{transform:'scale(.25)',opacity:.9,filter:'blur(4px)'};
+    const to  =gather?{transform:'scale(.3)',opacity:0,filter:'blur(4px)'}:{transform:'scale(2.4)',opacity:0,filter:'blur(16px)'};
+    g.animate([from,{opacity:gather?.7:.85,offset:.35},to],{duration:gather?640:760,easing:'ease-out'}).onfinish=()=>g.remove();
+  }
+  function ring(x,y){
+    const d=document.createElement('div');d.className='ring';
+    d.style.left=(x-60)+'px';d.style.top=(y-60)+'px';document.body.appendChild(d);
+    d.animate([{transform:'scale(.2)',opacity:.6},{transform:'scale(2.8)',opacity:0}],{duration:680,easing:'ease-out'}).onfinish=()=>d.remove();
+  }
+
+  function summon(){
+    if(document.body.classList.contains('open'))return;
+    const {x,y}=center();
+    card.classList.remove('materialize');
+    card.classList.add('poof');
+    glowCore(x,y,false); puffs(x,y,false); ring(x,y);
+    setTimeout(()=>document.body.classList.add('open'),150);   // overlay sweeps in
+    setTimeout(()=>{card.classList.add('hidden');card.classList.remove('poof');},470);
+  }
+  function dismiss(){
+    document.body.classList.remove('open');                    // overlay sweeps out
+    setTimeout(()=>{
+      const {x,y}=center();
+      card.classList.remove('hidden');
+      card.classList.add('materialize');
+      glowCore(x,y,true); puffs(x,y,true);
+      setTimeout(()=>card.classList.remove('materialize'),640);
+    },150);
+  }
+</script>
+</body>
+</html>

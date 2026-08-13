@@ -24,14 +24,30 @@ import { logEvent } from './logs';
 import { pushResult, patchJob, finishJob } from './jobs';
 import { BASE_MODEL_ID, HERO_MODEL_ID } from './config';
 import {
+  buildEnsemblePrompt,
+  buildSameGarmentPrompt,
+  VIEW_TRUTH,
+  viewLabel,
+  isViewRole,
+  asRole,
+  type RefMode,
+  type RefRole,
+  type EnsembleRole,
+  type GarmentRole,
+} from './ensemble';
+import {
   KID_CATS,
   GENDER_BY_CAT,
   LOOKS,
   MALE_LOOKS,
   buildPrompt,
   buildPosePrompt,
+  poseView,
+  type PoseRef,
   buildSavedModelHeroPrompt,
   HEAD_COMPLETE_PROMPT,
+  stylePhrase,
+  FRAMING,
 } from './prompts';
 import type { ShootDoc, ShootOpts, Resolution } from './types';
 
@@ -103,6 +119,42 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
   if (shoot.hero_file && !o.isHero) {
     heroBytes = await storage.get(shootKey(o.pid, shoot.hero_file));
   }
+
+  /**
+   * Tagged references for whatever angle this pose reveals.
+   *
+   * The hero is a front shot, so it is authoritative for the front and nothing
+   * more. Any pose that moves the camera — round the back, to a profile, in to
+   * a detail — is asking for information the hero does not contain, and the
+   * prompt otherwise has to admit that angle is unknown. If the shoot tagged a
+   * photo of it, send that photo instead of leaving it to invention.
+   *
+   * Works in both modes: a view role means the same thing in either list, and a
+   * detail pose also takes the label frame, which is where lettering lives.
+   */
+  const poseRefBytes: Buffer[] = [];
+  const poseRefDescs: PoseRef[] = [];
+
+  if (!o.isHero && shoot.refs?.length) {
+    const view = poseView(o.pose);
+    if (view) {
+      // A close-up wants the label too — that is where print and lettering are.
+      const wanted = view === 'detail' ? ['detail', 'label'] : [view];
+      for (const want of wanted) {
+        const ref = shoot.refs.find((r) => r.role === want);
+        if (!ref) continue;
+        const bytes = await storage.get(shootKey(o.pid, ref.file));
+        if (!bytes) continue;
+        poseRefBytes.push(bytes);
+        if (isViewRole(ref.role)) {
+          poseRefDescs.push({ label: viewLabel(ref.role), truth: VIEW_TRUTH[ref.role] });
+        }
+      }
+    }
+  }
+
+  // Ordered first by geminiGenerate, so they are Images 1..N and the hero N+1.
+  const poseRefs = poseRefBytes.length ? poseRefBytes : null;
 
   /** Persist the image, charge the wallet, log the event, report the result. */
   const saveAndCharge = async (
@@ -177,6 +229,8 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
     prompt: string,
     gBytes: Buffer | null,
     hBytes: Buffer | null,
+    /** Ensemble references, sent BEFORE the model frame so it is "Image N+1". */
+    refBytes: Buffer[] | null = null,
   ): Promise<{ raw: Buffer; seed: number; attempt: number; usage: Record<string, unknown> } | null> => {
     const mid = opts.model_id || '-';
     // The hero shot uses the stronger flash-image model; extra poses use the
@@ -189,6 +243,7 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
       try {
         const out = await produce({
           prompt,
+          refs: refBytes,
           garment: gBytes,
           hero: hBytes,
           seed: sd,
@@ -264,6 +319,111 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
       return;
     }
 
+    // ── multi-reference hero ────────────────────────────────────────
+    //
+    // Either several angles of ONE garment, or several DIFFERENT items
+    // assembled into one look. Both send N tagged references instead of a
+    // single garment photo.
+    //
+    // Checked BEFORE the saved-model branch below, because that branch's prompt
+    // is hardcoded to "Image 1 = garment, Image 2 = model" and only ever
+    // receives one garment — a multi-reference shoot falling into it would
+    // silently use the first image and drop the rest.
+    //
+    // Only the hero differs. Once it lands it is an ordinary hero, and every
+    // later pose is generated from it like any other shoot — which is what
+    // keeps the garment or assembled look locked without re-sending anything.
+    if (o.isHero && shoot.refs?.length) {
+      const refMode: RefMode =
+        opts.input_family === 'ensemble' ? 'ensemble' : 'same_garment';
+
+      const refBytes: Buffer[] = [];
+      const roles: RefRole[] = [];
+      for (const r of shoot.refs) {
+        const b = await storage.get(shootKey(o.pid, r.file));
+        // Skip a missing file rather than shifting every later reference up a
+        // slot — the prompt numbers them positionally, so a silent shift would
+        // put the shoes where the sunglasses should be.
+        if (!b) continue;
+        refBytes.push(b);
+        roles.push(asRole(r.role, refMode));
+      }
+
+      if (!refBytes.length) {
+        pushResult(o.jobId, { pose: o.pose, error: 'Reference images are missing.' });
+        return;
+      }
+
+      const gender = GENDER_BY_CAT[category] ?? 'female';
+      const child = gender === 'child';
+
+      /** Same shape either way; only the wording and the role list differ. */
+      const heroPrompt = (anchored: boolean) =>
+        refMode === 'ensemble'
+          ? buildEnsemblePrompt({
+              roles: roles as EnsembleRole[],
+              who: anchored
+                ? ''
+                : child
+                  ? 'a young child fashion model, age-appropriate and fully clothed'
+                  : stylePhrase(opts.style, gender, look),
+              scene: opts.scene ?? '',
+              framing: FRAMING[fr] ?? FRAMING.three_quarter,
+              anchored,
+              child,
+            })
+          : buildSameGarmentPrompt({
+              roles: roles as GarmentRole[],
+              who: anchored
+                ? ''
+                : child
+                  ? 'a young child fashion model, age-appropriate and fully clothed'
+                  : stylePhrase(opts.style, gender, look),
+              scene: opts.scene ?? '',
+              framing: FRAMING[fr] ?? FRAMING.three_quarter,
+              anchored,
+              child,
+            });
+
+      // A saved model anchors the face: its character-sheet frame goes in after
+      // the references, so the prompt can call it "Image N+1".
+      if (opts.model_id) {
+        const frontFrame = await latestCharsheetFrontFrame(opts.model_id);
+        if (!frontFrame) {
+          pushResult(o.jobId, {
+            pose: o.pose,
+            error: 'Selected model has no character sheet — generate one first.',
+          });
+          return;
+        }
+
+        const r = await produceAnchored(heroPrompt(true), null, frontFrame, refBytes);
+        if (!r) {
+          pushResult(o.jobId, { pose: o.pose, error: ANCHOR_FAIL_MSG });
+        } else {
+          await saveAndCharge(r.raw, {
+            seedUsed: r.seed,
+            attempt: r.attempt,
+            modelOverride: opts.model_id,
+            usage: r.usage,
+          });
+        }
+        return;
+      }
+
+      const out = await produce({
+        prompt: heroPrompt(false),
+        refs: refBytes,
+        seed: shoot.seed,
+        ar,
+        allowRevealing: allowRev,
+        pose: o.pose,
+        imageSize: res,
+      });
+      await saveAndCharge(out.image, { usage: { ...out.usage } });
+      return;
+    }
+
     // ── hero, anchored to a saved model ──
     if (o.isHero && opts.model_id) {
       const frontFrame = await latestCharsheetFrontFrame(opts.model_id);
@@ -320,9 +480,10 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
     // ── extra pose on a saved-model shoot ──
     if (opts.model_id) {
       const r = await produceAnchored(
-        buildPosePrompt(o.pose, fr, o.scene ?? ''),
+        buildPosePrompt(o.pose, fr, o.scene ?? '', poseRefDescs),
         null,
         heroBytes,
+        poseRefs,
       );
       if (!r) {
         pushResult(o.jobId, { pose: o.pose, error: ANCHOR_FAIL_MSG });
@@ -340,7 +501,8 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
     // ── extra pose on an imagined-model shoot ──
     try {
       const out = await produce({
-        prompt: buildPosePrompt(o.pose, fr, o.scene ?? ''),
+        prompt: buildPosePrompt(o.pose, fr, o.scene ?? '', poseRefDescs),
+        refs: poseRefs,
         garment: null,
         hero: heroBytes,
         seed: shoot.seed,

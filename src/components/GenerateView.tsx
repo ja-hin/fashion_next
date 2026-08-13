@@ -159,7 +159,9 @@ export default function GenerateView({
           />
         )}
 
-        {pid && !batchMode && <GenieCard onClick={() => setGenieOpen(true)} />}
+        {pid && !batchMode && (
+          <GenieCard open={genieOpen} onClick={() => setGenieOpen(true)} />
+        )}
       </div>
 
       {/* The grid-level Genie has no pose card to fill, so everything it hands
