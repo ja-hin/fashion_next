@@ -45,12 +45,9 @@ export const POST = handler(async (req: Request) => {
     }
   }
 
+  // Two independent axes: what the photo IS, and how the references relate.
   const family = str(fd, 'input_family', 'garment_in') as ShootOpts['input_family'];
-  const ensemble = family === 'ensemble';
-  // Same-garment shoots keep input_family 'garment_in' — they are still one
-  // garment, just photographed from several angles — so the mode is decided by
-  // whether tagged references were sent rather than by a new family value.
-  const refMode: RefMode = ensemble ? 'ensemble' : 'same_garment';
+  const refMode: RefMode = str(fd, 'ref_mode') === 'ensemble' ? 'ensemble' : 'same_garment';
 
   /**
    * An ensemble hero is built from several tagged product shots rather than one
@@ -59,6 +56,7 @@ export const POST = handler(async (req: Request) => {
    * 2"… so upload order is the manifest and must survive intact.
    */
   let refs: Array<{ bytes: Buffer; role: RefRole }> = [];
+
   const sentRefs = fd.getAll('refs').some((f) => f instanceof File && f.size > 0);
   if (sentRefs) {
     const files = fd.getAll('refs').filter((f): f is File => f instanceof File && f.size > 0);
@@ -112,6 +110,7 @@ export const POST = handler(async (req: Request) => {
     aspect: str(fd, 'aspect', '4:5'),
     framing: str(fd, 'framing', 'three_quarter'),
     input_family: family,
+    ref_mode: refMode,
     allow_revealing: bool(fd, 'allow_revealing'),
     model_id: modelId,
     resolution,

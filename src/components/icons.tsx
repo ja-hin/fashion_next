@@ -164,6 +164,14 @@ export const GridIcon = ({ className = 'w-5 h-5' }: P) => (
   </svg>
 );
 
+/** My Garments — a t-shirt outline. */
+export const ShirtIcon = ({ className = 'w-4 h-4' }: P) => (
+  <svg viewBox="0 0 24 24" className={className} {...stroke}>
+    <path d="M9 3L5 5 3 9l3 1v10h12V10l3-1-2-4-4-2" />
+    <path d="M9 3a3 3 0 0 0 6 0" />
+  </svg>
+);
+
 /** The Generate tab — a wand with a spark. */
 export const WandIcon = ({ className = 'w-4 h-4' }: P) => (
   <svg viewBox="0 0 24 24" className={className} {...stroke}>

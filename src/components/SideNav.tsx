@@ -1,23 +1,24 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { fmt } from '@/lib/client/api';
 import {
   WandIcon,
   ImagesIcon,
   PersonPlusIcon,
+  ShirtIcon,
   PersonIcon,
   ChartIcon,
   PlusCircleIcon,
   ReceiptIcon,
   DocIcon,
   SlidersIcon,
+  CoinsIcon,
   ChevronLeftIcon,
 } from './icons';
 import type { Me } from '@/lib/client/types';
-
-const RAIL_KEY = 'studio.navRailed';
 
 type Item = { href: string; label: string; Icon: (p: { className?: string }) => React.ReactElement };
 
@@ -25,6 +26,7 @@ type Item = { href: string; label: string; Icon: (p: { className?: string }) => 
 const MAIN: Item[] = [
   { href: '/generate', label: 'Generate', Icon: WandIcon },
   { href: '/gallery', label: 'Gallery', Icon: ImagesIcon },
+  { href: '/garments', label: 'My Garments', Icon: ShirtIcon },
   { href: '/models', label: 'My Models', Icon: PersonPlusIcon },
 ];
 
@@ -51,26 +53,30 @@ const ADMIN: Item[] = [
  * Lives in the shell rather than a page so it survives navigation, and is
  * hidden below `lg` where the TopBar menu already carries the same links.
  *
- * Navigation only — the credit balance lives in the TopBar, where it is visible
- * at every breakpoint and on every page. Showing the same number twice on one
- * screen invites the two to disagree after a generation.
+ * The balance appears here as well as in the TopBar. Both render the same
+ * `balance` from StudioContext, so they cannot drift apart — the rail copy is
+ * simply the one in reach while you are choosing where to go next.
  */
-export default function SideNav({ me }: { me: Me }) {
+export default function SideNav({
+  me,
+  balance,
+  railed,
+  onRailed,
+}: {
+  me: Me;
+  balance: number;
+  railed: boolean;
+  onRailed: (v: boolean) => void;
+}) {
   const pathname = usePathname();
 
-  // Reading localStorage during render would desync the server and client
-  // markup, so the stored preference is adopted after mount.
-  const [railed, setRailed] = useState(false);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    setRailed(localStorage.getItem(RAIL_KEY) === '1');
-    setReady(true);
-  }, []);
-
-  useEffect(() => {
-    if (ready) localStorage.setItem(RAIL_KEY, railed ? '1' : '0');
-  }, [railed, ready]);
+  /**
+   * A temporary hover expansion. Deliberately NOT the stored preference: a
+   * pointer crossing the rail on its way somewhere else should not silently
+   * change a setting the user chose.
+   */
+  const [peek, setPeek] = useState(false);
+  const wide = !railed || peek;
 
   const items = [...MAIN];
   const lower = [...ACCOUNT, ...(me.admin ? ADMIN : [])];
@@ -84,20 +90,20 @@ export default function SideNav({ me }: { me: Me }) {
       <Link
         key={href}
         href={href}
-        title={railed ? label : undefined}
+        title={!wide ? label : undefined}
         aria-current={active ? 'page' : undefined}
         className={`flex items-center rounded-[10px] transition-colors ${
-          railed ? 'flex-col justify-center gap-1 px-1 py-2' : 'gap-2.5 px-3 py-2'
+          !wide ? 'flex-col justify-center gap-1 px-1 py-2' : 'gap-2.5 px-3 py-2'
         } ${
           active
             ? 'bg-accent text-white'
             : 'text-muted hover:bg-surface2 hover:text-ink'
         }`}
       >
-        <Icon className={railed ? 'h-[18px] w-[18px]' : 'h-4 w-4'} />
+        <Icon className={!wide ? 'h-[18px] w-[18px]' : 'h-4 w-4'} />
         <span
           className={
-            railed
+            !wide
               ? 'max-w-full truncate text-[9.5px] font-semibold leading-none'
               : 'truncate text-[13px] font-semibold'
           }
@@ -109,25 +115,36 @@ export default function SideNav({ me }: { me: Me }) {
   }
 
   return (
-    <nav
-      aria-label="Studio"
-      className={`hidden flex-shrink-0 flex-col overflow-y-auto border-r border-line bg-bg lg:flex ${
-        railed ? 'w-[76px] px-2 py-3' : 'w-[212px] px-3 py-3'
-      }`}
+    // The outer slot holds the collapsed footprint; the nav itself is absolute
+    // so a hover peek floats OVER the page instead of shoving the results grid
+    // sideways every time the pointer passes.
+    <div
+      className={`relative hidden flex-shrink-0 lg:block ${railed ? 'w-[76px]' : 'w-[212px]'}`}
     >
-      <div className={`mb-2 flex items-center ${railed ? 'justify-center' : ''}`}>
-        {!railed && (
+      <nav
+        aria-label="Studio"
+        onMouseEnter={() => railed && setPeek(true)}
+        onMouseLeave={() => setPeek(false)}
+        className={`absolute inset-y-0 left-0 z-30 flex flex-col overflow-y-auto border-r border-line bg-bg transition-[width] duration-200 ${
+          !wide ? 'w-[76px] px-2 py-3' : 'w-[212px] px-3 py-3'
+        } ${peek ? 'shadow-pop' : ''}`}
+      >
+      <div className={`mb-2 flex items-center ${!wide ? 'justify-center' : ''}`}>
+        {wide && (
           <span className="px-1 text-[10px] font-bold uppercase tracking-[0.1em] text-muted">
             Studio
           </span>
         )}
         <button
-          onClick={() => setRailed((v) => !v)}
-          title={railed ? 'Expand sidebar' : 'Collapse sidebar'}
-          aria-label={railed ? 'Expand sidebar' : 'Collapse sidebar'}
+          onClick={() => {
+            onRailed(!railed);
+            setPeek(false);
+          }}
+          title={railed ? 'Keep sidebar open' : 'Collapse sidebar'}
+          aria-label={railed ? 'Keep sidebar open' : 'Collapse sidebar'}
           aria-expanded={!railed}
           className={`flex h-[28px] w-[28px] items-center justify-center rounded-lg text-muted transition hover:bg-surface2 hover:text-ink ${
-            railed ? '' : 'ml-auto'
+            !wide ? '' : 'ml-auto'
           }`}
         >
           <ChevronLeftIcon className={`h-4 w-4 ${railed ? 'rotate-180' : ''}`} />
@@ -148,6 +165,28 @@ export default function SideNav({ me }: { me: Me }) {
         ))}
       </div>
 
-    </nav>
+      {/* Pinned to the foot, and a link because "I'm low" and "top me up" are
+          the same thought. */}
+      <Link
+        href="/recharge"
+        title={`${fmt(balance)} credits — tap to recharge`}
+        className={`mt-auto flex flex-shrink-0 items-center rounded-[10px] border border-accent/40 bg-accent-soft text-accent transition hover:border-accent ${
+          !wide ? 'flex-col justify-center gap-0.5 px-1 py-2' : 'gap-2 px-3 py-2'
+        }`}
+      >
+        <CoinsIcon className="h-4 w-4 flex-shrink-0" />
+        <span className="truncate text-[13px] font-bold tabular-nums">{fmt(balance)}</span>
+        <span
+          className={
+            !wide
+              ? 'text-[8.5px] font-bold uppercase leading-none text-muted'
+              : 'text-[10px] font-bold uppercase text-muted'
+          }
+        >
+          credits
+        </span>
+        </Link>
+      </nav>
+    </div>
   );
 }

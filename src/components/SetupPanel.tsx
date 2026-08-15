@@ -20,6 +20,8 @@ import type { SavedModel } from '@/lib/client/types';
 export interface SetupState {
   category: string;
   input_family: string;
+  /** Several angles of one garment, or several different items. */
+  ref_mode: 'same_garment' | 'ensemble';
   style: string;
   framing: string;
   aspect: string;
@@ -32,6 +34,7 @@ export interface SetupState {
 export const DEFAULT_SETUP: SetupState = {
   category: 'womenswear',
   input_family: 'garment_in',
+  ref_mode: 'same_garment',
   style: 'european',
   framing: 'three_quarter',
   aspect: '4:5',
@@ -50,6 +53,10 @@ interface Props {
   onEnsembleAdd: (files: File[]) => void;
   /** Reopen the tagging window for what is already there. */
   onEnsembleOpen: () => void;
+  /** Keep the tagged references as a reusable garment. */
+  onSaveGarment: () => void;
+  /** Open the library and start from something already tagged. */
+  onPickGarment: () => void;
   modelSource: 'imagine' | 'saved';
   onModelSource: (s: 'imagine' | 'saved') => void;
   selectedModel: SavedModel | null;
@@ -74,6 +81,8 @@ export default function SetupPanel({
   ensemble,
   onEnsembleAdd,
   onEnsembleOpen,
+  onSaveGarment,
+  onPickGarment,
   modelSource,
   onModelSource,
   selectedModel,
@@ -90,7 +99,7 @@ export default function SetupPanel({
   const usingSaved = modelSource === 'saved' && !isExtend;
   const showResHint = (setup.resolution === '2K' || setup.resolution === '4K') && !usingSaved;
 
-  const isEnsemble = setup.input_family === 'ensemble';
+  const isEnsemble = setup.ref_mode === 'ensemble';
 
   return (
     <aside className="w-[336px] px-[22px] pb-[30px] pl-6 pt-[22px]">
@@ -118,16 +127,24 @@ export default function SetupPanel({
       <div className="mb-3 flex gap-1 rounded-[10px] bg-surface2 p-1">
         {(
           [
-            ['garment_in', 'Same garment'],
+            ['same_garment', 'Same garment'],
             ['ensemble', 'Ensemble'],
           ] as const
         ).map(([value, label]) => {
-          const on = isEnsemble ? value === 'ensemble' : value === 'garment_in';
+          const on = setup.ref_mode === value;
           return (
             <button
               key={value}
               type="button"
-              onClick={() => onSetup({ input_family: value })}
+              onClick={() =>
+                onSetup({
+                  ref_mode: value,
+                  // "Extend" means the uploaded photo IS already the hero, which
+                  // cannot be true of several separate product shots. Move off it
+                  // rather than leaving a combination that silently skips assembly.
+                  ...(value === 'ensemble' && isExtend ? { input_family: 'garment_in' } : {}),
+                })
+              }
               className={`flex-1 rounded-[7px] px-2 py-[7px] text-[12px] font-bold transition ${
                 on ? 'bg-surface text-ink shadow-card' : 'text-muted hover:text-ink'
               }`}
@@ -143,7 +160,17 @@ export default function SetupPanel({
         refs={ensemble}
         onAdd={onEnsembleAdd}
         onOpen={onEnsembleOpen}
+        onPickSaved={onPickGarment}
       />
+
+      {ensemble.length > 0 && (
+        <button
+          onClick={onSaveGarment}
+          className="mb-4 -mt-2 w-full rounded-[9px] border border-line bg-surface2 p-[8px] text-[11.5px] font-bold text-ink hover:border-accent hover:text-accent"
+        >
+          ♡ Save to My Garments
+        </button>
+      )}
 
       <div className="mb-[13px] flex gap-2.5">
         <div className="flex-1">
@@ -154,19 +181,18 @@ export default function SetupPanel({
             options={CATEGORIES}
           />
         </div>
-        {/* The tabs above already set input_family for an ensemble, and
-            "ensemble" is not one of this list's options — showing it here would
-            render an empty select and let the user silently break the mode. */}
-        {!isEnsemble && (
-          <div className="flex-1">
-            <label className="lbl">Input</label>
-            <Select
-              value={setup.input_family}
-              onChange={(v) => onSetup({ input_family: v })}
-              options={INPUT_FAMILIES}
-            />
-          </div>
-        )}
+        <div className="flex-1">
+          <label className="lbl">Input</label>
+          <Select
+            value={setup.input_family}
+            onChange={(v) => onSetup({ input_family: v })}
+            // An ensemble has no single photo that already shows the model, so
+            // "Extend" is not offered there — the rest apply to both modes.
+            options={
+              isEnsemble ? INPUT_FAMILIES.filter(([v]) => v !== 'extend') : INPUT_FAMILIES
+            }
+          />
+        </div>
       </div>
 
       <Field label="Model" dim={isExtend}>

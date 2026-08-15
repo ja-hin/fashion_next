@@ -334,8 +334,9 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
     // later pose is generated from it like any other shoot — which is what
     // keeps the garment or assembled look locked without re-sending anything.
     if (o.isHero && shoot.refs?.length) {
+      // Older shoots stored the mode in input_family; read that as a fallback.
       const refMode: RefMode =
-        opts.input_family === 'ensemble' ? 'ensemble' : 'same_garment';
+        opts.ref_mode ?? (opts.input_family === 'ensemble' ? 'ensemble' : 'same_garment');
 
       const refBytes: Buffer[] = [];
       const roles: RefRole[] = [];

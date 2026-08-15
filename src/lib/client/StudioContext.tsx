@@ -1,8 +1,11 @@
 'use client';
 
+/** localStorage key behind the nav's collapsed preference. */
+const NAV_RAIL_KEY = 'studio.navRailed';
+
 import type { EnsembleRef } from './ensemble-types';
 
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { getJson } from './api';
 import { useShoot, type ShootApi } from './useShoot';
 import { useDialog } from '@/components/Dialog';
@@ -57,6 +60,19 @@ interface StudioValue {
 
   modelsRefresh: number;
   bumpModels: () => void;
+
+  garmentsRefresh: number;
+  bumpGarments: () => void;
+
+  /**
+   * Whether the left nav is collapsed to its icon rail.
+   *
+   * Lives here rather than inside SideNav because pages need to close it —
+   * starting a shoot hands the screen over to the results grid, and the nav is
+   * not what you are looking at next.
+   */
+  navRailed: boolean;
+  setNavRailed: (v: boolean) => void;
 }
 
 const Ctx = createContext<StudioValue | null>(null);
@@ -89,6 +105,19 @@ export function StudioProvider({
   const [lightbox, setLightbox] = useState<{ items: LbItem[]; index: number } | null>(null);
   const [saveModelPid, setSaveModelPid] = useState<string | null>(null);
   const [modelsRefresh, setModelsRefresh] = useState(0);
+  const [garmentsRefresh, setGarmentsRefresh] = useState(0);
+
+  // Starts open and adopts the stored preference after mount: reading
+  // localStorage during render would desync the server and client markup.
+  const [navRailed, setNavRailed] = useState(false);
+  const [navReady, setNavReady] = useState(false);
+  useEffect(() => {
+    setNavRailed(localStorage.getItem(NAV_RAIL_KEY) === '1');
+    setNavReady(true);
+  }, []);
+  useEffect(() => {
+    if (navReady) localStorage.setItem(NAV_RAIL_KEY, navRailed ? '1' : '0');
+  }, [navRailed, navReady]);
 
   const onError = useCallback((msg: string) => void dialog.alert(msg), [dialog]);
   const shoot = useShoot(onError);
@@ -156,6 +185,10 @@ export function StudioProvider({
       closeSaveModel: () => setSaveModelPid(null),
       modelsRefresh,
       bumpModels: () => setModelsRefresh((n) => n + 1),
+      garmentsRefresh,
+      bumpGarments: () => setGarmentsRefresh((n) => n + 1),
+      navRailed,
+      setNavRailed,
     }),
     [
       me,
@@ -174,6 +207,8 @@ export function StudioProvider({
       lightbox,
       saveModelPid,
       modelsRefresh,
+      garmentsRefresh,
+      navRailed,
     ],
   );
 

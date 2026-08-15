@@ -9,6 +9,7 @@
  * Keys look like:
  *    outputs/<pid>/<filename>     generated shoot images + the garment reference
  *    models/<mid>/<filename>      a saved model's reference images
+ *    garments/<gid>/<filename>    a saved garment's tagged reference images
  *
  * Those key paths are also the public URL paths (`/outputs/...`, `/models/...`),
  * which keeps every URL already stored in migrated log rows working unchanged.
@@ -140,6 +141,11 @@ export const modelKey = (mid: string, file: string) =>
 
 export const modelPrefix = (mid: string) => `models/${mid}`;
 
+export const garmentKey = (gid: string, file: string) =>
+  `garments/${gid}/${baseName(file)}`;
+
+export const garmentPrefix = (gid: string) => `garments/${gid}`;
+
 /** Public, browser-facing URL for a storage key. */
 export const publicUrl = (key: string) => `/${key}`;
 
@@ -148,3 +154,6 @@ export const shootUrl = (pid: string, file: string) =>
 
 export const modelUrl = (mid: string, file: string) =>
   publicUrl(modelKey(mid, file));
+
+export const garmentUrl = (gid: string, file: string) =>
+  publicUrl(garmentKey(gid, file));

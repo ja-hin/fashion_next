@@ -46,7 +46,12 @@ function Chrome({ children }: { children: React.ReactNode }) {
       )}
 
       <div className="flex flex-1 overflow-hidden">
-        <SideNav me={s.me} />
+        <SideNav
+          me={s.me}
+          balance={s.balance}
+          railed={s.navRailed}
+          onRailed={s.setNavRailed}
+        />
         {children}
       </div>
 

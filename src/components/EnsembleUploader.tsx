@@ -21,12 +21,15 @@ export default function EnsembleUploader({
   refs,
   onAdd,
   onOpen,
+  onPickSaved,
 }: {
   mode: RefMode;
   refs: EnsembleRef[];
   /** Files dropped straight onto the panel — the modal opens to tag them. */
   onAdd: (files: File[]) => void;
   onOpen: () => void;
+  /** Open the library instead of uploading. */
+  onPickSaved: () => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -82,6 +85,7 @@ export default function EnsembleUploader({
   }
 
   return (
+    <>
     <div
       onClick={() => inputRef.current?.click()}
       onDragOver={(e) => {
@@ -117,5 +121,21 @@ export default function EnsembleUploader({
         onChange={(e) => take(e.target.files)}
       />
     </div>
+
+    {/* After the first few shoots the garment you want is usually already
+        saved, and hunting for the files again is redoing the work the library
+        exists to avoid. */}
+    <div className="mb-4 mt-2 flex items-center gap-2">
+      <span className="h-px flex-1 bg-line" />
+      <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-muted">or</span>
+      <span className="h-px flex-1 bg-line" />
+    </div>
+    <button
+      onClick={onPickSaved}
+      className="mb-4 -mt-2 w-full rounded-[9px] border border-accent/40 bg-accent-soft p-[9px] text-[12px] font-bold text-accent hover:border-accent"
+    >
+      ♡ Use a saved garment
+    </button>
+    </>
   );
 }

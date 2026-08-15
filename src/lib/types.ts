@@ -7,7 +7,7 @@
  */
 
 import type { BillingConfig } from './pricing';
-import type { RefRole } from './ensemble';
+import type { RefRole, RefMode } from './ensemble';
 
 export type Resolution = '1K' | '2K' | '4K';
 export type ShootMode = 'imagine' | 'saved';
@@ -106,7 +106,21 @@ export interface ShootOpts {
   scene: string;
   aspect: string;
   framing: string;
+  /**
+   * What the uploaded photo IS — a garment to try on, a shot that already has a
+   * model, or one to recast. Independent of `ref_mode`.
+   *
+   * 'ensemble' is legacy: the mode used to be stored here, which meant picking
+   * it destroyed the user's real input choice. Kept in the union so shoots
+   * written before the split still load; nothing writes it any more.
+   */
   input_family: 'garment_in' | 'extend' | 'recast' | 'ensemble';
+  /**
+   * How the tagged references relate to each other — several angles of ONE
+   * garment, or several DIFFERENT items to assemble. Absent on older shoots,
+   * where it is inferred from input_family.
+   */
+  ref_mode?: RefMode;
   allow_revealing: boolean;
   model_id: string;
   resolution: Resolution;
@@ -141,6 +155,41 @@ export interface ShootDoc {
   hero_file: string | null;
   manifest: ManifestItem[];
   created: string;
+}
+
+// ── saved garments ──────────────────────────────────────────────────
+
+/**
+ * A reusable garment: one product, photographed from several angles and tagged
+ * once, so it can anchor any number of later shoots without re-uploading.
+ *
+ * Deliberately the same shape a shoot consumes (see lib/ensemble.ts) — a saved
+ * garment IS a set of tagged references, so "use this" is a copy rather than a
+ * conversion. `mode` records which kind it is: several angles of one garment,
+ * or a whole assembled look.
+ */
+export interface GarmentDoc {
+  _id: string; // gid
+  name: string;
+  owner: string;
+  owner_email: string;
+  created: string;
+  /** Pre-fills the shoot's category when the garment is used. */
+  category: string;
+  mode: RefMode;
+  refs: Array<{ file: string; role: RefRole }>;
+}
+
+/** A saved garment as sent to the browser (adds resolved URLs). */
+export interface PublicGarment {
+  id: string;
+  name: string;
+  created: string;
+  category: string;
+  mode: RefMode;
+  thumb: string;
+  ref_count: number;
+  refs: Array<{ file: string; role: RefRole; url: string }>;
 }
 
 // ── saved models ────────────────────────────────────────────────────

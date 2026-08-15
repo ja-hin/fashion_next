@@ -12,6 +12,7 @@ import type {
   SessionDoc,
   ShootDoc,
   ModelDoc,
+  GarmentDoc,
   LogDoc,
   SettingsDoc,
   OrderDoc,
@@ -53,6 +54,9 @@ export async function shoots(): Promise<Collection<ShootDoc>> {
 }
 export async function savedModels(): Promise<Collection<ModelDoc>> {
   return (await getDb()).collection<ModelDoc>('models');
+}
+export async function garments(): Promise<Collection<GarmentDoc>> {
+  return (await getDb()).collection<GarmentDoc>('garments');
 }
 export async function logs(): Promise<Collection<LogDoc>> {
   return (await getDb()).collection<LogDoc>('logs');
