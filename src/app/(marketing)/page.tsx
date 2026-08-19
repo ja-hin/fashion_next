@@ -439,7 +439,7 @@ export default async function LandingPage() {
       {/* Sits straight after the challenge→solution beat: the narrative has
           just claimed a garment becomes a shoot, and this shows it happening.
           Built and driven by landing.js. */}
-      <section className="darkroom" id="darkroom">
+      {/* <section className="darkroom" id="darkroom">
         <div className="wrap">
           <span className="eyebrow">The darkroom · every frame develops as it passes the light</span>
           <h2 className="sec-h2">Watch the film develop.</h2>
@@ -462,7 +462,7 @@ export default async function LandingPage() {
           <span className="slbl">Raw negative → developed · AImageGen reel 01</span>
           <span className="slbl">Drag to scrub · scroll to speed up</span>
         </div>
-      </section>
+      </section> */}
 
       {/* ── casting matrix ── */}
       {/* Follows the darkroom: that panel proves one garment becomes a finished
@@ -476,7 +476,7 @@ export default async function LandingPage() {
           <p className="sec-p">
             Thirty frames, one garment. Five models from five continents, six setups each — flipping
             past at shutter speed so you can feel the <b>range</b>. Every frame in a row is the{' '}
-            <b>same face</b>. Hover to pause; click any thumbnail to jump.
+            <b>same face</b>. Hover a thumbnail to pause; click it to jump.
           </p>
 
           <div className="lr-box" id="panel">
@@ -562,6 +562,31 @@ export default async function LandingPage() {
           </div>
         </div>
       </section>
+      {/* ── the output: stills become reels ── */}
+      {/* A fan of frames from one shoot, each holding a clip. Hovering a card
+          straightens it out of the arc and plays it; leaving puts it back.
+          Cards, imagery and the arc geometry all come from landing.js — the
+          angles depend on the rendered card width, so they cannot be static
+          CSS. */}
+      <section className="reels" id="reels">
+        <div className="wrap reels-head rv">
+          <span className="eyebrow">The output</span>
+          <h2>
+            Turn a photoshoot into <em>scroll-stopping video</em>.
+          </h2>
+          <p className="sec-p">
+            Every card here is one frame in time — a single still brought to life, moment by
+            moment, into a reel your feed cannot scroll past.
+          </p>
+        </div>
+        {/* Outside .wrap: the arc is wider than the text column by design, and
+            the outer frames are meant to run off the edge of the screen. */}
+        <div className="reel-arc" id="reelArc" />
+        <div className="wrap">
+          <p className="reel-hint" id="reelHint">Hover a frame to play it</p>
+        </div>
+      </section>
+
       {/* ── built for brands at every stage ── */}
       {/* A category deck: pills choose, three cards fan with the chosen one
           upright. Pills, cards and imagery all come from landing.js. */}

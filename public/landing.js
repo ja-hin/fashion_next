@@ -535,8 +535,19 @@ const STRIP_ITEMS=[
     timer=setInterval(()=>{if(!paused)show((cur+1)%TOTAL);},STEP);
   }
 
-  panel.addEventListener("mouseenter",()=>{paused=true;pauseState.textContent="PAUSED — HOVERING";});
-  panel.addEventListener("mouseleave",()=>{paused=false;pauseState.textContent="PLAYING";});
+  /* Only the thumbnails hold the reel. Pausing on the whole panel meant the
+     cycle stopped the moment the pointer crossed the loupe, the caption or the
+     surrounding white — so simply reading the section froze the thing it was
+     there to demonstrate. The grid is the part you stop on to study, so the
+     grid is the part that pauses. */
+  function setPaused(on){
+    paused=on;
+    pauseState.textContent=on?"PAUSED — HOVERING":"PLAYING";
+  }
+  cells.forEach(c=>{
+    c.addEventListener("mouseenter",()=>setPaused(true));
+    c.addEventListener("mouseleave",()=>setPaused(false));
+  });
 
   show(0);restartTimer();
 })();
@@ -1378,4 +1389,195 @@ const STRIP_ITEMS=[
     const top=wrap.getBoundingClientRect().top+scrollY+total*0.78;
     scrollTo({top,behavior:reduce?"auto":"smooth"});
   });
+})();
+
+/* =============== the output: a fan of frames that play =============== */
+/* Nine frames from one shoot laid out on an arc. Each holds a clip that stays
+ * paused on its poster until you hover it — then the card straightens out of
+ * the arc and plays. Leaving puts it back on its first frame, so the row is
+ * always a sheet of stills until someone asks for motion.
+ *
+ * Clips live at  /webassets/reels/r1.mp4 … r9.mp4  (.webm also works), with an
+ * optional poster at  /webassets/reels/r1.jpg|png|webp.  A slot with no clip
+ * of its own falls back to a single shared  /webassets/reels/demo.mp4  and
+ * plays its own moment of it — card three starts a third of the way in — so
+ * one file is enough to see the whole row work. A slot with neither still
+ * shows its frame; it just has nothing to play, and says so by not offering a
+ * play badge.
+ */
+(function reelArc(){
+  const arc=document.getElementById("reelArc");
+  if(!arc)return;                           /* only the marketing page has one */
+
+  const REEL_DIR=ASSET_DIR+"reels/";
+  /* Fallback stills, in shoot order, for slots with no poster of their own. */
+  const FALLBACK=["m4p1","m4p2","m4p3","m4p4","m4p5","m4p6","m1p1","m1p2","m1p3"];
+  const N=FALLBACK.length;
+  const STEP=7.4;                           /* degrees between neighbours */
+
+  const wide=matchMedia("(min-width:861px)");
+  const canHover=matchMedia("(hover:hover)").matches;
+
+  const hint=document.getElementById("reelHint");
+  if(hint&&!canHover)hint.textContent="Tap a frame to play it";
+
+  /* ---- the cards ------------------------------------------------------ */
+  const cards=FALLBACK.map((slot,i)=>{
+    const card=document.createElement("div");
+    card.className="reel";
+
+    const box=document.createElement("button");
+    box.type="button";box.className="reel-in";box.dataset.c="";
+    box.setAttribute("aria-label",`Play clip ${i+1} of ${N}`);
+    box.appendChild(mkImg(slot,420,"front",BACKDROPS[i%BACKDROPS.length],
+      `AI fashion video still — frame ${i+1} of a generated shoot`));
+
+    card.appendChild(box);
+    arc.appendChild(card);
+    return {card,box,i,video:null,start:0};
+  });
+
+  /* ---- the arc -------------------------------------------------------- */
+  /* Radius comes from the rendered card width so the overlap holds at every
+     size: neighbours sit a little over three-quarters of a card apart, which
+     is the chord of STEP degrees on a circle of this radius. */
+  function layout(){
+    if(!wide.matches){
+      cards.forEach(({card})=>{card.style.transform="";card.style.zIndex="";card.style.transitionDelay="";});
+      arc.style.height="";
+      return;
+    }
+    const w=cards[0].card.offsetWidth||180, h=cards[0].card.offsetHeight||w*4/3;
+    const R=w*0.78/(2*Math.sin(STEP*Math.PI/360));
+    const mid=(N-1)/2;
+    let low=h;
+    cards.forEach(({card},i)=>{
+      const deg=(i-mid)*STEP, rad=deg*Math.PI/180;
+      const x=R*Math.sin(rad), y=R*(1-Math.cos(rad));
+      /* A rotated card's footprint is taller than the card, and the rotation
+         is about its own centre — so this is where its lowest corner lands. */
+      low=Math.max(low,y+h/2+(w*Math.abs(Math.sin(rad))+h*Math.abs(Math.cos(rad)))/2);
+      card.style.setProperty("--rot",deg+"deg");
+      card.style.transform=`translate(calc(-50% + ${x.toFixed(1)}px),${y.toFixed(1)}px) rotate(${deg.toFixed(2)}deg)`;
+      /* The middle card is the one in front, and each step out sits behind
+         the one before it — the same order the eye reads the fan in. */
+      card.style.zIndex=String(30-Math.round(Math.abs(i-mid)));
+    });
+
+    /* Derived rather than measured: layout runs while the fan is still opening,
+       so a rect read here would size the box to a half-finished animation. */
+    arc.style.height=Math.round(low+18)+"px";
+  }
+
+  /* ---- playback ------------------------------------------------------- */
+  let playing=null;
+
+  function stop(c){
+    if(!c||!c.video)return;
+    c.video.pause();
+    c.video.currentTime=c.start||0;         /* back to the still it came from */
+    c.card.classList.remove("playing");
+    if(playing===c)playing=null;
+  }
+
+  function start(c){
+    if(!c.video)return;
+    if(playing&&playing!==c)stop(playing);   /* one clip at a time */
+    playing=c;
+    c.card.classList.add("playing");
+    c.video.play().catch(()=>{});            /* a blocked autoplay is not an error */
+  }
+
+  /* The clip replaces the still only once there is one to play, so a slot with
+     no file keeps its frame and never shows a dead player. */
+  async function attach(c,i){
+    const playable=url=>new Promise(done=>{
+      const v=document.createElement("video");
+      v.preload="metadata";v.muted=true;
+      v.onloadedmetadata=()=>done(true);v.onerror=()=>done(false);
+      v.src=url;
+    });
+
+    let src=null,shared=false;
+    for(const e of ["mp4","webm"]){
+      const url=REEL_DIR+"r"+(i+1)+"."+e;
+      if(await playable(url)){src=url;break;}
+    }
+    if(!src)for(const e of ["mp4","webm"]){
+      const url=REEL_DIR+"demo."+e;
+      if(await playable(url)){src=url;shared=true;break;}
+    }
+    if(!src)return;
+
+    const v=document.createElement("video");
+    v.src=src;v.loop=true;v.muted=true;v.playsInline=true;
+    /* Own clip: nothing loads until it is asked for. Shared clip: the metadata
+       has to be in hand to know where this card's slice starts, and all nine
+       ask for the same URL, so it costs one fetch. */
+    v.preload=shared?"metadata":"none";
+    v.setAttribute("playsinline","");
+
+    /* Nine cards on one file would otherwise be nine copies of the same
+       second. Each takes its own slice of the clip instead, which is what the
+       copy above the fan promises: one frame in time, card by card. */
+    if(shared)v.addEventListener("loadedmetadata",()=>{
+      if(!isFinite(v.duration))return;
+      c.start=v.duration*i/N;
+      if(v.paused)v.currentTime=c.start;
+    },{once:true});
+    const poster=await probeChain(REEL_DIR+"r"+(i+1));
+    if(poster)v.poster=poster;
+    else{
+      /* No poster of its own: hold the still that is already on screen, so the
+         swap to the clip does not flash an empty black box. */
+      const img=c.box.querySelector("img");
+      if(img)v.poster=img.currentSrc||img.src;
+    }
+
+    c.box.textContent="";
+    c.box.appendChild(v);
+    const badge=document.createElement("span");
+    badge.className="reel-play";
+    c.box.appendChild(badge);
+    c.video=v;
+  }
+
+  cards.forEach(c=>{
+    if(canHover){
+      c.card.addEventListener("pointerenter",()=>start(c));
+      c.card.addEventListener("pointerleave",()=>stop(c));
+      /* Keyboard reaches the same thing the pointer does. */
+      c.box.addEventListener("focus",()=>start(c));
+      c.box.addEventListener("blur",()=>stop(c));
+    }
+    c.box.addEventListener("click",()=>{
+      if(!c.video)return;
+      c.video.paused?start(c):stop(c);
+    });
+  });
+
+  /* ---- reveal --------------------------------------------------------- */
+  /* The fan opens from a stack when the section arrives: the cards start piled
+     at the centre, and the layout above is what they animate to. Staggered
+     from the middle out, so it reads as one hand of cards being spread. */
+  let opened=false;
+  new IntersectionObserver((es,obs)=>{
+    if(!es[0].isIntersecting)return;
+    obs.disconnect();
+    opened=true;
+    const mid=(N-1)/2;
+    cards.forEach(({card},i)=>{
+      card.style.transitionDelay=reduce?"0s":(Math.abs(i-mid)*0.05).toFixed(2)+"s";
+      card.classList.add("in");
+    });
+    layout();
+    setTimeout(()=>cards.forEach(({card})=>{card.style.transitionDelay="";}),1200);
+    cards.forEach((c,i)=>attach(c,i));
+  },{threshold:.15}).observe(arc);
+
+  /* Nothing should be playing behind you. */
+  new IntersectionObserver(es=>{if(!es[0].isIntersecting)stop(playing);},{threshold:0}).observe(arc);
+
+  let rt;
+  addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(()=>{if(opened)layout();},150);});
 })();
