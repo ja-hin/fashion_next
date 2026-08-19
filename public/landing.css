@@ -1,9 +1,13 @@
 /* ============ THEME TOKENS ============ */
 :root{
   --flame:#E4572E; --flame-2:#D0491F; --mint:#1F9E6E;
-  --serif:"Fraunces",Georgia,serif;
-  --sans:"Inter",system-ui,-apple-system,sans-serif;
-  --mono:"Space Mono",ui-monospace,monospace;
+  /* Playfair carries the headings — high-contrast and editorial, which is the
+     register a fashion product wants. Geist keeps the body and the technical
+     labels quiet and modern underneath it, so the serif is the only voice
+     raised on the page. */
+  --serif:"Playfair Display",Georgia,serif;
+  --sans:"Geist","Geist Fallback",system-ui,-apple-system,sans-serif;
+  --mono:"Geist Mono","Geist Mono Fallback",ui-monospace,monospace;
 
   /* light (default) */
   --bg:#F1ECE1; --bg2:#E8E1D1; --card:#FAF6EC;
@@ -32,6 +36,11 @@
 }
 
 *{box-sizing:border-box}
+/* No overflow on the root at all: `clip` here is what silently killed every
+   `position:sticky` pin on the page — Chrome treats a clip container as the
+   sticky's scrollport, and a box that never scrolls never unsticks. The
+   horizontal overflow is still held by `body{overflow-x:hidden}` below, which
+   propagates to the viewport now that the root is visible again. */
 html{scroll-behavior:auto}
 body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.55;
   -webkit-font-smoothing:antialiased;overflow-x:hidden;transition:background .5s,color .5s}
@@ -39,7 +48,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:9998;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 a{color:inherit;text-decoration:none}
 img{display:block}
-h1,h2,h3{margin:0;font-family:var(--serif);font-weight:560;letter-spacing:-.012em;line-height:1.04;font-optical-sizing:auto}
+h1,h2,h3{margin:0;font-family:var(--serif);font-weight:500;letter-spacing:-.014em;line-height:1.08}
 .wrap{max-width:1280px;margin:0 auto;padding:0 32px}
 .eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.26em;text-transform:uppercase;color:var(--flame);font-weight:700}
 .k-label{font-family:var(--mono);font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
@@ -82,25 +91,61 @@ footer .logo-img{height:46px}
 .btn-line:hover{border-color:var(--text);transform:translateY(-2px)}
 
 /* ---------- hero ---------- */
-.hero{height:100svh;min-height:640px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.hero-bg{position:absolute;inset:-6%;z-index:0;will-change:transform}
-.hero-bg .drift{position:absolute;border-radius:5px;overflow:hidden;opacity:.85;box-shadow:var(--shadow)}
-.hero-bg .drift img,.hero-bg .drift svg{width:100%;height:100%;object-fit:cover}
-.hero-veil{position:absolute;inset:0;z-index:1;background:var(--veil);transition:background .5s}
-.hero-c{position:relative;z-index:2;text-align:center;padding:0 24px;max-width:1100px}
-.hero h1{font-size:75px;letter-spacing:-.02em}
+/* ---------- hero: editorial split ---------- */
+/* Text left, a collage of real frames right. The product IS photographs, so the
+   hero shows them at a size worth looking at instead of blurred behind a veil. */
+.hero{min-height:100svh;display:flex;align-items:center;padding:130px 0 60px;position:relative;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:60px;align-items:center}
+.hero h1{font-size:clamp(2.9rem,6.4vw,5.6rem);letter-spacing:-.02em}
 .hero h1 .ln{display:block;overflow:hidden}
 .hero h1 .ln span{display:inline-block;transform:translateY(115%);animation:rise 1.1s cubic-bezier(.16,.84,.24,1) forwards}
 .hero h1 .ln:nth-child(2) span{animation-delay:.14s}
 .hero h1 em{font-style:italic;color:var(--flame)}
 @keyframes rise{to{transform:none}}
-.hero .sub{color:var(--dim);font-size:clamp(1rem,1.6vw,1.25rem);max-width:56ch;margin:30px auto 0;opacity:0;animation:fadeup 1s .55s cubic-bezier(.2,.7,.2,1) forwards}
-.hero-cta{display:flex;gap:16px;justify-content:center;margin-top:38px;opacity:0;animation:fadeup 1s .75s cubic-bezier(.2,.7,.2,1) forwards}
+.hero .eyebrow{display:inline-block;opacity:0;animation:fadeup .8s .1s forwards}
+.hero .sub{color:var(--dim);font-size:clamp(1rem,1.4vw,1.15rem);max-width:52ch;margin:26px 0 0;opacity:0;animation:fadeup 1s .5s cubic-bezier(.2,.7,.2,1) forwards}
+.hero .sub b{color:var(--text)}
+.hero-cta{display:flex;gap:16px;margin-top:34px;opacity:0;animation:fadeup 1s .7s cubic-bezier(.2,.7,.2,1) forwards;flex-wrap:wrap}
+.hero-note{font-family:var(--mono);font-size:.66rem;color:var(--muted);margin-top:22px;letter-spacing:.12em;text-transform:uppercase;opacity:0;animation:fadeup 1s .9s forwards}
 @keyframes fadeup{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
-.scroll-hint{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;gap:10px;opacity:0;animation:fadeup 1s 1.2s forwards}
-.scroll-hint .stem{width:1px;height:44px;background:var(--line);position:relative;overflow:hidden}
-.scroll-hint .stem::after{content:"";position:absolute;left:0;top:-40%;width:100%;height:40%;background:var(--flame);animation:drip 1.8s ease-in-out infinite}
-@keyframes drip{to{top:110%}}
+
+/* the collage — three overlapping frames, each easing up in turn */
+.collage{position:relative;height:min(76svh,680px)}
+.pl{position:absolute;border-radius:6px;overflow:hidden;box-shadow:var(--shadow);opacity:0;animation:plin 1s cubic-bezier(.16,.84,.24,1) forwards}
+.pl img,.pl svg{width:100%;height:100%;object-fit:cover}
+/* --r keeps each frame's tilt through the animation; without it the rotation
+   would be reset to 0 by the transform on the final keyframe. */
+@keyframes plin{from{opacity:0;transform:translateY(26px) rotate(var(--r,0deg))}to{opacity:1;transform:rotate(var(--r,0deg))}}
+/* Four plates, laid so the hero frame keeps the left and the three smaller ones
+   stack down the right and across the bottom. Each is nudged off-square by a
+   degree or two — a perfectly aligned collage reads as a grid, not a pinboard.
+   The right column stops at 78% so the SHOT ON stamp has its corner. */
+.pl.main{left:4%;top:2%;width:52%;height:74%;--r:0deg;animation-delay:.25s;z-index:2}
+.pl.b{right:0;top:0;width:40%;height:40%;--r:1.6deg;animation-delay:.4s;z-index:3}
+.pl.d{right:5%;top:42%;width:35%;height:36%;--r:-1.4deg;animation-delay:.55s;z-index:3}
+.pl.c{left:8%;bottom:4%;width:37%;height:34%;--r:-2deg;animation-delay:.7s;z-index:4}
+.pl .cap{position:absolute;bottom:0;left:0;right:0;padding:14px 12px 8px;background:linear-gradient(transparent,rgba(0,0,0,.6));
+  font-family:var(--mono);font-size:.54rem;letter-spacing:.14em;color:#fff;text-transform:uppercase;z-index:3}
+
+/* Each frame swaps its own media layer, so the caption and the shutter above it
+   stay put while the photograph underneath cross-fades. */
+.pl .pl-media{position:absolute;inset:0;z-index:1;transition:opacity .45s,transform .45s}
+.pl .pl-media.out{opacity:0;transform:scale(1.03)}
+.pl .pl-media img,.pl .pl-media svg{width:100%;height:100%;object-fit:cover;display:block}
+/* A camera flash on the lead frame — it is what makes the swap read as a shot
+   being taken rather than a slideshow advancing. */
+.shutter{position:absolute;inset:0;background:#fff;opacity:0;z-index:2;pointer-events:none}
+.shutter.snap{animation:snap .32s ease-out}
+@keyframes snap{0%{opacity:.55}100%{opacity:0}}
+.stamp .rec{color:var(--flame);animation:recpulse 1.4s steps(1) infinite}
+@keyframes recpulse{50%{opacity:.45}}
+/* min-width stops the sentence reflowing as the word changes length. */
+.rotw{display:inline-block;color:var(--flame);font-weight:600;min-width:7.5ch;transition:opacity .3s,transform .3s}
+.rotw.sw{opacity:0;transform:translateY(8px)}
+.stamp{position:absolute;right:6%;bottom:6%;z-index:4;background:var(--card);border:1px solid var(--line);border-radius:100px;
+  padding:10px 18px;font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;color:var(--text);text-transform:uppercase;
+  box-shadow:var(--shadow);opacity:0;animation:fadeup .8s 1s forwards}
+.stamp b{color:var(--flame)}
 
 /* ---------- pinned narrative ---------- */
 .pin-wrap{position:relative}
@@ -204,9 +249,37 @@ footer .logo-img{height:46px}
 .frame.garment{outline:1.5px solid var(--flame);outline-offset:-1.5px}
 .frame .tag{position:absolute;top:6px;right:7px;z-index:3;font-family:var(--mono);font-size:.48rem;letter-spacing:.1em;background:var(--flame);color:#fff;padding:2px 5px;border-radius:2px;text-transform:uppercase}
 .frame .idc{position:absolute;top:6px;right:7px;z-index:3;width:8px;height:8px;border-radius:50%;background:#5FD3A3;box-shadow:0 0 0 3px rgba(95,211,163,.25)}
-.sheet-foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--sheet-line)}
-.replay{background:none;border:1px solid rgba(237,231,218,.25);color:#EDE7DA;font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;padding:7px 12px;border-radius:2px;cursor:pointer;text-transform:uppercase;transition:.25s}
-.replay:hover{background:var(--flame);border-color:var(--flame)}
+/* A set whose frame is missing still holds its slot — the gap is the point,
+   it shows which angles this shoot does not have. */
+.frame.missing{opacity:.28!important;transform:none!important}
+
+/* footer: garment thumbnails navigate between shoots */
+.sheet-foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--sheet-line);gap:12px;flex-wrap:wrap}
+.sheet .nav{display:flex;align-items:center;gap:14px}
+.nbtn{position:relative;background:none;border:1px solid rgba(237,231,218,.28);color:#EDE7DA;
+  width:38px;height:38px;border-radius:50%;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+  transition:background .25s,border-color .25s,transform .15s}
+.nbtn svg{width:14px;height:14px;transition:transform .25s}
+.nbtn:hover{background:var(--flame);border-color:var(--flame)}
+.nbtn:hover svg{transform:translateX(2px)}
+.nbtn.prev:hover svg{transform:translateX(-2px)}
+.nbtn:active{transform:scale(.9)}
+.thumbs{display:flex;gap:9px;align-items:center}
+.thumb{position:relative;width:34px;height:44px;border-radius:5px;border:0;padding:0;cursor:pointer;background:#1b1915;
+  transition:transform .25s cubic-bezier(.2,.8,.2,1),opacity .25s;opacity:.55}
+/* the conic ring doubles as the dwell timer for the current set */
+.thumb::before{content:"";position:absolute;inset:-3px;border-radius:7px;z-index:0;
+  background:conic-gradient(#F0774E calc(var(--p,0)*1%),rgba(237,231,218,.14) 0)}
+.thumb .tin{position:absolute;inset:0;border-radius:5px;overflow:hidden;z-index:1;background:#221f19}
+.thumb .tin img,.thumb .tin svg{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .tlbl{position:absolute;bottom:2px;left:0;right:0;z-index:2;text-align:center;
+  font-family:var(--mono);font-size:.46rem;letter-spacing:.08em;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9)}
+.thumb:hover{opacity:.95;transform:translateY(-3px)}
+.thumb.on{opacity:1;transform:scale(1.14)}
+.thumb.on:hover{transform:scale(1.14)}
+/* Only offered where there is no pointer to press the arrows with. */
+.swipe-hint{font-family:var(--mono);font-size:.5rem;letter-spacing:.12em;color:#8f8676;text-transform:uppercase;display:none}
+@media(hover:none){.swipe-hint{display:inline}}
 .scan{position:absolute;left:20px;right:20px;top:52px;height:2px;background:linear-gradient(90deg,transparent,var(--flame),transparent);opacity:0;z-index:5;pointer-events:none}
 .scan.run{animation:scan 1.4s ease-in-out}
 @keyframes scan{0%{opacity:0;transform:translateY(0)}12%{opacity:1}88%{opacity:1}100%{opacity:0;transform:translateY(330px)}}
@@ -264,6 +337,11 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 
 @media(max-width:960px){
   .nav-links{display:none}
+  /* The collage stacks under the copy rather than beside it, and loses height —
+     a 76svh photo block below the fold is all a phone would show. */
+  .hero{padding:110px 0 50px}
+  .hero-grid{grid-template-columns:1fr;gap:44px}
+  .collage{height:60svh}
   .stats-in{grid-template-columns:1fr 1fr}
   .stat:nth-child(3){border-left:0}
   .demo-grid{grid-template-columns:1fr;gap:44px}
@@ -272,14 +350,538 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 }
 @media(max-width:620px){
   .plans{grid-template-columns:1fr}
-  .hero-cta{flex-direction:column;align-items:center}
+  .hero-cta{flex-direction:column;align-items:flex-start}
   .rcard{flex-basis:82vw}
   .mode .txt{display:none}
 }
 @media(prefers-reduced-motion:reduce){
   *{animation-duration:.001ms!important;animation-delay:0ms!important;transition-duration:.001ms!important}
-  .rv,.hero .sub,.hero-cta,.scroll-hint{opacity:1;transform:none}
+  .rv,.hero .eyebrow,.hero .sub,.hero-cta,.hero-note,.pl,.stamp{opacity:1;transform:none}
   .hero h1 .ln span{transform:none}
   .frame{opacity:1;transform:none}
 }
 :focus-visible{outline:2px solid var(--flame);outline-offset:3px}
+
+/* ---------- darkroom filmstrip ---------- */
+/* A reel of frames that develop from raw negative to finished photograph as
+   they cross a central beam — the transformation the product performs, shown
+   rather than described. Drag to scrub; page scroll drives the reel's speed. */
+.darkroom{padding:90px 0 0}
+.dark-strip{position:relative;background:#100E0B;border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);
+  padding:30px 0 26px;overflow:hidden;cursor:grab;user-select:none;margin-top:44px}
+.dark-strip.dragging{cursor:grabbing}
+/* film sprocket holes, top and bottom */
+.sprockets{position:absolute;left:0;right:0;height:10px;pointer-events:none;
+  background-image:radial-gradient(circle 3px, rgba(237,231,218,.22) 98%, transparent), radial-gradient(circle 3px, rgba(237,231,218,.22) 98%, transparent);
+  background-size:26px 10px;background-repeat:repeat-x}
+.sprockets.top{top:10px}
+.sprockets.bot{bottom:8px}
+.track{display:flex;gap:16px;width:max-content;will-change:transform;padding:0 8px}
+.cell{position:relative;height:250px;aspect-ratio:3/4;border-radius:4px;overflow:hidden;flex:0 0 auto;background:#1b1915}
+.cell img,.cell svg{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+/* The filter rides on .inner, not .cell — filtering the cell would take the
+   caption and frame number down with the image. */
+.cell .inner{position:absolute;inset:0;will-change:filter,transform}
+.cell .cap{position:absolute;bottom:0;left:0;right:0;padding:12px 8px 6px;background:linear-gradient(transparent,rgba(0,0,0,.62));
+  font-family:var(--mono);font-size:.5rem;letter-spacing:.12em;color:#fff;text-transform:uppercase;z-index:3;opacity:.4;transition:opacity .3s}
+.cell.lit .cap{opacity:1}
+.cell .neg{position:absolute;top:6px;left:7px;z-index:3;font-family:var(--mono);font-size:.5rem;letter-spacing:.1em;color:rgba(237,231,218,.5)}
+
+/* the developer beam */
+.beam{position:absolute;top:0;bottom:0;left:50%;width:2px;transform:translateX(-50%);z-index:5;pointer-events:none;
+  background:linear-gradient(180deg,transparent,var(--flame) 22%,#F0774E 50%,var(--flame) 78%,transparent)}
+.beam::before{content:"";position:absolute;top:0;bottom:0;left:-34px;width:70px;
+  background:radial-gradient(ellipse 46% 52% at 50% 50%, rgba(228,87,46,.18), transparent 72%)}
+.beam-lbl{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:6;pointer-events:none;
+  font-family:var(--mono);font-size:.52rem;letter-spacing:.24em;color:#F0774E;text-transform:uppercase;
+  background:rgba(16,14,11,.72);padding:3px 10px;border-radius:100px;border:1px solid rgba(228,87,46,.4)}
+.strip-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:14px;padding:0 8px}
+.slbl{font-family:var(--mono);font-size:.54rem;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
+
+@media(max-width:640px){.cell{height:190px}}
+@media(prefers-reduced-motion:reduce){
+  /* Every frame simply arrives developed, and the captions stay readable. */
+  .cell .inner{filter:none!important;transform:none!important}
+  .cell .cap{opacity:1}
+}
+
+/* ---------- casting panel: one garment, every model ---------- */
+/* A 5×6 matrix — five models, six setups — flipping past at shutter speed.
+   The claim being made is range WITH identity held, so the minimap matters as
+   much as the loupe: every frame in a row is visibly the same face. */
+.castworld{padding:90px 0 0}
+.lr-box{background:var(--sheet-bg);border:1px solid var(--line-soft);border-radius:10px;padding:22px;box-shadow:var(--shadow);margin-top:46px}
+.lr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:12px;flex-wrap:wrap}
+.lr-box .lbl{font-family:var(--mono);font-size:.64rem;letter-spacing:.18em;color:#8f8676;text-transform:uppercase}
+.lr-box .roll{font-family:var(--mono);font-size:.64rem;color:#F0774E;letter-spacing:.1em}
+.lr-main{display:grid;grid-template-columns:1.05fr 1fr;gap:24px;align-items:stretch}
+
+/* the loupe — the frame currently being looked at */
+.loupe{position:relative;border-radius:6px;overflow:hidden;background:#1b1915;aspect-ratio:3/4;max-height:560px}
+.loupe .media{position:absolute;inset:0;animation:settle .3s cubic-bezier(.2,.8,.2,1)}
+.loupe .media img,.loupe .media svg{width:100%;height:100%;object-fit:cover;display:block}
+@keyframes settle{from{transform:scale(1.035);opacity:.55}to{transform:none;opacity:1}}
+.loupe .veil{position:absolute;inset:0;background:linear-gradient(transparent 62%,rgba(0,0,0,.55));pointer-events:none}
+.loupe .who{position:absolute;left:16px;bottom:14px;z-index:2}
+.loupe .who .nm{font-family:var(--serif);font-size:1.6rem;color:#fff;line-height:1.1}
+.loupe .who .sub{font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;color:rgba(255,255,255,.85);text-transform:uppercase;margin-top:5px}
+.loupe .idchip{position:absolute;top:12px;left:14px;z-index:2;display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:.54rem;letter-spacing:.14em;color:#5FD3A3;text-transform:uppercase;
+  background:rgba(0,0,0,.45);border:1px solid rgba(95,211,163,.5);border-radius:100px;padding:4px 10px}
+.loupe .idchip::before{content:"";width:6px;height:6px;border-radius:50%;background:#5FD3A3}
+.loupe .fno{position:absolute;top:12px;right:14px;z-index:2;font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;color:rgba(255,255,255,.85);
+  background:rgba(0,0,0,.45);border-radius:3px;padding:4px 8px}
+.loupe .bar{position:absolute;left:0;bottom:0;height:3px;background:var(--flame);z-index:3;width:0%}
+
+/* the matrix — rows are models, columns are setups */
+.mapside{display:flex;flex-direction:column;gap:14px;min-width:0}
+.mm-cols{display:grid;grid-template-columns:86px repeat(6,1fr);gap:6px}
+.mm-cols .ch{font-family:var(--mono);font-size:.5rem;letter-spacing:.1em;color:#8f8676;text-transform:uppercase;text-align:center;overflow:hidden}
+.mm-row{display:grid;grid-template-columns:86px repeat(6,1fr);gap:6px;margin-top:6px}
+.mm-name{display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0}
+.mm-name .nm{font-family:var(--mono);font-size:.56rem;letter-spacing:.1em;color:#EDE7DA}
+.mm-name .org{font-family:var(--mono);font-size:.48rem;letter-spacing:.1em;color:#8f8676}
+.mm-cell{aspect-ratio:3/4;border-radius:3px;overflow:hidden;position:relative;background:#1b1915;cursor:pointer;
+  outline:2px solid transparent;outline-offset:-2px;transition:outline-color .2s,opacity .2s;opacity:.6}
+.mm-cell img,.mm-cell svg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.mm-cell:hover{opacity:.95}
+.mm-cell.on{outline-color:var(--flame);opacity:1}
+.mm-cell.seen{opacity:.85}
+.mm-legend{margin-top:auto;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.mm-legend .same{font-family:var(--mono);font-size:.52rem;letter-spacing:.1em;color:#5FD3A3;text-transform:uppercase}
+.lr-foot{display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--sheet-line);gap:10px;flex-wrap:wrap}
+
+@media(max-width:860px){
+  .lr-main{grid-template-columns:1fr}
+  .loupe{max-height:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .loupe .media{animation:none}
+}
+
+/* ---------- how it works: the shot setup ---------- */
+/* An interactive version of the pitch — pick a model, a background and a pose
+   and watch the frame change. Every other panel on this page shows finished
+   work; this one lets the visitor drive it, which is the closest thing to a
+   trial before signing up. */
+.hiw{padding:90px 0 0}
+.hiw-head{text-align:center;max-width:640px;margin:0 auto}
+.hiw-head .sec-p{margin-left:auto;margin-right:auto}
+/* Womenswear / Menswear — a segmented control rather than another pill row,
+   because it does not set one property of the shot, it swaps the whole panel
+   underneath it. */
+.hiw-tabs{display:flex;justify-content:center;gap:6px;margin:30px auto 0;width:max-content;max-width:100%;
+  background:var(--bg2);border:1px solid var(--line-soft);border-radius:100px;padding:5px}
+.hiw-tab{border:0;background:transparent;color:var(--dim);border-radius:100px;cursor:pointer;
+  padding:.62em 1.5em;font-family:inherit;font-size:.94rem;font-weight:600;
+  transition:background .25s,color .25s}
+.hiw-tab:hover{color:var(--text)}
+.hiw-tab.on{background:var(--card);color:var(--text);box-shadow:0 2px 10px -4px rgba(23,21,15,.45)}
+
+.hiw-card{margin-top:26px;background:var(--card);border:1px solid var(--line-soft);border-radius:20px;
+  box-shadow:var(--shadow);padding:30px;display:grid;grid-template-columns:1fr .82fr;gap:34px;align-items:center;
+  position:relative;overflow:hidden}
+/* the hairline that ties the card to the brand without shouting */
+.hiw-card::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;
+  background:linear-gradient(90deg,transparent,#7c5cff,var(--flame),transparent);opacity:.7}
+
+/* the garments being worked on — a card, not a pill: this is the one choice
+   the visitor should be able to see rather than read */
+/* minmax(0,…) so a long garment name shrinks its card instead of pushing it
+   past the panel's edge — 1fr alone floors each track at its content width. */
+.hiw-garments{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.gcard{display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer;
+  background:var(--bg2);border:1px solid var(--line-soft);border-radius:14px;padding:10px 12px;
+  color:var(--text);font-family:inherit;transition:border-color .25s,background .25s,transform .2s}
+.gcard:hover{border-color:var(--text);transform:translateY(-1px)}
+.gcard.on{border-color:var(--flame);background:color-mix(in srgb,var(--flame) 8%,var(--card))}
+.gcard .gt{width:50px;height:50px;border-radius:9px;overflow:hidden;flex:0 0 auto;background:var(--card)}
+.gcard .gt img,.gcard .gt svg{width:100%;height:100%;object-fit:cover;display:block}
+.gcard .gm{min-width:0}
+.gcard .gn{display:block;font-weight:600;font-size:.94rem;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Two lines of sub-copy would make the two cards different heights the moment
+   one garment's line is longer than the other's. */
+.gcard .gs{display:block;color:var(--muted);font-size:.76rem;margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.hiw-group{margin-top:24px}
+.hiw-group:first-child{margin-top:0}
+.hiw-group .k-label{display:block;margin-bottom:10px}
+.hiw-opts{display:flex;gap:10px;flex-wrap:wrap}
+.opt{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:100px;
+  padding:.62em 1.15em;font-size:.92rem;font-weight:500;cursor:pointer;
+  transition:background .25s,border-color .25s,color .25s,transform .2s}
+.opt:hover{border-color:var(--text);transform:translateY(-1px)}
+.opt.on{background:var(--text);border-color:var(--text);color:var(--bg)}
+/* The model is the one choice that changes WHO is in the photo, so it is the
+   one that gets the gradient — everything else is a setting. */
+.opt.model.on{background:linear-gradient(90deg,var(--flame),#7c5cff);border-color:transparent;color:#fff}
+.hiw-cta{margin-top:30px}
+
+/* the resulting frame */
+.hiw-view{position:relative;border-radius:16px;overflow:hidden;background:#1b1915;aspect-ratio:4/5}
+.hiw-view .media{position:absolute;inset:0;animation:settle .32s cubic-bezier(.2,.8,.2,1)}
+.hiw-view .media img,.hiw-view .media svg{width:100%;height:100%;object-fit:cover;display:block}
+.hiw-cap{position:absolute;left:14px;bottom:14px;z-index:2;background:rgba(23,21,15,.72);color:#fff;
+  border-radius:100px;padding:8px 15px;font-size:.82rem;backdrop-filter:blur(6px)}
+
+@media(max-width:860px){
+  .hiw-card{grid-template-columns:1fr;gap:26px;padding:22px}
+  .hiw-view{order:-1}          /* show the result first on a phone */
+}
+@media(max-width:560px){
+  /* Two cards side by side leave the names truncated to nothing at this
+     width, and the name is what the card is for. */
+  .hiw-garments{grid-template-columns:1fr}
+  .hiw-tab{padding:.62em 1.1em;font-size:.88rem}
+}
+@media(prefers-reduced-motion:reduce){
+  .hiw-view .media{animation:none}
+}
+
+/* ---------- dark hero band ---------- */
+/* The hero runs dark in BOTH themes — photographs read better against it, and
+   it gives the page a clear opening beat before the light sections below.
+   Written with literals rather than the theme tokens on purpose: this band is
+   dark by design, not by preference. */
+.hero{background:#0A0908;color:#EDE7DA}
+.hero h1{color:#FBF7EF}
+.hero .sub{color:#B9B1A0}
+.hero .sub b{color:#EDE7DA}
+.hero-note{color:#8a8172}
+/* the outline CTA needs a light edge to exist against the dark */
+.hero .btn-line{border-color:rgba(237,231,218,.34);color:#EDE7DA}
+.hero .btn-line:hover{border-color:#EDE7DA;background:rgba(237,231,218,.06)}
+
+/* The nav is transparent until it solidifies, so while it is over the hero it
+   has to be styled for the dark — otherwise the black logo and dark links
+   vanish into it on the light theme. */
+header.nav:not(.solid) .logo-light{display:none}
+header.nav:not(.solid) .logo-dark{display:block}
+header.nav:not(.solid) .nav-links a{color:rgba(237,231,218,.72)}
+header.nav:not(.solid) .nav-links a:hover{color:#EDE7DA}
+header.nav:not(.solid) .mode{border-color:rgba(237,231,218,.3);color:rgba(237,231,218,.8)}
+header.nav:not(.solid) .mode:hover{border-color:#EDE7DA;color:#EDE7DA}
+header.nav:not(.solid) .mode .orb{background:linear-gradient(90deg,#EDE7DA 50%,transparent 50%);border-color:#EDE7DA}
+header.nav:not(.solid) .btn-line{border-color:rgba(237,231,218,.35);color:#EDE7DA}
+header.nav:not(.solid) .btn-line:hover{border-color:#EDE7DA;background:rgba(237,231,218,.06)}
+
+/* ---------- mobile navigation ---------- */
+/* Below 960px the inline links and CTAs are hidden, so the burger IS the
+   navigation — it is never hidden, and it inherits the nav's light-on-dark
+   treatment while the bar sits over the hero. */
+.burger{display:none;position:relative;width:42px;height:42px;border:1px solid var(--line);border-radius:100px;
+  background:transparent;cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  transition:border-color .25s,background .25s}
+.burger span{display:block;width:17px;height:1.5px;background:var(--text);border-radius:2px;
+  transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .2s}
+.burger:hover{border-color:var(--text)}
+header.nav:not(.solid) .burger{border-color:rgba(237,231,218,.32)}
+header.nav:not(.solid) .burger span{background:#EDE7DA}
+/* the bars become the X while the sheet is open */
+body.mnav-open .burger span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+body.mnav-open .burger span:nth-child(2){opacity:0}
+body.mnav-open .burger span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+
+.mnav{position:fixed;inset:0;z-index:890}          /* under the bar (900) so the burger stays clickable */
+.mnav-scrim{position:absolute;inset:0;border:0;padding:0;background:rgba(10,9,8,.55);
+  backdrop-filter:blur(3px);cursor:pointer;opacity:0;transition:opacity .3s}
+.mnav-sheet{position:absolute;top:0;left:0;right:0;background:var(--bg);border-bottom:1px solid var(--line-soft);
+  padding:96px 28px 34px;box-shadow:var(--shadow);
+  transform:translateY(-100%);transition:transform .38s cubic-bezier(.22,.9,.3,1)}
+body.mnav-open .mnav-scrim{opacity:1}
+body.mnav-open .mnav-sheet{transform:none}
+
+.mnav-links{display:flex;flex-direction:column}
+.mnav-links a{font-family:var(--serif);font-size:1.7rem;line-height:1.5;color:var(--text);
+  border-bottom:1px solid var(--line-soft);padding:12px 0;transition:color .2s}
+.mnav-links a:last-child{border-bottom:0}
+.mnav-links a:hover{color:var(--flame)}
+.mnav-cta{display:flex;flex-direction:column;gap:12px;margin-top:26px}
+.mnav-cta .btn{justify-content:center}
+
+/* The sheet is scrollable in its own right on a short screen, so a long menu
+   in landscape never puts the last link past the bottom edge. */
+@media(max-height:520px){
+  .mnav-sheet{max-height:100svh;overflow-y:auto}
+  .mnav-links a{font-size:1.25rem;padding:9px 0}
+}
+@media(max-width:960px){
+  .burger{display:flex}
+  .nav-cta{display:none}                            /* Log in / Register move into the sheet */
+  .mode .txt{display:none}
+}
+@media(min-width:961px){
+  .mnav{display:none}                               /* nothing to open above the breakpoint */
+}
+@media(prefers-reduced-motion:reduce){
+  .mnav-sheet,.mnav-scrim,.burger span{transition:none}
+}
+
+/* ---------- "what do you want to create" accordion ---------- */
+/* Four entry points that expand on hover. The panels animate `flex-grow`
+   rather than width — grow is a single transitionable number and the row stays
+   exactly full whatever the viewport, where animating widths would need them
+   to sum correctly at every frame. */
+.create{padding:90px 0 0}
+.create-head{text-align:center;max-width:720px;margin:0 auto}
+.create-head .sec-p{margin-left:auto;margin-right:auto}
+/* `relative` so the round advance control can be pinned to the row's edge. */
+.create-row{position:relative;display:flex;gap:14px;margin-top:44px;height:min(70svh,600px)}
+.cnext{position:absolute;right:-19px;top:50%;transform:translateY(-50%);z-index:4;
+  width:44px;height:44px;border-radius:50%;border:0;cursor:pointer;
+  background:var(--flame);color:#fff;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 10px 26px -8px rgba(228,87,46,.9);transition:transform .25s,background .25s}
+.cnext:hover{background:var(--flame-2);transform:translateY(-50%) scale(1.08)}
+.cnext:active{transform:translateY(-50%) scale(.94)}
+.cnext svg{width:17px;height:17px}
+.cpanel{position:relative;flex:1 1 0;min-width:0;border-radius:16px;overflow:hidden;background:#1b1915;
+  cursor:pointer;border:0;padding:0;text-align:left;color:#fff;display:block;
+  will-change:flex-grow;transition:flex-grow .55s cubic-bezier(.22,.9,.3,1)}
+/* Only the width moves. The others keep flex-grow:1 and simply lose their share
+   as the open one claims more — 1 : 1 : 1 : 5.8 puts the open card at ~66% of
+   the row and each closed one at ~11%, which is the proportion in the design. */
+.cpanel.on{flex-grow:5.8}
+/* The card is a fixed window; the image behind it is what moves. Scaling the
+   picture instead of the box means the frame's corners and its neighbours stay
+   put, and the type layered over it is never resampled. */
+.cpanel img,.cpanel svg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 30%;
+  transform-origin:center;transition:transform .7s cubic-bezier(.22,.9,.3,1)}
+.cpanel.on img,.cpanel.on svg{transform:scale(1.08)}
+/* keeps the type legible whatever the photograph is doing underneath it */
+.cpanel::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(transparent 42%,rgba(10,9,8,.82))}
+
+.cpanel .cname{position:absolute;left:20px;bottom:22px;z-index:2;font-size:1.18rem;font-weight:600;
+  white-space:nowrap;transition:opacity .3s,transform .45s cubic-bezier(.22,.9,.3,1)}
+.cpanel .cdetail{position:absolute;left:28px;right:28px;bottom:26px;z-index:2;
+  opacity:0;transform:translateY(14px);pointer-events:none;
+  transition:opacity .4s .12s,transform .5s .12s cubic-bezier(.22,.9,.3,1)}
+.cpanel .cdetail h3{font-size:clamp(1.5rem,2.4vw,2.1rem);color:#fff;line-height:1.1}
+.cpanel .cdetail p{color:rgba(255,255,255,.82);font-size:1rem;margin:10px 0 0;max-width:46ch}
+.cpanel .center{display:inline-flex;align-items:center;gap:.5em;margin-top:16px;
+  color:var(--flame);font-weight:600;font-size:1rem}
+.cpanel .center .arw{transition:transform .3s}
+.cpanel.on .cname{opacity:0;transform:translateY(10px)}
+.cpanel.on .cdetail{opacity:1;transform:none;pointer-events:auto}
+.cpanel.on:hover .center .arw{transform:translateX(5px)}
+
+@media(max-width:860px){
+  /* No hover to expand with, so the row becomes a swipeable rail of cards that
+     each show their own detail — the accordion idea does not survive at this
+     width, and a squeezed one would just be four unreadable slivers. */
+  .create-row{height:auto;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;
+    -webkit-overflow-scrolling:touch}
+  .create-row .cpanel,.create-row.has-on .cpanel,.cpanel.on{flex:0 0 78%;scroll-snap-align:center;
+    height:62svh;transition:none}
+  .cpanel.on img,.cpanel.on svg{transform:none}
+  .cpanel .cname{display:none}
+  .cnext{display:none}                              /* the rail already swipes */
+  .cpanel .cdetail{opacity:1;transform:none;pointer-events:auto}
+}
+@media(prefers-reduced-motion:reduce){
+  .cpanel,.cpanel img,.cpanel svg,.cpanel .cname,.cpanel .cdetail{transition:none}
+}
+
+/* ---------- "built for brands at every stage" category carousel ---------- */
+/* Pills pick a category; the deck fans three cards with the chosen one upright
+   in the middle. The tilt on the outer two is what stops this reading as three
+   equal cards in a row — they are clearly waiting their turn. */
+.cats{padding:90px 0 0;overflow:hidden}
+.cats-head{text-align:center;max-width:680px;margin:0 auto}
+.cats-head .sec-p{margin:14px auto 0}
+.cats-pills{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:30px}
+.cpill{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:100px;
+  padding:0.4em 0.5em;font-size:.92rem;font-weight:500;cursor:pointer;white-space:nowrap;
+  transition:background .25s,border-color .25s,color .25s,transform .2s}
+.cpill:hover{border-color:var(--text);transform:translateY(-1px)}
+.cpill.on{background:var(--text);border-color:var(--text);color:var(--bg)}
+
+/* the deck */
+.cats-stage{position:relative;height:min(78svh,660px);margin-top:40px;cursor:grab;
+  /* Horizontal gestures belong to the deck, vertical ones to the page — without
+     this the browser claims the drag as a scroll and the deck never moves. */
+  touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.cats-stage.dragging{cursor:grabbing}
+/* While dragging the transform IS the finger position, so a transition would
+   make it lag behind by its own duration. */
+.cats-stage.dragging .ccard{transition:none}
+/* Native image/link dragging would otherwise hijack the gesture with a ghost. */
+.ccard img{-webkit-user-drag:none;user-select:none;pointer-events:none}
+.ccard{position:absolute;top:0;left:50%;width:clamp(240px,26vw,352px);height:100%;
+  border-radius:20px;overflow:hidden;background:#1b1915;color:#fff;text-align:center;
+  border:0;padding:0;cursor:pointer;text-decoration:none;display:block;
+  /* Transforms are written from JS so one formula covers every offset and the
+     wrap-around; the transition here is what makes them glide. */
+  transition:transform .62s cubic-bezier(.22,.9,.3,1),opacity .5s;
+  box-shadow:0 30px 60px -30px rgba(10,9,8,.55)}
+.ccard img,.ccard svg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+/* enough scrim to carry white type over any photograph */
+.ccard::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(rgba(10,9,8,.1) 20%,rgba(10,9,8,.62))}
+.ccard-in{position:absolute;left:22px;right:22px;top:44%;z-index:2;transform:translateY(-30%)}
+.ccard-in h3{font-size:clamp(1.8rem,3vw,2.6rem);color:#fff;line-height:1.02;text-shadow:0 2px 18px rgba(0,0,0,.5)}
+.ccard-in p{font-size:.95rem;line-height:1.5;color:rgba(255,255,255,.9);margin:14px 0 0;
+  text-shadow:0 1px 10px rgba(0,0,0,.6)}
+.ccard .clearn{display:inline-flex;align-items:center;gap:.45em;margin-top:20px;background:var(--card);
+  color:var(--text);border-radius:100px;padding:.62em 1.2em;font-size:.9rem;font-weight:600;
+  box-shadow:0 8px 20px -8px rgba(10,9,8,.5)}
+.ccard .clearn .arw{transition:transform .3s}
+.ccard:hover .clearn .arw{transform:translateX(4px)}
+/* Only the middle card is a live target — the others are there to be brought
+   forward first, and their copy is half-turned and unreadable anyway. */
+.ccard:not(.mid){pointer-events:auto}
+.ccard:not(.mid) .clearn{display:none}
+
+@media(max-width:860px){
+  /* One card at a time: a fanned deck at phone width is three slivers, and the
+     side cards' rotated copy is unreadable. The pills still drive it. */
+  .cats-stage{height:min(72svh,560px)}
+  /* One card, near full-bleed — at this width the deck is a single card, so it
+     should use the room rather than sit in the middle of two empty margins. */
+  .ccard{width:min(88vw,420px)}
+  .ccard-in{left:26px;right:26px}
+
+  /* A wrapped pill row leaves a ragged 4+3 that clips the moment one label is
+     a little long. A single scrolling strip cannot clip whatever the labels
+     say, and the active pill is scrolled into view when it changes.
+     Negative margins let it run to the screen edges while the first and last
+     pills keep the text column's padding. */
+  .cats-pills{flex-wrap:wrap;justify-content:center;overflow-x:auto;
+    margin-left:-32px;margin-right:-32px;padding:2px 32px;
+    scrollbar-width:none;-ms-overflow-style:none;scroll-snap-type:x proximity}
+  .cats-pills::-webkit-scrollbar{display:none}
+  .cpill{flex:0 0 auto;scroll-snap-align:center}
+}
+@media(prefers-reduced-motion:reduce){
+  .ccard{transition:none}
+}
+
+/* ---------- prompt genie: summoned by the scroll ---------- */
+/* Violet and gold are the Genie's colours inside the app, and carrying them
+   here is what makes this read as the same feature rather than another flame
+   panel. Declared beside the section instead of at the top of the file
+   because nothing else on the page uses them. */
+:root{--genie:#6E44D6;--genie-2:#A87B26}
+[data-theme="dark"]{--genie:#B08CFF;--genie-2:#D8B45E}
+
+.genie-sec{position:relative;background:var(--bg2);transition:background .5s}
+.genie-sec .pin-wrap{height:340svh}
+.genie-sec .pin{flex-direction:column;justify-content:flex-start;gap:clamp(16px,3vh,30px);
+  height:100svh;min-height:600px;padding:clamp(90px,12vh,130px) 24px 46px}
+
+/* Darkens the section as the panel forms, so it reads as a dialog over the
+   page rather than one more card sitting in the flow. Opacity is scrubbed
+   from scroll, which is why there is no transition on it. */
+.genie-veil{position:absolute;inset:0;opacity:0;pointer-events:none;z-index:2;
+  background:radial-gradient(ellipse 74% 62% at 50% 58%,color-mix(in srgb,var(--genie) 16%,transparent),transparent 70%),
+             rgba(8,7,6,.66)}
+
+.genie-copy{position:relative;z-index:1;text-align:center;max-width:58ch;will-change:opacity,transform}
+.genie-copy .eyebrow{color:var(--genie)}
+.genie-copy h2{font-size:clamp(1.9rem,4.2vw,3.2rem);margin-top:14px}
+.genie-copy h2 em{font-style:italic;color:var(--genie)}
+.genie-copy p{color:var(--dim);font-size:1.02rem;margin:16px auto 0;max-width:46ch}
+.genie-hint{display:inline-block;margin-top:20px;font-family:var(--mono);font-size:.64rem;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.genie-hint .arw{color:var(--genie)}
+
+/* A centring layer over the whole pin rather than a block in the column: the
+   tile and the panel it becomes must share one centre, or the smoke would
+   leave from one point and the panel form at another. Transparent to the
+   pointer so the copy underneath stays selectable. */
+/* The padding pushes the centre — and so the tile, the burst and the panel
+   that forms out of it — clear of the copy above. */
+.genie-stage{position:absolute;inset:0;z-index:3;pointer-events:none;padding-top:min(120px,14vh);
+  display:flex;align-items:center;justify-content:center}
+
+/* ---- the tile ---- */
+@keyframes gbob{0%,100%{transform:translateY(0) rotate(-1.2deg)}50%{transform:translateY(-9px) rotate(1.2deg)}}
+@keyframes ghalo{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:.85;transform:scale(1.16)}}
+
+/* The bob lives on .gt-in, not the tile: the scroll writes the tile's own
+   transform every frame, and two transforms on one box cannot both win. */
+.genie-tile{position:absolute;width:214px;padding:20px 16px 18px;border-radius:18px;cursor:pointer;
+  text-align:center;color:var(--text);font-family:inherit;
+  border:1px solid color-mix(in srgb,var(--genie) 28%,transparent);
+  background:linear-gradient(160deg,var(--card),color-mix(in srgb,var(--genie) 9%,var(--card)));
+  box-shadow:0 20px 46px -20px color-mix(in srgb,var(--genie) 60%,transparent),var(--shadow);
+  will-change:transform,opacity,filter}
+/* A masked pseudo-element is the only way to stroke a gradient border. */
+.genie-tile::after{content:"";position:absolute;inset:-2px;border-radius:20px;padding:2px;
+  background:linear-gradient(140deg,var(--genie),#b98bff,var(--genie-2));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;opacity:.6;pointer-events:none}
+.gt-in{display:block;animation:gbob 3.4s ease-in-out infinite;transform-origin:50% 60%}
+.gt-orb{position:relative;display:flex;width:76px;height:76px;margin:0 auto 12px;
+  align-items:center;justify-content:center;transition:transform .3s;
+  filter:drop-shadow(0 6px 16px color-mix(in srgb,var(--genie) 45%,transparent))}
+.gt-orb::before{content:"";position:absolute;inset:-8px;border-radius:50%;
+  background:radial-gradient(circle,color-mix(in srgb,var(--genie) 35%,transparent),transparent 70%);
+  animation:ghalo 2.6s ease-in-out infinite}
+.gt-orb img{position:relative;width:100%;height:100%;object-fit:contain}
+.genie-tile:hover .gt-orb{transform:scale(1.06)}
+.gt-name{display:block;font-size:1.04rem;font-weight:700;letter-spacing:-.01em}
+.gt-sub{display:block;margin-top:3px;font-size:.76rem;color:var(--muted)}
+
+/* ---- the panel the smoke turns into ---- */
+/* Dark in both themes, like the contact sheet — it is a player, not a card. */
+/* The third cap is the height one: a 16/9 player plus its bar and caption is
+   taller than a short viewport, and .pin clips whatever runs past it — so the
+   panel is narrowed until it fits rather than cropped. */
+.genie-modal{position:absolute;width:min(780px,calc(100vw - 40px),calc((100svh - 320px) * 16 / 9));
+  border-radius:14px;overflow:hidden;opacity:0;
+  background:var(--sheet-bg);border:1px solid var(--sheet-line);
+  box-shadow:0 60px 120px -50px rgba(0,0,0,.85);pointer-events:none;
+  will-change:transform,opacity,filter}
+.gm-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;
+  border-bottom:1px solid var(--sheet-line)}
+.gm-bar .k-label{color:#8f8676}
+.gm-dot{width:8px;height:8px;border-radius:50%;background:var(--genie-2);
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--genie-2) 24%,transparent)}
+.gm-media{position:relative;aspect-ratio:16/9;background:#0e0d0b;overflow:hidden}
+.gm-media video,.gm-media img{width:100%;height:100%;object-fit:cover}
+/* A portrait still cropped to 16/9 loses the face on a centre crop, and the
+   face is the whole point of an on-model frame. */
+.gm-media img{object-position:50% 20%}
+.gm-media svg{width:100%;height:100%}
+.gm-sound{position:absolute;right:12px;bottom:12px;z-index:2;border:1px solid rgba(255,255,255,.24);
+  background:rgba(14,13,11,.62);color:#EDE7DA;border-radius:100px;padding:.42em 1em;cursor:pointer;
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;
+  backdrop-filter:blur(6px);transition:border-color .3s,background .3s}
+.gm-sound:hover{border-color:var(--genie-2);background:rgba(14,13,11,.85)}
+.gm-foot{display:grid;gap:8px;padding:14px 16px 16px}
+.gm-line{font-size:.92rem;line-height:1.5;color:rgba(237,231,218,.66)}
+.gm-line b{font-family:var(--mono);font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;
+  color:#8f8676;margin-right:10px;font-weight:400}
+.gm-out{color:#EDE7DA}
+.gm-out b{color:var(--genie-2)}
+
+/* ---- the burst ---- */
+/* Appended to <body> and thrown away when the animation ends: transform,
+   opacity and filter only, so the panel forming at the same moment does not
+   have to share the paint path with twenty particles. */
+.gsmoke,.gring,.gcore{position:fixed;border-radius:50%;pointer-events:none}
+.gsmoke{z-index:60}
+.gring{z-index:59;border:2px solid rgba(150,120,240,.5)}
+.gcore{z-index:58;filter:blur(6px);
+  background:radial-gradient(circle at 50% 50%,rgba(190,160,255,.68) 0%,rgba(201,162,75,.34) 42%,transparent 72%)}
+
+@media(max-width:860px){
+  .genie-sec .pin-wrap{height:300svh}
+  .genie-sec .pin{min-height:540px}
+  .genie-copy p{font-size:.96rem}
+  .genie-tile{width:186px;padding:18px 14px 16px}
+  .gt-orb{width:64px;height:64px}
+  .gm-line{font-size:.84rem}
+}
+@media(max-width:560px){
+  /* The rewritten brief is the point of the panel; the one-line prompt above
+     it is not worth the two lines it wraps to at this width. */
+  .gm-foot .gm-line:not(.gm-out){display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .gt-in,.gt-orb::before{animation:none}
+}

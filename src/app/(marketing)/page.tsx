@@ -238,47 +238,128 @@ export default async function LandingPage() {
               <span className="orb" />
               <span className="txt" id="modeTxt">Dark</span>
             </button>
-            <a href="/login" className="btn btn-line" style={{ padding: '.6em 1.2em' }} data-c="">
+            <a href="/login" className="btn btn-line nav-cta" style={{ padding: '.6em 1.2em' }} data-c="">
               Log in
             </a>
-            <a href="/register" className="btn btn-flame" style={{ padding: '.6em 1.2em' }} data-c="">
+            <a href="/register" className="btn btn-flame nav-cta" style={{ padding: '.6em 1.2em' }} data-c="">
               Register <span className="arw">→</span>
             </a>
+
+            {/* Below 960px the links and CTAs move into the sheet — the three
+                bars are the only nav on a phone, so they must never be hidden. */}
+            <button
+              className="burger"
+              id="burger"
+              type="button"
+              aria-label="Open menu"
+              aria-controls="mobileNav"
+              aria-expanded="false"
+            >
+              <span />
+              <span />
+              <span />
+            </button>
           </div>
         </div>
       </header>
 
+      {/* Mobile sheet. Outside <header> so it can cover the viewport without
+          inheriting the bar's height, and so a fixed header over a scrolling
+          sheet never traps the last link out of reach. */}
+      <div className="mnav" id="mobileNav" hidden>
+        <button className="mnav-scrim" id="mnavScrim" type="button" aria-label="Close menu" />
+        <div className="mnav-sheet" role="dialog" aria-modal="true" aria-label="Menu">
+          <nav className="mnav-links">
+            <a href="#how" data-c="">How it works</a>
+            <a href="#story" data-c="">Why</a>
+            <a href="#features" data-c="">Features</a>
+            <a href="#demo" data-c="">See it run</a>
+            <a href="/pricing" data-c="">Pricing</a>
+          </nav>
+          <div className="mnav-cta">
+            <a href="/login" className="btn btn-line" data-c="">Log in</a>
+            <a href="/register" className="btn btn-flame" data-c="">
+              Register <span className="arw">→</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
       <a id="top" />
 
       {/* ── hero ── */}
+      {/* Editorial split: the copy holds the left column, real frames the right.
+          The product is photographs, so they are shown at a size worth looking
+          at rather than blurred behind a veil. Frames are filled by landing.js,
+          which falls back through /assets → placeholder → a drawn figure. */}
       <section className="hero">
-        <div className="hero-bg" id="heroBg" />
-        <div className="hero-veil" />
-        <div className="hero-c">
-          <h1>
-            <span className="ln"><span>Making studio photography</span></span>
-            <span className="ln"><span><em>universally</em> accessible</span></span>
-          </h1>
-          <p className="sub">
-            AI on-model fashion photography for D2C brands and ecommerce sellers in India. One
-            garment photo becomes a full photoshoot — a consistent, photo-real model in every pose
-            your catalogue needs. Minutes, not weeks.
-          </p>
-          <div className="hero-cta">
-            <a href="/register" className="btn btn-flame" data-c="">
-              Start with free credits <span className="arw">→</span>
-            </a>
-            <a href="#demo" className="btn btn-line" data-c="">See a shoot run</a>
+        <div className="wrap hero-grid">
+          <div>
+            <span className="eyebrow">Written with AI · Shot like a studio</span>
+            <h1 style={{ marginTop: 18, fontSize:'49px' }}>
+              <span className="ln"><span>Making studio photography</span></span>
+              <span className="ln"><span><em>universally</em> accessible</span></span>
+            </h1>
+            <p className="sub">
+              AI on-model fashion photography for D2C brands and ecommerce sellers in India. One
+              garment photo — or an on-model shot — becomes a full editorial shoot for{' '}
+              <span className="rotw" id="rotw">sarees</span> — <b>photo-real output that
+              doesn&apos;t look AI-generated</b> — in minutes, not weeks.
+            </p>
+            <div className="hero-cta">
+              <a href="/register" className="btn btn-flame" data-c="">
+                Start with free credits <span className="arw">→</span>
+              </a>
+              <a href="#demo" className="btn btn-line" data-c="">See a shoot run</a>
+            </div>
+            <p className="hero-note">No studio · No crew · No minimum SKUs · Prepaid in ₹</p>
+          </div>
+
+          {/* Each frame carries its own media layer so the photograph can swap
+              underneath a caption and shutter that stay put. landing.js cycles
+              whole shoot SETS through the three plates, so the hero reads as a
+              shoot running rather than a carousel. */}
+          <div className="collage" id="collage" aria-label="Live AI photoshoot lookbook">
+            <div className="pl main" id="plMain">
+              <div className="pl-media" id="mMain" />
+              <div className="shutter" id="shutter" />
+              <span className="cap" id="capMain">S1 · FRAME 01</span>
+            </div>
+            <div className="pl b" id="plB">
+              <div className="pl-media" id="mB" />
+              <span className="cap" id="capB">S1 · FRAME 02</span>
+            </div>
+            <div className="pl d" id="plD">
+              <div className="pl-media" id="mD" />
+              <span className="cap" id="capD">S1 · FRAME 03</span>
+            </div>
+            <div className="pl c" id="plC">
+              <div className="pl-media" id="mC" />
+              <span className="cap" id="capC">S1 · FRAME 04</span>
+            </div>
+            <div className="stamp">
+              SHOT ON <b>AIMAGEGEN</b> · <span className="rec" id="rec">● REC 00:00</span>
+            </div>
           </div>
         </div>
-        <div className="scroll-hint">
-          <span className="k-label">Scroll</span>
-          <span className="stem" />
+      </section>
+
+      {/* ── what do you want to create ── */}
+      {/* Straight after the hero: the visitor has just been told what this is,
+          and this is where they pick which door to walk through. Panels expand
+          on hover; images and behaviour come from landing.js. */}
+      <section className="create" id="create">
+        <div className="wrap">
+          <div className="create-head rv">
+            <span className="eyebrow">What do you want to create?</span>
+            <h2 className="sec-h2">Photos, models, video, or listings. Start where you need to.</h2>
+          </div>
+          <div className="create-row" id="createRow" />
         </div>
       </section>
 
       {/* ── narrative ── */}
-      <section className="narr" id="story">
+      <section className="narr" id="story" style={{display:"none"}}>
         <div className="pin-wrap" id="narrWrap">
           <div className="pin">
             <div className="scene" id="sc1">
@@ -297,6 +378,204 @@ export default async function LandingPage() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* ── how it works: the shot setup ── */}
+      {/* Placed right after the challenge→solution beat: the story has just
+          said a garment becomes a shoot, and this is where the visitor gets to
+          drive it themselves before any of the finished-work panels below.
+          Wired by landing.js. */}
+      <section className="hiw" id="how">
+        <div className="wrap">
+          <div className="hiw-head rv">
+            <span className="eyebrow">How it works</span>
+            <h2 className="sec-h2">From garment to finished photo</h2>
+            <p className="sec-p">
+              Upload a garment, set the model, scene and pose, and generate studio-grade photos.
+              Try the shot setup below.
+            </p>
+          </div>
+
+          {/* Womenswear / Menswear. Each carries its own garments, cast and
+              poses, so the panel below is rebuilt when this changes. */}
+          <div className="hiw-tabs" id="hiwCats" role="tablist" aria-label="Category" />
+
+          <div className="hiw-card">
+            <div>
+              <div className="hiw-group">
+                <span className="k-label">Garment</span>
+                <div className="hiw-garments" id="hiwGarments" role="group" aria-label="Garment" />
+              </div>
+
+              <div className="hiw-group">
+                <span className="k-label">Model</span>
+                <div className="hiw-opts" id="hiwModels" role="group" aria-label="Model" />
+              </div>
+              <div className="hiw-group">
+                <span className="k-label">Background</span>
+                <div className="hiw-opts" id="hiwBgs" role="group" aria-label="Background" />
+              </div>
+              <div className="hiw-group">
+                <span className="k-label">Poses</span>
+                <div className="hiw-opts" id="hiwPoses" role="group" aria-label="Pose" />
+              </div>
+
+              <div className="hiw-cta">
+                <a href="/register" className="btn btn-flame" data-c="">
+                  Generate this shot free <span className="arw">→</span>
+                </a>
+              </div>
+            </div>
+
+            <div className="hiw-view" id="hiwView">
+              <div className="media" id="hiwMedia" />
+              <span className="hiw-cap" id="hiwCap">Anouk Steele · Studio white · Standing</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── darkroom filmstrip ── */}
+      {/* Sits straight after the challenge→solution beat: the narrative has
+          just claimed a garment becomes a shoot, and this shows it happening.
+          Built and driven by landing.js. */}
+      <section className="darkroom" id="darkroom">
+        <div className="wrap">
+          <span className="eyebrow">The darkroom · every frame develops as it passes the light</span>
+          <h2 className="sec-h2">Watch the film develop.</h2>
+          <p className="sec-p">
+            Frames enter as raw negatives and develop into finished photographs as they cross the
+            developer beam — the way a garment enters AImageGen and leaves as a shoot. Drag the
+            film. Scroll the page and the reel speeds with you.
+          </p>
+        </div>
+
+        <div className="dark-strip" id="strip">
+          <div className="sprockets top" />
+          <div className="sprockets bot" />
+          <div className="track" id="track" />
+          <div className="beam" />
+          <div className="beam-lbl">Developing</div>
+        </div>
+
+        <div className="wrap strip-foot">
+          <span className="slbl">Raw negative → developed · AImageGen reel 01</span>
+          <span className="slbl">Drag to scrub · scroll to speed up</span>
+        </div>
+      </section>
+
+      {/* ── casting matrix ── */}
+      {/* Follows the darkroom: that panel proves one garment becomes a finished
+          photograph, this one proves it becomes ANY of them — five models, six
+          setups, identity held down each row. Built by landing.js from
+          /webassets/m{row}p{col}. */}
+      <section className="castworld" id="casting">
+        <div className="wrap">
+          <span className="eyebrow">Casting · One garment · Any model · Any backdrop</span>
+          <h2 className="sec-h2">Cast the world. Shoot it your way.</h2>
+          <p className="sec-p">
+            Thirty frames, one garment. Five models from five continents, six setups each — flipping
+            past at shutter speed so you can feel the <b>range</b>. Every frame in a row is the{' '}
+            <b>same face</b>. Hover to pause; click any thumbnail to jump.
+          </p>
+
+          <div className="lr-box" id="panel">
+            <div className="lr-top">
+              <span className="lbl">Library · 1 garment · 5 models × 6 setups · auto-advance 0.45s</span>
+              <span className="roll">● identity locked per row</span>
+            </div>
+
+            <div className="lr-main">
+              <div className="loupe" id="loupe">
+                <span className="idchip">Same model — locked</span>
+                <span className="fno" id="fno">FRAME 01 / 30</span>
+                <div className="media" id="loupeMedia" />
+                <div className="veil" />
+                <div className="who">
+                  <div className="nm" id="whoNm">Aisha</div>
+                  <div className="sub" id="whoSub">MUMBAI · STUDIO SEAMLESS</div>
+                </div>
+                <div className="bar" id="cycleBar" />
+              </div>
+
+              <div className="mapside">
+                <div>
+                  <div className="mm-cols" id="mmCols" />
+                  <div id="mmRows" />
+                </div>
+                <div className="mm-legend">
+                  <span className="same">● Same face across each row →</span>
+                  <span className="lbl" id="pauseState">PLAYING</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="lr-foot">
+              <span className="lbl">30 frames · generated from one upload</span>
+              <span className="lbl">Cells replaceable via webassets/m&#123;row&#125;p&#123;col&#125;.jpg</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section className="demo" id="demo">
+        <div className="wrap">
+          <div className="rv">
+            <span className="eyebrow">Live on this page · webassets/shoot</span>
+            <h2 className="sec-h2">One garment in. A full shoot out.</h2>
+            <p className="sec-p">
+              Five real shoots on one sheet — the <b>input</b> and everything it became. It advances
+              on its own; use <b>◀ ▶</b> to browse at your own pace.
+            </p>
+          </div>
+
+          <div className="sheet" id="sheetBox">
+            <div className="sheet-top">
+              <span className="lbl" id="topLbl">CONTACT SHEET · SET 01 / 05</span>
+              <span className="roll">● REC · consistency locked</span>
+            </div>
+            <div className="scan" id="scan" />
+            <div className="frames" id="frames" />
+            <div className="sheet-foot">
+              <span className="lbl" id="footLbl">
+                6 FRAMES · SAME MODEL · ~00:02:11 <span className="swipe-hint">· swipe ⇄</span>
+              </span>
+              <div className="nav">
+                <button className="nbtn prev" id="prevB" aria-label="Previous set">
+                  <svg viewBox="0 0 16 16" fill="none">
+                    <path d="M10 3 L5 8 L10 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                <div className="thumbs" id="thumbs" />
+                <button className="nbtn next" id="nextB" aria-label="Next set">
+                  <svg viewBox="0 0 16 16" fill="none">
+                    <path d="M6 3 L11 8 L6 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="rv" style={{ marginTop: 34 }}>
+            <a href="/register" className="btn btn-flame" data-c="">
+              Run it on your garment <span className="arw">→</span>
+            </a>
+          </div>
+        </div>
+      </section>
+      {/* ── built for brands at every stage ── */}
+      {/* A category deck: pills choose, three cards fan with the chosen one
+          upright. Pills, cards and imagery all come from landing.js. */}
+      <section className="cats" id="cats">
+        <div className="wrap">
+          <div className="cats-head rv">
+            <h2 className="sec-h2">Built for brands at every stage.</h2>
+            <p className="sec-p">Pick the category that fits your brand:</p>
+          </div>
+          <div className="cats-pills" id="catsPills" role="tablist" aria-label="Category" />
+        </div>
+        {/* Outside .wrap so the fanned side cards can run past the text column
+            without being clipped by its padding. */}
+        <div className="cats-stage" id="catsStage" />
       </section>
 
       {/* ── cost counter ── */}
@@ -356,6 +635,80 @@ export default async function LandingPage() {
         </div>
       </section>
 
+
+      {/* ── prompt genie: summoned by the scroll ── */}
+      {/* One gesture spread over a pinned zone: the tile rises, bursts into
+          smoke at the halfway mark, and the demo modal forms out of the same
+          burst — every step scrubbed from scroll position, so scrolling back
+          up gathers the smoke and puts Genie back. landing.js drives it all
+          from zoneProgress(genieWrap); the tile stays clickable and simply
+          scrolls you to the point where the modal is open. */}
+      <section className="genie-sec" id="genie">
+        <div className="pin-wrap" id="genieWrap">
+          <div className="pin">
+            <div className="genie-veil" id="genieVeil" />
+            <div className="genie-copy" id="genieCopy">
+              <span className="eyebrow">Prompt Genie</span>
+              <h2>
+                Not sure what to <em>ask for?</em>
+              </h2>
+              <p>
+                Type a half-formed idea. Genie rewrites it into a brief a photographer would
+                recognise — lens, light, pose, background — before a single credit is spent.
+              </p>
+              <span className="genie-hint" id="genieHint">
+                Keep scrolling to summon <span className="arw">↓</span>
+              </span>
+            </div>
+
+            <div className="genie-stage">
+              <button
+                className="genie-tile"
+                id="genieTile"
+                type="button"
+                data-c=""
+                aria-label="Summon the Prompt Genie demo"
+              >
+                <span className="gt-in">
+                  <span className="gt-orb">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/genie.webp" alt="" width={76} height={76} />
+                  </span>
+                  <span className="gt-name">Ask Genie</span>
+                  <span className="gt-sub">tap to summon ✨</span>
+                </span>
+              </button>
+
+              {/* Filled by landing.js: /webassets/genie-demo.mp4 if it is there,
+                  otherwise a still frame — never a broken player. */}
+              <div
+                className="genie-modal"
+                id="genieModal"
+                role="dialog"
+                aria-label="Prompt Genie demo"
+                aria-hidden="true"
+              >
+                <div className="gm-bar">
+                  <span className="k-label">Prompt Genie · live</span>
+                  <span className="gm-dot" />
+                </div>
+                <div className="gm-media" id="genieMedia" />
+                <div className="gm-foot">
+                  <span className="gm-line">
+                    <b>You</b>red saree, nice background
+                  </span>
+                  <span className="gm-line gm-out">
+                    <b>Genie</b>Full-length editorial of a deep-red silk saree — 85mm, soft key
+                    from camera-left, warm sandstone backdrop, three-quarter turn, gold zari
+                    catching the light.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── stats ── */}
       <div className="stats">
         <div className="wrap stats-in">
@@ -395,36 +748,11 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* ── demo ── */}
-      <section className="demo" id="demo">
-        <div className="wrap demo-grid">
-          <div className="rv">
-            <span className="eyebrow">Live on this page</span>
-            <h2>One garment in. A full shoot out.</h2>
-            <p className="d">
-              This is the product, in miniature. One garment frame becomes a full set — with the
-              model&apos;s identity locked on every frame.
-            </p>
-            <a href="/register" className="btn btn-flame" data-c="">
-              Run it on your garment <span className="arw">→</span>
-            </a>
-          </div>
-          <div className="rv">
-            <div className="sheet" id="sheetBox">
-              <div className="sheet-top">
-                <span className="lbl">Contact sheet · 1 upload</span>
-                <span className="roll">● REC · consistency locked</span>
-              </div>
-              <div className="scan" id="scan" />
-              <div className="frames" id="frames" />
-              <div className="sheet-foot">
-                <span className="lbl">6 frames · same model · ~00:02:11</span>
-                <button className="replay" id="replay" data-c="">↻ Run again</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* ── demo: the contact sheet ── */}
+      {/* Full width rather than the old half-column: the sheet is six frames
+          plus a set-navigator, and that does not fit beside a paragraph.
+          Driven by landing.js from /webassets/shoot. */}
+      
 
       {/* ── pricing ── */}
       <section className="pricing" id="pricing">
