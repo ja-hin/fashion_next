@@ -84,16 +84,10 @@ export default async function PricingPage() {
             <a href="/pricing">Pricing</a>
           </nav>
           <div className="nav-right">
-            <button className="mode" id="modeBtn" aria-label="Toggle light and dark mode">
-              <span className="orb" />
-              <span className="txt" id="modeTxt">
-                Dark
-              </span>
-            </button>
             <a href="/login" className="btn btn-line" style={{ padding: '.6em 1.2em' }}>
               Log in
             </a>
-            <a href="/register" className="btn btn-flame" style={{ padding: '.6em 1.2em' }}>
+            <a href="/register" className="btn btn-cta" style={{ padding: '.6em 1.2em' }}>
               Register <span className="arw">→</span>
             </a>
           </div>
@@ -269,7 +263,7 @@ export default async function PricingPage() {
 
                   <a
                     href="/register"
-                    className={`btn ${p.popular ? 'btn-flame' : 'btn-line'}`}
+                    className={`btn ${p.popular ? 'btn-cta' : 'btn-line'}`}
                     style={{ justifyContent: 'center', marginTop: 18 }}
                   >
                     Get started <span className="arw">→</span>

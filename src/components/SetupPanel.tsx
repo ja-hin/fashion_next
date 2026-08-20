@@ -36,7 +36,7 @@ export const DEFAULT_SETUP: SetupState = {
   input_family: 'garment_in',
   ref_mode: 'same_garment',
   style: 'european',
-  framing: 'three_quarter',
+  framing: 'full_body',
   aspect: '4:5',
   resolution: '1K',
   backdrop: 'studio seamless',
@@ -103,13 +103,13 @@ export default function SetupPanel({
 
   return (
     <aside className="w-[336px] px-[22px] pb-[30px] pl-6 pt-[22px]">
-      <div className="mb-[3px] text-[10.5px] font-bold uppercase tracking-[0.08em] text-brand">
+      {/* <div className="mb-[3px] text-[10.5px] font-bold uppercase tracking-[0.08em] text-brand">
         Step 1
       </div>
       <h2 className="mb-1 text-[17px] font-bold">Set up your shoot</h2>
       <div className="mb-[18px] text-xs leading-[1.5] text-muted">
         The front shot locks the model, lighting &amp; background. You add poses after.
-      </div>
+      </div> */}
 
       {hasShoot && (
         <button
@@ -271,55 +271,55 @@ export default function SetupPanel({
         )}
       </Field>
 
-      <div className="mb-[13px] flex gap-2.5">
-        <div className="flex-1">
-          <label className="lbl">Framing</label>
+      {/* One grid for all six selects so every control is the same width and
+          the columns line up across rows. min-w-0 keeps a long option label
+          from stretching its column. */}
+      <div className="mb-[13px] grid grid-cols-2 items-start gap-x-2.5 gap-y-[13px] relative">
+        <Field label="Resolution" className="mb-0 min-w-0" float>
+          <Select
+            value={setup.resolution}
+            onChange={(v) => onSetup({ resolution: v })}
+            options={RESOLUTIONS}
+          />
+          {showResHint && (
+            <div className="mt-1.5 text-[11px] font-semibold text-muted">
+              2K / 4K render on the higher-quality flash-image model.
+            </div>
+          )}
+        </Field>
+
+        <Field label="Aspect" className="mb-0 min-w-0" float>
+          <Select value={setup.aspect} onChange={(v) => onSetup({ aspect: v })} options={ASPECTS} />
+        </Field>
+
+        <Field label="Framing" className="mb-0 min-w-0" float>
           <Select
             value={setup.framing}
             onChange={(v) => onSetup({ framing: v })}
             options={FRAMINGS}
           />
-        </div>
-        <div className="flex-1">
-          <label className="lbl">Aspect</label>
-          <Select value={setup.aspect} onChange={(v) => onSetup({ aspect: v })} options={ASPECTS} />
-        </div>
+        </Field>
+
+        <Field label="Backdrop" className="mb-0 min-w-0" float>
+          <Select
+            value={setup.backdrop}
+            onChange={(v) => onSetup({ backdrop: v })}
+            options={BACKDROPS}
+          />
+        </Field>
+
+        <Field label="Mood" className="mb-0 min-w-0" float>
+          <Select value={setup.mood} onChange={(v) => onSetup({ mood: v })} options={MOODS} />
+        </Field>
+
+        <Field label="Lighting" className="mb-0 min-w-0" float>
+          <Select
+            value={setup.lighting}
+            onChange={(v) => onSetup({ lighting: v })}
+            options={LIGHTINGS}
+          />
+        </Field>
       </div>
-
-      <Field label="Resolution">
-        <Select
-          value={setup.resolution}
-          onChange={(v) => onSetup({ resolution: v })}
-          options={RESOLUTIONS}
-        />
-        {showResHint && (
-          <div className="mt-1.5 text-[11px] font-semibold text-muted">
-            2K / 4K render on the higher-quality flash-image model.
-          </div>
-        )}
-      </Field>
-
-      {/* Full width: these option labels ("studio seamless", "soft bright
-          commercial") are too long for a half-width select and get truncated. */}
-      <Field label="Backdrop">
-        <Select
-          value={setup.backdrop}
-          onChange={(v) => onSetup({ backdrop: v })}
-          options={BACKDROPS}
-        />
-      </Field>
-
-      <Field label="Mood">
-        <Select value={setup.mood} onChange={(v) => onSetup({ mood: v })} options={MOODS} />
-      </Field>
-
-      <Field label="Lighting">
-        <Select
-          value={setup.lighting}
-          onChange={(v) => onSetup({ lighting: v })}
-          options={LIGHTINGS}
-        />
-      </Field>
 
       <button
         onClick={onGenerate}
@@ -331,13 +331,16 @@ export default function SetupPanel({
           : ensemble.length
             ? `Generate Hero from ${ensemble.length} image${ensemble.length === 1 ? '' : 's'}`
             : 'Generate Hero image'}
+        {/* The hero is one image whatever the reference count, so the quote is
+            the single-image rate for the chosen resolution × model source. */}
+        {!busy && heroCost > 0 && ` · ${heroCost} credit${heroCost === 1 ? '' : 's'}`}
       </button>
 
-      <div className="mt-2.5 text-[11px] leading-[1.5] text-muted">
+      {/* <div className="mt-2.5 text-[11px] leading-[1.5] text-muted">
         {isEnsemble
           ? 'Assembles every item onto one model and locks that model, so each later pose keeps the whole look.'
           : 'Each photo is the truth for the side it shows, so the back is never invented. Locks the model too.'}
-      </div>
+      </div> */}
     </aside>
   );
 }

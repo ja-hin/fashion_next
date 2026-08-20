@@ -10,7 +10,7 @@
   --mono:"Geist Mono","Geist Mono Fallback",ui-monospace,monospace;
 
   /* light (default) */
-  --bg:#F1ECE1; --bg2:#E8E1D1; --card:#FAF6EC;
+  --bg:#e5e5e5; --bg2:#e5e5e5; --card:#fff;
   --text:#17150F; --dim:#5B5344; --muted:#8A8172;
   --line:rgba(23,21,15,.16); --line-soft:rgba(23,21,15,.08);
   --sheet-bg:#171511; --sheet-line:rgba(255,255,255,.1);
@@ -18,7 +18,7 @@
   --shadow:0 30px 70px -35px rgba(23,21,15,.5);
   --grain-blend:multiply; --grain-op:.05;
   --veil:radial-gradient(ellipse 72% 62% at 50% 45%, rgba(241,236,225,.62), rgba(241,236,225,.97) 78%);
-  --nav-bg:rgba(241,236,225,.85);
+  --nav-bg:#e5e5e5;
   --glow:radial-gradient(circle, rgba(228,87,46,.12), transparent 62%);
 }
 [data-theme="dark"]{
@@ -53,6 +53,37 @@ h1,h2,h3{margin:0;font-family:var(--serif);font-weight:500;letter-spacing:-.014e
 .eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.26em;text-transform:uppercase;color:var(--flame);font-weight:700}
 .k-label{font-family:var(--mono);font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
 
+/* ============ shared card hover: gradient rim + coloured bloom ============
+   Opt in by adding `card-glow` alongside a card's own class. Two independent parts:
+
+   The RIM is one gradient masked down to its own padding box — the standard
+   two-layer mask/exclude trick — so it rides over whatever border the card
+   already carries without a second element and without touching the card's
+   background. It lives on ::after because `.stat` already spends ::before on
+   its top accent.
+
+   The BLOOM is a box-shadow, not a blurred pseudo-element: a shadow is not
+   clipped by the card's own `overflow:hidden`, needs no z-index juggling
+   against the card's content, and costs no extra paint layer.
+
+   Both ends of the gradient are the page's own accents rather than imported
+   colours, so this reads as the same design system, not a borrowed effect. */
+.card-glow{position:relative;
+  transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .4s,border-color .35s}
+.card-glow::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;
+  background:linear-gradient(135deg,var(--flame),#E0559B 52%,var(--genie));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+          mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  opacity:0;transition:opacity .35s;pointer-events:none}
+.card-glow:hover{transform:translateY(-5px);
+  box-shadow:0 16px 34px -24px rgba(23,21,15,.42),
+             0 26px 52px -18px color-mix(in srgb,var(--genie) 40%,transparent)}
+.card-glow:hover::after{opacity:1}
+/* Keyboard gets the same affordance the pointer does. */
+.card-glow:focus-within{transform:translateY(-5px)}
+.card-glow:focus-within::after{opacity:1}
+
 /* custom cursor */
 .cur{position:fixed;z-index:10000;top:0;left:0;width:10px;height:10px;border-radius:50%;background:var(--flame);pointer-events:none;
   transform:translate(-50%,-50%);transition:width .25s,height .25s,background .25s;mix-blend-mode:difference}
@@ -76,17 +107,42 @@ footer .logo-img{height:46px}
 .nav-links a:hover{color:var(--text)}
 .nav-links a:hover::after{width:100%}
 .nav-right{display:flex;align-items:center;gap:12px}
-.mode{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:100px;padding:6px 12px;background:transparent;
-  cursor:pointer;font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;transition:border-color .3s,color .3s}
-.mode:hover{border-color:var(--text);color:var(--text)}
-.mode .orb{width:12px;height:12px;border-radius:50%;background:linear-gradient(90deg,var(--text) 50%,transparent 50%);border:1.5px solid var(--text);transition:transform .5s cubic-bezier(.2,.7,.2,1)}
-[data-theme="dark"] .mode .orb{transform:rotate(180deg)}
 
 .btn{display:inline-flex;align-items:center;gap:.55em;font-weight:600;font-size:.95rem;padding:.85em 1.5em;border-radius:2px;cursor:pointer;border:1px solid transparent;transition:transform .3s cubic-bezier(.2,.7,.2,1),background .3s,border-color .3s,color .3s}
 .btn .arw{transition:transform .3s}
 .btn:hover .arw{transform:translateX(5px)}
-.btn-flame{background:var(--flame);color:#fff}
-.btn-flame:hover{background:var(--flame-2);transform:translateY(-2px)}
+
+/* ── the running-gradient sweep, shared by the CTAs and the how-it-works card ──
+   `@property` is what makes the angle animatable: a plain custom property is
+   an untyped token, so it would jump 0deg → 360deg with nothing in between.
+   Declaring it an <angle> is what lets the engine interpolate it. Where
+   @property is unsupported the gradient simply holds at 0deg — a static rim,
+   not a broken one. */
+@property --sweep-angle{syntax:"<angle>";initial-value:0deg;inherits:false}
+@keyframes sweep{to{--sweep-angle:360deg}}
+
+/* The primary call to action. White rather than a filled flame: against this
+   page's grey a white plane with a lit edge carries further than another block
+   of orange, and it keeps the accent for the one thing that is moving. */
+.btn-cta{background:var(--card);color:var(--text);border-color:var(--line-soft);
+  border-radius:10px;position:relative;isolation:isolate;
+  box-shadow:0 10px 26px -18px rgba(23,21,15,.5)}
+/* Same masked ring as .hiw-card — one gradient clipped to its own padding box,
+   so only the rim paints and the button's white face is untouched. */
+.btn-cta::before{content:"";position:absolute;inset:0;border-radius:inherit;
+  padding:1.6px;pointer-events:none;
+  background:conic-gradient(from var(--sweep-angle),
+    transparent 0deg,#7c5cff 42deg,var(--flame) 84deg,transparent 136deg,transparent 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+          mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  animation:sweep 6s linear infinite}
+.btn-cta:hover{transform:translateY(-2px);
+  box-shadow:0 16px 34px -18px rgba(23,21,15,.5),
+             0 18px 40px -20px color-mix(in srgb,#7c5cff 40%,transparent)}
+/* Twice round while the pointer is on it — the button answers the hover
+   without changing colour or size enough to shift anything around it. */
+.btn-cta:hover::before{animation-duration:3s}
 .btn-line{border-color:var(--line);color:var(--text)}
 .btn-line:hover{border-color:var(--text);transform:translateY(-2px)}
 
@@ -176,8 +232,8 @@ footer .logo-img{height:46px}
 
 /* ---------- horizontal rail ---------- */
 .rail-sec{position:relative;background:var(--bg2);transition:background .5s}
-.rail-head{padding:110px 0 20px}
-.rail-head h2{font-size:clamp(2rem,4.6vw,3.6rem);max-width:18ch;margin-top:16px}
+.rail-head{padding:50px 20px 20px;text-align: center;}
+.rail-head h2{font-size:clamp(2rem,4.6vw,3.6rem);margin-top:16px}
 .rail-pinzone{position:relative}
 .rail-pin{position:sticky;top:0;height:100svh;min-height:620px;display:flex;align-items:center;overflow:hidden}
 .rail-track{display:flex;gap:26px;padding:0 32px;will-change:transform}
@@ -215,23 +271,80 @@ footer .logo-img{height:46px}
 .wchip .cr{font-family:var(--mono);font-size:.66rem;color:var(--mint);margin-top:8px;letter-spacing:.08em}
 
 /* ---------- stats ---------- */
-.stats{border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
-.stats-in{display:grid;grid-template-columns:repeat(4,1fr)}
-.stat{padding:64px 30px;border-left:1px solid var(--line-soft)}
-.stat:first-child{border-left:0}
-.stat .num{font-family:var(--serif);font-size:clamp(2.2rem,4vw,3.4rem);line-height:1;font-variant-numeric:tabular-nums}
-.stat .num small{font-size:.45em;font-family:var(--mono);color:var(--flame)}
-.stat .cap{margin-top:14px}
+/* Four proof points. Cards on the page's grey rather than cells divided by
+   hairlines: each number is a separate claim, and its own white plane is what
+   makes it read as one instead of as a row in a table. */
+.stats{padding:clamp(54px,7vw,86px) 0}
+.stats-in{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(12px,1.4vw,18px)}
+.stat{position:relative;overflow:hidden;background:var(--card);
+  border:1px solid var(--line-soft);border-radius:18px;
+  padding:clamp(26px,2.6vw,34px) clamp(20px,2vw,28px);
+  transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s,border-color .35s}
+/* The accent draws itself across the top edge when the number starts counting,
+   so the card arrives as one gesture rather than two. `.lit` is set by the
+   same observer that runs the count — see landing.js. */
+.stat::before{content:"";position:absolute;left:0;top:0;height:3px;width:100%;
+  background:linear-gradient(90deg,var(--flame),transparent);
+  transform:scaleX(0);transform-origin:0 50%;
+  transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+.stat.lit::before{transform:none}
+
+/* Baseline-aligned so the unit sits on the number's feet, not its middle. */
+.stat .num{font-family:var(--serif);font-size:clamp(2.3rem,4vw,3.4rem);line-height:1;
+  font-variant-numeric:tabular-nums;letter-spacing:-.015em;
+  display:flex;align-items:baseline;gap:.1em}
+/* The currency mark comes out of the serif on purpose: Playfair has no rupee
+   of its own, and the Georgia fallback it reaches for sets one with the wrong
+   advance width, which is what made ₹ collide with the 25 beside it. */
+.stat .num .pre{font-family:var(--sans);font-size:.6em;font-weight:500;letter-spacing:0}
+.stat .num small{font-size:.4em;font-family:var(--mono);color:var(--flame);font-weight:500}
+.stat .cap{margin-top:16px;display:block}
+
 
 /* ---------- assurances ---------- */
-.assure{padding:90px 0 10px}
-.agrid{display:grid;grid-template-columns:1fr 1fr;gap:0 44px}
-.aitem{display:flex;gap:14px;align-items:flex-start;padding:16px 0;border-bottom:1px solid var(--line-soft);font-size:1.02rem;color:var(--dim)}
-.aitem .tick{color:var(--mint);font-weight:700;flex:0 0 auto}
-@media(max-width:720px){.agrid{grid-template-columns:1fr}}
+/* These are the reassurances, so they are set as eight affirmative cards
+   rather than ruled rows — underlined grey text reads as the small print the
+   heading is promising it is not. */
+.assure{padding:clamp(30px,4vw,50px) 0 clamp(60px,8vw,100px)}
+.agrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.aitem{display:flex;gap:13px;align-items:center;padding:17px 20px;
+  background:var(--card);border:1px solid var(--line-soft);border-radius:14px;
+  font-size:1rem;line-height:1.45;color:var(--text);
+  opacity:0;translate:0 14px;
+  transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .4s,border-color .35s}
+/* Each card rises on the parent's reveal, one after the next along the grid,
+   so the block lands as a sweep rather than eight things at once.
+
+   Deliberately an animation on `translate`, not a transition on `transform`:
+   a staggered transition-delay would also delay the hover lift — the eighth
+   card would hang for 385ms before moving — and an animation that filled
+   `transform` would outrank the hover rule in the cascade and pin the card
+   down. `translate` is its own property, so the reveal and the lift compose
+   instead of fighting. */
+.agrid.in .aitem{animation:aitemIn .5s cubic-bezier(.2,.7,.2,1) both;
+  animation-delay:calc(var(--i,0) * 55ms)}
+@keyframes aitemIn{from{opacity:0;translate:0 14px}to{opacity:1;translate:none}}
+/* A card this small would be swamped by the full bloom, so it gets a shorter
+   throw — the rim and the lift are shared, only the shadow is scaled. */
+.aitem.card-glow:hover{transform:translateY(-3px);
+  box-shadow:0 10px 22px -18px rgba(23,21,15,.4),
+             0 16px 32px -14px color-mix(in srgb,var(--genie) 32%,transparent)}
+/* A filled disc, not a bare glyph: at this size a loose ✓ sits at a different
+   height in every fallback font and the column of them goes ragged. */
+.aitem .tick{flex:0 0 auto;width:23px;height:23px;border-radius:50%;
+  background:color-mix(in srgb,var(--mint) 16%,transparent);color:var(--mint);
+  display:grid;place-items:center;font-size:.7rem;font-weight:800;line-height:1}
+@media(max-width:720px){
+  .agrid{grid-template-columns:1fr}
+  /* Two 1-column-wide stat cards at phone width leave the numbers stranded in
+     a lot of white; stacked, each claim gets the full measure. */
+  .stats-in{grid-template-columns:1fr}
+  .stat{padding:22px 20px}
+  .aitem{padding:15px 16px;font-size:.96rem}
+}
 
 /* ---------- contact sheet demo (dark in both themes — it's a light table) ---------- */
-.demo{padding:130px 0}
+.demo{padding:50px 0}
 .demo-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:64px;align-items:center}
 .demo h2{font-size:clamp(2rem,4.4vw,3.4rem);margin-top:16px}
 .demo p.d{color:var(--dim);font-size:1.06rem;max-width:46ch;margin:20px 0 30px}
@@ -286,13 +399,17 @@ footer .logo-img{height:46px}
 .imgcredit{font-family:var(--mono);font-size:.6rem;color:var(--muted);letter-spacing:.06em;margin-top:14px}
 
 /* ---------- pricing ---------- */
-.pricing{padding:130px 0;background:var(--bg2);border-top:1px solid var(--line-soft);transition:background .5s}
+.pricing{padding:50px 0 0 0;background:var(--bg2);border-top:1px solid var(--line-soft);transition:background .5s}
 .pricing .head{text-align:center;max-width:760px;margin:0 auto 64px}
 .pricing h2{font-size:clamp(2.2rem,5vw,4rem);margin-top:16px}
 .pricing .head p{color:var(--dim);margin-top:20px}
 .plans{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
 .plan{border:1px solid var(--line-soft);border-radius:8px;padding:32px 26px;background:var(--card);display:flex;flex-direction:column;position:relative;transition:transform .35s cubic-bezier(.2,.7,.2,1),border-color .35s,box-shadow .35s,background .5s}
-.plan:hover{transform:translateY(-8px);border-color:var(--line);box-shadow:var(--shadow)}
+/* Outranks `.rv`, whose .9s reveal transition would otherwise time the lift
+   as well and make it feel like it is dragging. */
+.plan.card-glow{transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .4s,
+  border-color .35s,opacity .9s}
+.plan.card-glow:hover{transform:translateY(-8px)}
 .plan.feat{border-color:rgba(228,87,46,.6);background:linear-gradient(180deg,rgba(228,87,46,.1),rgba(228,87,46,.02) 40%),var(--card)}
 .badge{position:absolute;top:-11px;left:26px;background:var(--flame);color:#fff;font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;padding:5px 11px;border-radius:2px}
 .p-name{font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--flame);font-weight:700}
@@ -306,7 +423,7 @@ footer .logo-img{height:46px}
 .pnote{text-align:center;font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-top:36px}
 
 /* ---------- faq ---------- */
-.faq{padding:120px 0 60px}
+.faq{padding:50px 0 0px}
 .qa{border-bottom:1px solid var(--line-soft)}
 .qa summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:20px;
   padding:22px 4px;font-weight:600;font-size:1.05rem;color:var(--text);transition:color .25s}
@@ -318,7 +435,7 @@ footer .logo-img{height:46px}
 .qa p b{color:var(--text)}
 
 /* ---------- final ---------- */
-.final{height:92svh;min-height:560px;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden}
+.final{height:22svh;min-height:560px;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden}
 .final h2{font-size:clamp(2.6rem,7vw,5.8rem);max-width:15ch}
 .final h2 em{font-style:italic;color:var(--flame)}
 .final .in{position:relative;z-index:2;padding:0 24px}
@@ -339,20 +456,21 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
   .nav-links{display:none}
   /* The collage stacks under the copy rather than beside it, and loses height —
      a 76svh photo block below the fold is all a phone would show. */
-  .hero{padding:110px 0 50px}
+  .hero{padding:75px 0 50px}
   .hero-grid{grid-template-columns:1fr;gap:44px}
   .collage{height:60svh}
   .stats-in{grid-template-columns:1fr 1fr}
-  .stat:nth-child(3){border-left:0}
   .demo-grid{grid-template-columns:1fr;gap:44px}
   .plans{grid-template-columns:1fr 1fr}
   .cost-bars{gap:30px}
 }
 @media(max-width:620px){
+  /* The clamp's 2.9rem floor never kicks in on a phone — 46px of display type
+     ate the fold, so the h1 is pinned flat here instead. */
+  .hero h1{font-size:26px !important}
   .plans{grid-template-columns:1fr}
   .hero-cta{flex-direction:column;align-items:flex-start}
   .rcard{flex-basis:82vw}
-  .mode .txt{display:none}
 }
 @media(prefers-reduced-motion:reduce){
   *{animation-duration:.001ms!important;animation-delay:0ms!important;transition-duration:.001ms!important}
@@ -409,7 +527,7 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 /* A 5×6 matrix — five models, six setups — flipping past at shutter speed.
    The claim being made is range WITH identity held, so the minimap matters as
    much as the loupe: every frame in a row is visibly the same face. */
-.castworld{padding:90px 0 0}
+.castworld{padding:50px 0 0}
 .lr-box{background:var(--sheet-bg);border:1px solid var(--line-soft);border-radius:10px;padding:22px;box-shadow:var(--shadow);margin-top:46px}
 .lr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:12px;flex-wrap:wrap}
 .lr-box .lbl{font-family:var(--mono);font-size:.64rem;letter-spacing:.18em;color:#8f8676;text-transform:uppercase}
@@ -452,6 +570,13 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 .lr-foot{display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--sheet-line);gap:10px;flex-wrap:wrap}
 
 @media(max-width:860px){
+  .final {
+    height: 12svh;
+    min-height: 400px;
+  }
+  .reel-cap{
+    margin-top: 8px !important;
+  }
   .lr-main{grid-template-columns:1fr}
   .loupe{max-height:none}
 }
@@ -464,7 +589,7 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
    and watch the frame change. Every other panel on this page shows finished
    work; this one lets the visitor drive it, which is the closest thing to a
    trial before signing up. */
-.hiw{padding:90px 0 0}
+.hiw{padding:50px 0 0}
 .hiw-head{text-align:center;max-width:640px;margin:0 auto}
 .hiw-head .sec-p{margin-left:auto;margin-right:auto}
 /* Womenswear / Menswear — a segmented control rather than another pill row,
@@ -477,14 +602,37 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
   transition:background .25s,color .25s}
 .hiw-tab:hover{color:var(--text)}
 .hiw-tab.on{background:var(--card);color:var(--text);box-shadow:0 2px 10px -4px rgba(23,21,15,.45)}
+/* Inside the card the pill track is one control among the others rather than a
+   centred header, so it drops the auto margins and aligns with the labels. */
+.hiw-card .hiw-tabs{margin:0;justify-content:flex-start}
 
 .hiw-card{margin-top:26px;background:var(--card);border:1px solid var(--line-soft);border-radius:20px;
   box-shadow:var(--shadow);padding:30px;display:grid;grid-template-columns:1fr .82fr;gap:34px;align-items:center;
   position:relative;overflow:hidden}
-/* the hairline that ties the card to the brand without shouting */
-.hiw-card::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;
-  background:linear-gradient(90deg,transparent,#7c5cff,var(--flame),transparent);opacity:.7}
 
+/* ── the light that runs round the card ──────────────────────────────
+   The colours are the requested sweep — transparent → violet → flame →
+   transparent — but laid out as a conic gradient rather than a linear one,
+   because only a conic can be spun about the card's centre and read as one
+   light travelling the perimeter. A linear gradient can be slid, and that
+   reads as a bar crossing the card, not a border in motion.
+
+   `@property` is what makes the spin possible at all: a plain custom property
+   is an untyped token, so it would flip from 0deg to 360deg with nothing in
+   between. Declaring it an <angle> is what lets the engine interpolate it.
+   Where @property is unsupported the ring simply holds still at 0deg, which
+   is a static gradient rim rather than a broken one.
+
+   Masked to its own padding box by the same exclude trick `.card-glow` uses,
+   so only the 1.5px rim paints and the card's interior is untouched. */
+.hiw-card::before{content:"";position:absolute;inset:0;border-radius:inherit;
+  padding:1.5px;pointer-events:none;z-index:1;
+  background:conic-gradient(from var(--sweep-angle),
+    transparent 0deg,#7c5cff 42deg,var(--flame) 84deg,transparent 136deg,transparent 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+          mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  animation:sweep 6s linear infinite}
 /* the garments being worked on — a card, not a pill: this is the one choice
    the visitor should be able to see rather than read */
 /* minmax(0,…) so a long garment name shrinks its card instead of pushing it
@@ -520,7 +668,7 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 .hiw-cta{margin-top:30px}
 
 /* the resulting frame */
-.hiw-view{position:relative;border-radius:16px;overflow:hidden;background:#1b1915;aspect-ratio:4/5}
+.hiw-view{position:relative;border-radius:16px;overflow:hidden;background:#1b1915;aspect-ratio:1/1}
 .hiw-view .media{position:absolute;inset:0;animation:settle .32s cubic-bezier(.2,.8,.2,1)}
 .hiw-view .media img,.hiw-view .media svg{width:100%;height:100%;object-fit:cover;display:block}
 .hiw-cap{position:absolute;left:14px;bottom:14px;z-index:2;background:rgba(23,21,15,.72);color:#fff;
@@ -528,7 +676,10 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 
 @media(max-width:860px){
   .hiw-card{grid-template-columns:1fr;gap:26px;padding:22px}
-  .hiw-view{order:-1}          /* show the result first on a phone */
+  /* No `order` override here on purpose: stacked, the card should read in the
+     order it is used — category, garment, model, backdrop, pose, then the
+     frame those choices produce. Lifting the result above the controls put
+     the answer before the question. */
 }
 @media(max-width:560px){
   /* Two cards side by side leave the names truncated to nothing at this
@@ -546,7 +697,7 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
    Written with literals rather than the theme tokens on purpose: this band is
    dark by design, not by preference. */
 .hero{background:#0A0908;color:#EDE7DA}
-.hero h1{color:#FBF7EF}
+.hero h1{color:#FBF7EF; font-size: 49px; margin-top: 18px;}
 .hero .sub{color:#B9B1A0}
 .hero .sub b{color:#EDE7DA}
 .hero-note{color:#8a8172}
@@ -561,9 +712,6 @@ header.nav:not(.solid) .logo-light{display:none}
 header.nav:not(.solid) .logo-dark{display:block}
 header.nav:not(.solid) .nav-links a{color:rgba(237,231,218,.72)}
 header.nav:not(.solid) .nav-links a:hover{color:#EDE7DA}
-header.nav:not(.solid) .mode{border-color:rgba(237,231,218,.3);color:rgba(237,231,218,.8)}
-header.nav:not(.solid) .mode:hover{border-color:#EDE7DA;color:#EDE7DA}
-header.nav:not(.solid) .mode .orb{background:linear-gradient(90deg,#EDE7DA 50%,transparent 50%);border-color:#EDE7DA}
 header.nav:not(.solid) .btn-line{border-color:rgba(237,231,218,.35);color:#EDE7DA}
 header.nav:not(.solid) .btn-line:hover{border-color:#EDE7DA;background:rgba(237,231,218,.06)}
 
@@ -610,7 +758,6 @@ body.mnav-open .mnav-sheet{transform:none}
 @media(max-width:960px){
   .burger{display:flex}
   .nav-cta{display:none}                            /* Log in / Register move into the sheet */
-  .mode .txt{display:none}
 }
 @media(min-width:961px){
   .mnav{display:none}                               /* nothing to open above the breakpoint */
@@ -624,11 +771,11 @@ body.mnav-open .mnav-sheet{transform:none}
    rather than width — grow is a single transitionable number and the row stays
    exactly full whatever the viewport, where animating widths would need them
    to sum correctly at every frame. */
-.create{padding:90px 0 0}
+.create{padding:50px 0 0}
 .create-head{text-align:center;max-width:720px;margin:0 auto}
 .create-head .sec-p{margin-left:auto;margin-right:auto}
 /* `relative` so the round advance control can be pinned to the row's edge. */
-.create-row{position:relative;display:flex;gap:14px;margin-top:44px;height:min(70svh,600px)}
+.create-row{position:relative;display:flex;gap:14px;margin-top:44px;height:min(45svh,600px)}
 .cnext{position:absolute;right:-19px;top:50%;transform:translateY(-50%);z-index:4;
   width:44px;height:44px;border-radius:50%;border:0;cursor:pointer;
   background:var(--flame);color:#fff;display:flex;align-items:center;justify-content:center;
@@ -668,17 +815,19 @@ body.mnav-open .mnav-sheet{transform:none}
 .cpanel.on:hover .center .arw{transform:translateX(5px)}
 
 @media(max-width:860px){
-  /* No hover to expand with, so the row becomes a swipeable rail of cards that
-     each show their own detail — the accordion idea does not survive at this
-     width, and a squeezed one would just be four unreadable slivers. */
-  .create-row{height:auto;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;
-    -webkit-overflow-scrolling:touch}
-  .create-row .cpanel,.create-row.has-on .cpanel,.cpanel.on{flex:0 0 78%;scroll-snap-align:center;
-    height:62svh;transition:none}
-  .cpanel.on img,.cpanel.on svg{transform:none}
-  .cpanel .cname{display:none}
-  .cnext{display:none}                              /* the rail already swipes */
-  .cpanel .cdetail{opacity:1;transform:none;pointer-events:auto}
+  /* The row turns on its side: four full-width banners stacked, each showing
+     only its name until it is opened. Sideways the panels either had to be
+     slivers or a rail that hides three of the four doors off-screen — stacked,
+     all four are visible at once and the open one has the width to be read.
+     Height is the animated property here rather than flex-grow: the column has
+     no fixed extent to share out, so each panel owns its own size. */
+  .create-row{flex-direction:column;height:auto;gap:12px;margin-top:30px}
+  .create-row .cpanel{flex:0 0 auto;height:100px;
+    transition:height .5s cubic-bezier(.22,.9,.3,1)}
+  /* `.on` is set by landing.js, not :hover — on a touch screen the first tap
+     opens the panel and only the second follows the link. */
+  .create-row .cpanel.on{height:min(58svh,430px)}
+  .cnext{display:none}              /* nothing to advance to — all four show */
 }
 @media(prefers-reduced-motion:reduce){
   .cpanel,.cpanel img,.cpanel svg,.cpanel .cname,.cpanel .cdetail{transition:none}
@@ -688,7 +837,7 @@ body.mnav-open .mnav-sheet{transform:none}
 /* Pills pick a category; the deck fans three cards with the chosen one upright
    in the middle. The tilt on the outer two is what stops this reading as three
    equal cards in a row — they are clearly waiting their turn. */
-.cats{padding:90px 0 0;overflow:hidden}
+.cats{padding:50px 0 0;overflow:hidden}
 .cats-head{text-align:center;max-width:680px;margin:0 auto}
 .cats-head .sec-p{margin:14px auto 0}
 .cats-pills{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:30px}
@@ -749,7 +898,7 @@ body.mnav-open .mnav-sheet{transform:none}
      Negative margins let it run to the screen edges while the first and last
      pills keep the text column's padding. */
   .cats-pills{flex-wrap:wrap;justify-content:center;overflow-x:auto;
-    margin-left:-32px;margin-right:-32px;padding:2px 32px;
+    margin-left:-62px;margin-right:-62px;padding:2px 32px;
     scrollbar-width:none;-ms-overflow-style:none;scroll-snap-type:x proximity}
   .cats-pills::-webkit-scrollbar{display:none}
   .cpill{flex:0 0 auto;scroll-snap-align:center}
@@ -891,7 +1040,7 @@ body.mnav-open .mnav-sheet{transform:none}
    on how wide the card actually rendered, so it cannot be a static list of
    rotations. Everything here is the part that does not depend on that: the
    frame, the hover, and the two shapes the row takes. */
-.reels{padding:120px 0 90px;overflow:hidden}
+.reels{padding:50px 0 90px;overflow:hidden}
 .reels-head{text-align:center;max-width:760px}
 .reels-head h2{font-size:clamp(2rem,4.6vw,3.6rem);margin-top:16px}
 .reels-head h2 em{font-style:italic;color:var(--flame)}
@@ -902,7 +1051,7 @@ body.mnav-open .mnav-sheet{transform:none}
    page is no border at all. */
 [data-theme="dark"]{--reel-frame:#EDE7DA}
 
-.reel-arc{position:relative;margin-top:clamp(40px,6vw,70px);
+.reel-arc{position:relative;margin-top:clamp(40px,6vw,45px);
   height:clamp(340px,34vw,520px)}
 
 /* Outer box carries the card's place in the arc, inner box carries the hover.
@@ -919,8 +1068,10 @@ body.mnav-open .mnav-sheet{transform:none}
 .reel-in img,.reel-in video{width:100%;height:100%;object-fit:cover;display:block}
 /* Straightening the card out of the arc is the hover: it steps forward and
    stands up while its neighbours stay tilted. */
-.reel:hover,.reel:focus-within{z-index:40 !important}
-.reel:hover .reel-in,.reel:focus-within .reel-in{
+/* `.playing` is set by the tour in landing.js. It shares the hover rules so a
+   card the row raised on its own is indistinguishable from one you raised. */
+.reel:hover,.reel:focus-within,.reel.playing{z-index:40 !important}
+.reel:hover .reel-in,.reel:focus-within .reel-in,.reel.playing .reel-in{
   transform:rotate(calc(var(--rot,0deg) * -0.6)) translateY(-16px) scale(1.06);
   box-shadow:0 40px 70px -26px rgba(23,21,15,.8)}
 .reel-in:focus-visible{outline:2px solid var(--flame);outline-offset:3px}
@@ -937,6 +1088,21 @@ body.mnav-open .mnav-sheet{transform:none}
   border-color:transparent transparent transparent #fff;margin-left:3px}
 .reel.playing .reel-play{opacity:0;transform:rotate(calc(var(--rot,0deg) * -1)) scale(.8)}
 
+/* The caption for the hovered frame, in the gap the arc leaves beneath it.
+   A fixed min-height rather than an auto one: the text swaps on every hover,
+   and a box that resized with it would walk the hint below up and down. */
+.reel-cap{min-height:78px;margin-top:-45px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px}
+.reel-cap b{font-family:var(--serif);font-size:clamp(1.15rem,2vw,1.6rem);
+  font-weight:500;color:var(--text);line-height:1.15}
+.reel-cap span{font-family:var(--mono);font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--muted)}
+/* Replayed by removing and re-adding the class, so every swap animates —
+   a transition would only fire on the first one. */
+.reel-cap.swap b,.reel-cap.swap span{animation:capIn .42s cubic-bezier(.2,.8,.2,1) both}
+.reel-cap.swap span{animation-delay:.05s}
+@keyframes capIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+
 .reel-hint{margin-top:clamp(26px,4vw,44px);text-align:center;font-family:var(--mono);
   font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
 
@@ -944,7 +1110,7 @@ body.mnav-open .mnav-sheet{transform:none}
   /* An arc of nine frames at phone width is nine slivers. The same cards
      become one swipeable strip instead, and JS stops writing arc transforms
      so nothing fights the scroller. */
-  .reels{padding:90px 0 70px}
+  .reels{padding:0px 0 0px}
   .reel-arc{display:flex;gap:12px;height:auto;position:static;overflow-x:auto;
     padding:4px 24px 10px;scroll-snap-type:x mandatory;
     scrollbar-width:none;-ms-overflow-style:none}

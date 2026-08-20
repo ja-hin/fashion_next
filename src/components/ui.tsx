@@ -9,15 +9,36 @@ export function Field({
   children,
   className = '',
   dim = false,
+  float = false,
 }: {
   label?: string;
   children: React.ReactNode;
   className?: string;
   dim?: boolean;
+  /**
+   * Sit the label astride the control's top border instead of above it. Only
+   * for a field whose child is a single bordered input — over a filled block
+   * like a segmented control it notches nothing and just overlaps.
+   */
+  float?: boolean;
 }) {
   return (
-    <div className={`mb-[13px] ${dim ? 'opacity-50' : ''} ${className}`}>
-      {label && <label className="lbl">{label}</label>}
+    // `relative` is the positioning context a floated label resolves against.
+    <div className={`relative mb-[13px] ${dim ? 'opacity-50' : ''} ${className}`}>
+      {label && (
+        <label
+          className={
+            float
+              ? // Painted with the panel's own background so it cuts a notch in
+                // the border rather than overprinting it — `bg-bg` rather than a
+                // literal white, or the notch is a white bar in the dark theme.
+                'lbl absolute -top-[5px] left-3 z-[1] mb-0 bg-bg px-1'
+              : 'lbl'
+          }
+        >
+          {label}
+        </label>
+      )}
       {children}
     </div>
   );
@@ -46,6 +67,7 @@ export function Select({
       disabled={disabled}
       onChange={(e) => onChange(e.target.value)}
       className={className}
+      
     >
       {options.map((o) => {
         const [v, l] = Array.isArray(o) ? o : [o, o];

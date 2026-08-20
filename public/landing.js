@@ -1,11 +1,6 @@
-/* =============== theme toggle (in-memory, light default) =============== */
-const root=document.documentElement;
-const modeBtn=document.getElementById("modeBtn"),modeTxt=document.getElementById("modeTxt");
-modeBtn.addEventListener("click",()=>{
-  const dark=root.getAttribute("data-theme")==="dark";
-  root.setAttribute("data-theme",dark?"light":"dark");
-  modeTxt.textContent=dark?"Dark":"Light";
-});
+/* The public site is light-only. The dark/light toggle lives in the studio
+   top bar (src/components/TopBar.tsx), which persists the choice to
+   localStorage — the marketing pages never set `data-theme` at all. */
 
 /* =============== SVG croquis fallbacks (used if an image fails) =============== */
 const skin="#E7C6A8",skin2="#D8AE8C",garment="#E4572E",garmentB="#B93E1F",hair="#2A231C";
@@ -308,6 +303,8 @@ const cio=new IntersectionObserver(es=>{es.forEach(e=>{
   if(!e.isIntersecting)return;cio.unobserve(e.target);
   const el=e.target,to=parseFloat(el.dataset.count),dec=+(el.dataset.dec||0);
   const pre=el.dataset.prefix||"",suf=el.dataset.suffix||"";
+  /* Draws the card's top accent on the same beat the number starts moving. */
+  if(el.closest)el.closest(".stat")?.classList.add("lit");
   const t0=performance.now(),dur=1400;
   (function st(t){const k=ease(clamp((t-t0)/dur,0,1));
     el.innerHTML=pre+(to*k).toFixed(dec)+(suf?`<small>${suf}</small>`:"");
@@ -1304,9 +1301,19 @@ const STRIP_ITEMS=[
     v.src=url;
   });
 
+  /* Tried in order. A purpose-made genie-demo in webassets wins if one is ever
+     dropped there; failing that the omni render that ships in public/ plays.
+     Its name carries a space, so it has to go through encodeURI or the request
+     404s and the panel falls back to a still for no visible reason. */
+  const SOURCES=[
+    ASSET_DIR+"genie-demo.mp4",
+    ASSET_DIR+"genie-demo.webm",
+    encodeURI("/omni_f22e5154--BG Tokyo.mp4"),
+  ];
+
   (async function fillMedia(){
-    for(const e of ["mp4","webm"]){
-      const hit=await probeVid(ASSET_DIR+"genie-demo."+e);
+    for(const url of SOURCES){
+      const hit=await probeVid(url);
       if(!hit)continue;
       vid=document.createElement("video");
       vid.src=hit;vid.loop=true;vid.muted=true;vid.playsInline=true;vid.preload="metadata";
@@ -1416,10 +1423,49 @@ const STRIP_ITEMS=[
   const STEP=7.4;                           /* degrees between neighbours */
 
   const wide=matchMedia("(min-width:861px)");
-  const canHover=matchMedia("(hover:hover)").matches;
-
+  /* Wording only — NOT a gate on the listeners. `(hover:hover)` reads false on
+     a touchscreen laptop and in device-emulation, and gating hover on it left
+     those machines with click as the only way in. Both are always wired now,
+     and the hint corrects itself on the first real pointer event below. */
   const hint=document.getElementById("reelHint");
-  if(hint&&!canHover)hint.textContent="Tap a frame to play it";
+  let canHover=matchMedia("(hover:hover)").matches;
+  const say=h=>{if(hint)hint.textContent=h?"Playing on its own — hover any frame to take over"
+                                          :"Tap a frame to play it";};
+  say(canHover);
+
+  /* One line per frame, in the same order as FALLBACK — the copy that fills
+     the space under the arc while a card is hovered. The resting entry is what
+     shows when nothing is, so the block is never blank and never collapses. */
+  const REST={t:"Nine frames, one shoot",s:"Every still here is its own clip"};
+  const CAPS=[
+    {t:"The approach",     s:"Frame 01 · walking into the light"},
+    {t:"Three-quarter turn",s:"Frame 02 · shoulders open to camera"},
+    {t:"Full stride",      s:"Frame 03 · the skirt caught mid-step"},
+    {t:"Profile",          s:"Frame 04 · chin lifted, eyes off camera"},
+    {t:"Fabric detail",    s:"Frame 05 · the print at close range"},
+    {t:"Texture pass",     s:"Frame 06 · weave, drape and sheen"},
+    {t:"Held pose",        s:"Frame 07 · hat brim, hands easy"},
+    {t:"Back view",        s:"Frame 08 · the shape from behind"},
+    {t:"Last look",        s:"Frame 09 · one beat before the cut"}
+  ];
+
+  const cap=document.getElementById("reelCap");
+  let capT=null,capS=null;
+  if(cap){
+    cap.innerHTML="<b></b><span></span>";
+    capT=cap.querySelector("b");capS=cap.querySelector("span");
+  }
+  /* Passing null means "nothing hovered" and puts the resting line back. */
+  function setCap(c){
+    if(!cap)return;
+    const d=(c&&CAPS[c.i])||REST;
+    if(capT.textContent===d.t)return;         /* same card — don't replay */
+    capT.textContent=d.t;capS.textContent=d.s;
+    cap.classList.remove("swap");
+    void cap.offsetWidth;                     /* reflow, so the animation restarts */
+    cap.classList.add("swap");
+  }
+  setCap(null);
 
   /* ---- the cards ------------------------------------------------------ */
   const cards=FALLBACK.map((slot,i)=>{
@@ -1543,18 +1589,116 @@ const STRIP_ITEMS=[
   }
 
   cards.forEach(c=>{
-    if(canHover){
-      c.card.addEventListener("pointerenter",()=>start(c));
-      c.card.addEventListener("pointerleave",()=>stop(c));
-      /* Keyboard reaches the same thing the pointer does. */
-      c.box.addEventListener("focus",()=>start(c));
-      c.box.addEventListener("blur",()=>stop(c));
-    }
+    /* A tap fires pointerenter and then click, so without this the tap would
+       start the clip and the click that follows would immediately pause it.
+       The flag lets that one click through untouched; every later click on the
+       same card toggles as normal. */
+    let entered=false;
+
+    c.card.addEventListener("pointerenter",e=>{
+      /* The first real pointer settles the question the media query got wrong. */
+      if(e.pointerType==="mouse"&&!canHover){canHover=true;say(true);}
+      else if(e.pointerType==="touch"&&canHover){canHover=false;say(false);}
+      entered=e.pointerType!=="mouse";
+      setCap(c);start(c);
+    });
+    c.card.addEventListener("pointerleave",()=>{setCap(null);stop(c);});
+
+    /* Keyboard reaches the same thing the pointer does. */
+    c.box.addEventListener("focus",()=>{setCap(c);start(c);});
+    c.box.addEventListener("blur",()=>{setCap(null);stop(c);});
+
+    /* Caption first and unconditionally: a slot with no clip attached still
+       has something to say. */
     c.box.addEventListener("click",()=>{
+      setCap(c);
+      tourAt=c.i;                             /* the tour carries on from here */
       if(!c.video)return;
+      if(entered){entered=false;return;}      /* the tap already started it */
       c.video.paused?start(c):stop(c);
     });
   });
+
+  /* ---- the tour ------------------------------------------------------- */
+  /* The row runs itself: one card at a time straightens, plays and captions
+     itself, then hands over to the next. A pointer on the row takes the wheel
+     — the tour stands down while you are driving and picks up from wherever it
+     was left when you go. Held to `reduce`, which opts out of both the moving
+     row and the autoplaying video in one go. */
+  const DWELL=4200;                        /* ms each frame holds the row */
+  let tourAt=-1,tourT=null;
+
+  /* Only the mobile strip scrolls. On the desktop arc there is nothing to
+     scroll, and scrollIntoView there would drag the page instead of the row —
+     so this moves the container itself rather than asking the card to be seen. */
+  let selfScroll=0;                        /* while set, scrolls are our own */
+  function centre(c){
+    if(wide.matches)return;
+    const left=c.card.offsetLeft-(arc.clientWidth-c.card.offsetWidth)/2;
+    selfScroll=performance.now()+800;      /* covers the smooth scroll's run */
+    arc.scrollTo({left:Math.max(0,left),behavior:reduce?"auto":"smooth"});
+  }
+
+  function show(i){
+    const c=cards[i];
+    if(!c)return;
+    tourAt=i;setCap(c);start(c);centre(c);
+  }
+
+  /* Skips slots that never got a clip: a card with nothing to play would sit
+     there as a dead beat in the rotation. */
+  function nextIdx(){
+    for(let n=1;n<=N;n++){
+      const i=(tourAt+n)%N;
+      if(cards[i].video)return i;
+    }
+    return -1;
+  }
+
+  function step(){
+    const i=nextIdx();
+    /* Nothing attached yet — the clips probe asynchronously, so wait rather
+       than giving up and leaving the row frozen on its stills forever. */
+    if(i<0){tourT=setTimeout(step,600);return;}
+    show(i);
+    tourT=setTimeout(step,DWELL);
+  }
+
+  function tourPlay(){
+    if(reduce)return;
+    clearTimeout(tourT);
+    if(tourAt<0){step();return;}           /* cold start: begin at once */
+    show(tourAt);                          /* warm: put our own frame back on */
+    tourT=setTimeout(step,DWELL);
+  }
+  function tourPause(){clearTimeout(tourT);}
+
+  /* Driving beats the tour, in both directions. */
+  arc.addEventListener("pointerenter",tourPause);
+  arc.addEventListener("pointerleave",tourPlay);
+  arc.addEventListener("focusin",tourPause);
+  arc.addEventListener("focusout",tourPlay);
+
+  /* A hand on the strip wins. Without this the tour would yank the row back to
+     its own card on the next tick and a swipe would be unusable — so a manual
+     scroll re-seats the tour on whatever was scrolled to and carries on from
+     there. `selfScroll` is what keeps centre()'s own smooth scroll from being
+     read as the user's and re-triggering this in a loop. */
+  let settle=null;
+  arc.addEventListener("scroll",()=>{
+    if(wide.matches||performance.now()<selfScroll)return;
+    tourPause();
+    clearTimeout(settle);
+    settle=setTimeout(()=>{
+      const mid=arc.scrollLeft+arc.clientWidth/2;
+      let best=tourAt,bd=Infinity;
+      cards.forEach(({card},i)=>{
+        const d=Math.abs(card.offsetLeft+card.offsetWidth/2-mid);
+        if(d<bd){bd=d;best=i;}
+      });
+      tourAt=best;tourPlay();
+    },280);
+  },{passive:true});
 
   /* ---- reveal --------------------------------------------------------- */
   /* The fan opens from a stack when the section arrives: the cards start piled
@@ -1575,8 +1719,13 @@ const STRIP_ITEMS=[
     cards.forEach((c,i)=>attach(c,i));
   },{threshold:.15}).observe(arc);
 
-  /* Nothing should be playing behind you. */
-  new IntersectionObserver(es=>{if(!es[0].isIntersecting)stop(playing);},{threshold:0}).observe(arc);
+  /* Nothing plays behind you: the tour halts with the clip when the row leaves
+     the screen and resumes on the same frame when it comes back, so returning
+     to the section neither finds it frozen nor restarts it from the top. */
+  new IntersectionObserver(es=>{
+    if(es[0].isIntersecting){tourPlay();return;}
+    tourPause();stop(playing);setCap(null);
+  },{threshold:0}).observe(arc);
 
   let rt;
   addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(()=>{if(opened)layout();},150);});

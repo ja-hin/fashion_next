@@ -234,14 +234,10 @@ export default async function LandingPage() {
             <a href="/pricing" data-c="">Pricing</a>
           </nav>
           <div className="nav-right">
-            <button className="mode" id="modeBtn" data-c="" aria-label="Toggle light and dark mode">
-              <span className="orb" />
-              <span className="txt" id="modeTxt">Dark</span>
-            </button>
             <a href="/login" className="btn btn-line nav-cta" style={{ padding: '.6em 1.2em' }} data-c="">
               Log in
             </a>
-            <a href="/register" className="btn btn-flame nav-cta" style={{ padding: '.6em 1.2em' }} data-c="">
+            <a href="/register" className="btn btn-cta nav-cta" style={{ padding: '.6em 1.2em' }} data-c="">
               Register <span className="arw">→</span>
             </a>
 
@@ -278,7 +274,7 @@ export default async function LandingPage() {
           </nav>
           <div className="mnav-cta">
             <a href="/login" className="btn btn-line" data-c="">Log in</a>
-            <a href="/register" className="btn btn-flame" data-c="">
+            <a href="/register" className="btn btn-cta" data-c="">
               Register <span className="arw">→</span>
             </a>
           </div>
@@ -295,8 +291,7 @@ export default async function LandingPage() {
       <section className="hero">
         <div className="wrap hero-grid">
           <div>
-            <span className="eyebrow">Written with AI · Shot like a studio</span>
-            <h1 style={{ marginTop: 18, fontSize:'49px' }}>
+            <h1>
               <span className="ln"><span>Making studio photography</span></span>
               <span className="ln"><span><em>universally</em> accessible</span></span>
             </h1>
@@ -307,7 +302,7 @@ export default async function LandingPage() {
               doesn&apos;t look AI-generated</b> — in minutes, not weeks.
             </p>
             <div className="hero-cta">
-              <a href="/register" className="btn btn-flame" data-c="">
+              <a href="/register" className="btn btn-cta" data-c="">
                 Start with free credits <span className="arw">→</span>
               </a>
               <a href="#demo" className="btn btn-line" data-c="">See a shoot run</a>
@@ -396,12 +391,16 @@ export default async function LandingPage() {
             </p>
           </div>
 
-          {/* Womenswear / Menswear. Each carries its own garments, cast and
-              poses, so the panel below is rebuilt when this changes. */}
-          <div className="hiw-tabs" id="hiwCats" role="tablist" aria-label="Category" />
-
           <div className="hiw-card">
             <div>
+              {/* Womenswear / Menswear. Each carries its own garments, cast and
+                  poses, so everything below is rebuilt when this changes —
+                  which is why it sits above the rest of the controls. */}
+              <div className="hiw-group">
+                <span className="k-label">Category</span>
+                <div className="hiw-tabs" id="hiwCats" role="tablist" aria-label="Category" />
+              </div>
+
               <div className="hiw-group">
                 <span className="k-label">Garment</span>
                 <div className="hiw-garments" id="hiwGarments" role="group" aria-label="Garment" />
@@ -421,7 +420,7 @@ export default async function LandingPage() {
               </div>
 
               <div className="hiw-cta">
-                <a href="/register" className="btn btn-flame" data-c="">
+                <a href="/register" className="btn btn-cta" data-c="">
                   Generate this shot free <span className="arw">→</span>
                 </a>
               </div>
@@ -555,8 +554,8 @@ export default async function LandingPage() {
             </div>
           </div>
 
-          <div className="rv" style={{ marginTop: 34 }}>
-            <a href="/register" className="btn btn-flame" data-c="">
+          <div className="rv" style={{ marginTop: 34, display: 'flex', justifyContent:'center' }}>
+            <a href="/register" className="btn btn-cta" data-c="">
               Run it on your garment <span className="arw">→</span>
             </a>
           </div>
@@ -583,7 +582,10 @@ export default async function LandingPage() {
             the outer frames are meant to run off the edge of the screen. */}
         <div className="reel-arc" id="reelArc" />
         <div className="wrap">
-          <p className="reel-hint" id="reelHint">Hover a frame to play it</p>
+          {/* The copy for whichever frame is hovered, filled by landing.js. It
+              reserves its height up front so swapping the text never nudges
+              the hint underneath it. */}
+          <div className="reel-cap" id="reelCap" aria-live="polite" />
         </div>
       </section>
 
@@ -604,7 +606,7 @@ export default async function LandingPage() {
       </section>
 
       {/* ── cost counter ── */}
-      <section className="counter-sec">
+      <section className="counter-sec" style={{display:'none'}}>
         <div className="pin-wrap" id="cntWrap">
           <div className="pin">
             <div className="cnt-cap">
@@ -640,7 +642,6 @@ export default async function LandingPage() {
         </div>
         <div className="rail-pinzone" id="railZone">
           <div className="rail-pin">
-            <div className="drag-hint">Keep scrolling →</div>
             <div className="rail-track" id="railTrack">
               {RAIL_CARDS.map((c) => (
                 <div className="rcard" key={c.idx}>
@@ -737,19 +738,23 @@ export default async function LandingPage() {
       {/* ── stats ── */}
       <div className="stats">
         <div className="wrap stats-in">
-          <div className="stat">
-            <div className="num" data-count="25" data-prefix="₹">₹0</div>
+          <div className="stat card-glow">
+            {/* The mark is its own element so it can be set in the sans — see
+                the note on `.stat .num .pre` in landing.css. */}
+            <div className="num" data-count="25" data-prefix="<i class='pre'>₹</i>">
+              <i className="pre">₹</i>0
+            </div>
             <div className="cap k-label">Per photo, prepaid</div>
           </div>
-          <div className="stat">
+          <div className="stat card-glow">
             <div className="num" data-count="2" data-suffix=" min">0</div>
             <div className="cap k-label">Upload → full shoot</div>
           </div>
-          <div className="stat">
+          <div className="stat card-glow">
             <div className="num" data-count="10" data-suffix="×">0</div>
             <div className="cap k-label">Cheaper than studio</div>
           </div>
-          <div className="stat">
+          <div className="stat card-glow">
             <div className="num" data-count="12" data-suffix=" mo">0</div>
             <div className="cap k-label">Credit validity, prepaid</div>
           </div>
@@ -763,9 +768,12 @@ export default async function LandingPage() {
             <span className="eyebrow">The fine print — in your favour</span>
           </div>
           <div className="agrid rv">
-            {ASSURANCES.map((a) => (
-              <div className="aitem" key={a}>
-                <span className="tick">✓</span>
+            {ASSURANCES.map((a, i) => (
+              // `--i` is the card's place in the stagger once the grid reveals.
+              <div className="aitem card-glow" key={a} style={{ '--i': i } as React.CSSProperties}>
+                <span className="tick" aria-hidden="true">
+                  ✓
+                </span>
                 {a}
               </div>
             ))}
@@ -795,7 +803,7 @@ export default async function LandingPage() {
               const total = packCredits(p);
               return (
                 <div
-                  className={`plan rv${p.popular ? ' feat' : ''}`}
+                  className={`plan card-glow rv${p.popular ? ' feat' : ''}`}
                   key={p.id}
                   style={{ transitionDelay: `${i * 0.06}s` }}
                 >
@@ -847,7 +855,7 @@ export default async function LandingPage() {
                   <div style={{ flex: 1 }} />
                   <a
                     href="/pricing"
-                    className={`btn ${p.popular ? 'btn-flame' : 'btn-line'}`}
+                    className={`btn ${p.popular ? 'btn-cta' : 'btn-line'}`}
                     data-c=""
                   >
                     Load wallet
@@ -895,7 +903,7 @@ export default async function LandingPage() {
             Load a wallet, upload a garment, and watch a full on-model shoot come back before the
             kettle boils.
           </p>
-          <a href="/register" className="btn btn-flame" data-c="">
+          <a href="/register" className="btn btn-cta" data-c="">
             Start with free credits <span className="arw">→</span>
           </a>
         </div>
