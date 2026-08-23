@@ -253,6 +253,22 @@ const railZone=document.getElementById("railZone");
 const railTrack=document.getElementById("railTrack");
 const railFill=document.getElementById("railFill");
 
+/* Each rail card rises as the track carries it into view. The class goes on
+   from here rather than sitting in the stylesheet so that a page without JS
+   never hides them — nothing is concealed until something can reveal it.
+   IntersectionObserver is honest about the pin's `overflow:hidden`, so a card
+   still parked off the right edge reports as not intersecting and waits its
+   turn; unobserving makes it a one-shot, so the rail scrubbed backwards does
+   not replay eight animations. */
+if(railTrack){
+  railTrack.classList.add("reveal");
+  const rio=new IntersectionObserver(es=>{es.forEach(e=>{
+    if(!e.isIntersecting)return;
+    e.target.classList.add("in");rio.unobserve(e.target);
+  });},{threshold:.12});
+  railTrack.querySelectorAll(".rcard").forEach(el=>rio.observe(el));
+}
+
 function zoneProgress(el){
   const r=el.getBoundingClientRect();
   const total=el.offsetHeight-innerHeight;
@@ -858,6 +874,9 @@ const STRIP_ITEMS=[
       const b=document.createElement("button");
       b.type="button";b.className="gcard"+(i===gi?" on":"");b.dataset.c="";
       b.setAttribute("aria-pressed",String(i===gi));
+      /* The tile has no room for the flow line, so it becomes the tooltip
+         rather than being dropped from the page altogether. */
+      b.title=`${g.n} — ${g.s}`;
       b.innerHTML=`<span class="gt"></span><span class="gm"><span class="gn">${g.n}</span><span class="gs">${g.s}</span></span>`;
 
       /* The chip is the flat-lay the visitor would upload, so it draws the
@@ -928,8 +947,6 @@ const STRIP_ITEMS=[
      h:"AI Fashion Model Generator", p:"A cast of AI models, every size and skin tone — reusable across shoots.", href:"/register"},
     {slot:"video",      fb:"walk",   pose:"walk", name:"Video",
      h:"AI Fashion Video", p:"Turn a finished frame into motion for reels and product pages.", href:"/register"},
-    {slot:"listings",   fb:"closeup",pose:"close",name:"Listings",
-     h:"AI Listing Copy", p:"Titles, descriptions, attributes and keywords — marketplace ready.", href:"/register"}
   ];
 
   const panels=PANELS.map((it,i)=>{

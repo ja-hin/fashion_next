@@ -2,6 +2,8 @@
 
 /** localStorage key behind the nav's collapsed preference. */
 const NAV_RAIL_KEY = 'studio.navRailed';
+/** localStorage key behind the Generate tab's collapsed setup panel. */
+const SETUP_KEY = 'studio.setupCollapsed';
 
 import type { EnsembleRef } from './ensemble-types';
 
@@ -73,6 +75,15 @@ interface StudioValue {
    */
   navRailed: boolean;
   setNavRailed: (v: boolean) => void;
+
+  /**
+   * Whether the Generate tab's shoot-setup panel is folded away.
+   *
+   * Here rather than in the page so it survives a trip to Gallery and back —
+   * a panel that re-opened on every navigation would be worse than no toggle.
+   */
+  setupCollapsed: boolean;
+  setSetupCollapsed: (v: boolean) => void;
 }
 
 const Ctx = createContext<StudioValue | null>(null);
@@ -110,14 +121,18 @@ export function StudioProvider({
   // Starts open and adopts the stored preference after mount: reading
   // localStorage during render would desync the server and client markup.
   const [navRailed, setNavRailed] = useState(false);
+  const [setupCollapsed, setSetupCollapsed] = useState(false);
   const [navReady, setNavReady] = useState(false);
   useEffect(() => {
     setNavRailed(localStorage.getItem(NAV_RAIL_KEY) === '1');
+    setSetupCollapsed(localStorage.getItem(SETUP_KEY) === '1');
     setNavReady(true);
   }, []);
   useEffect(() => {
-    if (navReady) localStorage.setItem(NAV_RAIL_KEY, navRailed ? '1' : '0');
-  }, [navRailed, navReady]);
+    if (!navReady) return;
+    localStorage.setItem(NAV_RAIL_KEY, navRailed ? '1' : '0');
+    localStorage.setItem(SETUP_KEY, setupCollapsed ? '1' : '0');
+  }, [navRailed, setupCollapsed, navReady]);
 
   const onError = useCallback((msg: string) => void dialog.alert(msg), [dialog]);
   const shoot = useShoot(onError);
@@ -189,6 +204,8 @@ export function StudioProvider({
       bumpGarments: () => setGarmentsRefresh((n) => n + 1),
       navRailed,
       setNavRailed,
+      setupCollapsed,
+      setSetupCollapsed,
     }),
     [
       me,
@@ -209,6 +226,7 @@ export function StudioProvider({
       modelsRefresh,
       garmentsRefresh,
       navRailed,
+      setupCollapsed,
     ],
   );
 

@@ -102,7 +102,9 @@ export default function SetupPanel({
   const isEnsemble = setup.ref_mode === 'ensemble';
 
   return (
-    <aside className="w-[336px] px-[22px] pb-[30px] pl-6 pt-[22px]">
+    // A plain div: the page already wraps this in the <aside> landmark, and the
+    // top padding is lighter now that the collapse bar sits above it.
+    <div className="w-full px-[22px] pb-[30px] pl-6 pt-2">
       {/* <div className="mb-[3px] text-[10.5px] font-bold uppercase tracking-[0.08em] text-brand">
         Step 1
       </div>
@@ -341,6 +343,6 @@ export default function SetupPanel({
           ? 'Assembles every item onto one model and locks that model, so each later pose keeps the whole look.'
           : 'Each photo is the truth for the side it shows, so the back is never invented. Locks the model too.'}
       </div> */}
-    </aside>
+    </div>
   );
 }

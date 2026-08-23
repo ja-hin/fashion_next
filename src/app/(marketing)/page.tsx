@@ -107,33 +107,59 @@ const FAQ_LD = {
   })),
 };
 
+/**
+ * Stroke icons for the platform rail — one per card, drawn on a 24 grid and
+ * inheriting `currentColor` so the tile controls the colour in one place.
+ * Inline rather than a sprite: eight glyphs is less bytes than the request.
+ */
+const I = (d: React.ReactNode) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"
+       strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>
+);
+
+const RAIL_ICONS = {
+  direction: I(<><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0" /><circle cx="16" cy="6" r="2" /><circle cx="10" cy="12" r="2" /><circle cx="18" cy="18" r="2" /></>),
+  faces: I(<><circle cx="9" cy="8" r="3.4" /><path d="M3 19a6 6 0 0 1 12 0" /><path d="M16.5 5.6a3.4 3.4 0 0 1 0 4.8M19 3.2a6.8 6.8 0 0 1 0 9.6" /></>),
+  prompt: I(<><rect x="3" y="4" width="18" height="16" rx="3" /><path d="M7 9.5h6M7 14h4" /><path d="M16 13.4l1.1 2.2 2.2 1.1-2.2 1.1L16 20l-1.1-2.2-2.2-1.1 2.2-1.1z" /></>),
+  genie: I(<><path d="M12 3l1.7 3.9L17.6 8.6l-3.9 1.7L12 14.2l-1.7-3.9L6.4 8.6l3.9-1.7z" /><path d="M18.5 15l.8 1.8 1.8.8-1.8.8-.8 1.8-.8-1.8-1.8-.8 1.8-.8z" /><path d="M5 15.5l.6 1.3 1.3.6-1.3.6L5 19.3l-.6-1.3-1.3-.6 1.3-.6z" /></>),
+  globe: I(<><circle cx="12" cy="12" r="9" /><path d="M3 12h18" /><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18z" /></>),
+  continuity: I(<><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1" /><path d="M3 4v5h5" /><path d="M12 8v4.4l3 1.8" /></>),
+  resolution: I(<><rect x="3" y="5" width="18" height="14" rx="2.5" /><path d="M7 9.5v5M7 12h2.6M7 9.5h2.6" /><path d="M13.4 14.5h3.2M13.4 14.5l3.2-3.2a1.6 1.6 0 1 0-3.2-1.1" /></>),
+  wallet: I(<><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6H18a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z" /><path d="M3 8.5V7a2 2 0 0 1 2-2h9" /><circle cx="17" cy="12.5" r="1.3" /></>),
+};
+
 const RAIL_CARDS = [
   {
     idx: '01 / FULL DIRECTION',
+    icon: RAIL_ICONS.direction,
     h: 'Any model. Any pose. Any backdrop. Any mood.',
     p: 'Full-body to close-up, studio seamless to sunlit street, editorial to catalogue-clean. Every frame answers to you.',
     visual: <div className="vgrid" id="vg1" />,
   },
   {
     idx: '02 / YOUR OWN AI MODELS',
+    icon: RAIL_ICONS.faces,
     h: 'Your own AI models. Every SKU. Same face.',
     p: 'Build a model once, save her, and she fronts your entire catalogue — the same recognisable face on every product, drop after drop.',
     visual: <div className="vgrid" id="vg2" />,
   },
   {
     idx: '03 / CUSTOM PROMPTS',
+    icon: RAIL_ICONS.prompt,
     h: 'Describe the shot. Get the shot.',
     p: 'Need something specific? Type it — "golden-hour terrace, side profile, dupatta mid-swirl" — and AImageGen composes pose, backdrop, lighting and framing to match, exactly.',
     visual: <div className="pv" id="pv1" />,
   },
   {
     idx: '04 / PROMPT GENIE',
+    icon: RAIL_ICONS.genie,
     h: 'Complex prompts, written in seconds.',
     p: 'Not a prompt engineer? Tell Genie the vibe in plain words and it drafts the full studio-grade prompt — pose, lighting, mood, framing — ready to run or tweak.',
     visual: <div className="pv" id="pv2" />,
   },
   {
     idx: '05 / GLOBAL CASTING',
+    icon: RAIL_ICONS.globe,
     h: 'Models from across the world.',
     p: 'South-Asian presets out of the box — plus faces, skin tones and looks for every market you sell into. Shoot the same garment for Delhi, Dubai and Dallas.',
     visual: (
@@ -146,6 +172,7 @@ const RAIL_CARDS = [
   },
   {
     idx: '06 / SHOOT CONTINUITY',
+    icon: RAIL_ICONS.continuity,
     h: 'Pause today. Reshoot next season.',
     p: 'Every shoot is saved with its model, look and lighting. Come back weeks later — for a new colourway, a festive drop, one missing angle — and continue with full continuity. No re-booking, ever.',
     visual: (
@@ -160,6 +187,7 @@ const RAIL_CARDS = [
   },
   {
     idx: '07 / 2K & 4K OUTPUT',
+    icon: RAIL_ICONS.resolution,
     h: 'Marketplace listing to billboard.',
     p: 'Standard shots for PDPs and social — or native 2K and 4K renders when the same image has to carry a homepage banner, a hoarding, or print.',
     visual: (
@@ -175,6 +203,7 @@ const RAIL_CARDS = [
   },
   {
     idx: '08 / PREPAID WALLET',
+    icon: RAIL_ICONS.wallet,
     h: 'Pay for photos. Not seats, not months.',
     p: 'Top up a ₹ credit wallet and spend it whenever you shoot. No subscription, no minimum SKUs, GST-ready invoicing.',
     visual: (
@@ -303,7 +332,7 @@ export default async function LandingPage() {
             </p>
             <div className="hero-cta">
               <a href="/register" className="btn btn-cta" data-c="">
-                Start with free credits <span className="arw">→</span>
+                Start with free trial <span className="arw">→</span>
               </a>
               <a href="#demo" className="btn btn-line" data-c="">See a shoot run</a>
             </div>
@@ -470,13 +499,18 @@ export default async function LandingPage() {
           /webassets/m{row}p{col}. */}
       <section className="castworld" id="casting">
         <div className="wrap">
-          <span className="eyebrow">Casting · One garment · Any model · Any backdrop</span>
-          <h2 className="sec-h2">Cast the world. Shoot it your way.</h2>
-          <p className="sec-p">
-            Thirty frames, one garment. Five models from five continents, six setups each — flipping
-            past at shutter speed so you can feel the <b>range</b>. Every frame in a row is the{' '}
-            <b>same face</b>. Hover a thumbnail to pause; click it to jump.
-          </p>
+          {/* Wrapped so the three lines centre as one block on a shared measure
+              — the same `-head` pattern the reels, create and cats sections
+              already use. */}
+          <div className="castworld-head rv">
+            <span className="eyebrow">Casting · One garment · Any model · Any backdrop</span>
+            <h2 className="sec-h2">Cast the world. Shoot it your way.</h2>
+            <p className="sec-p">
+              Thirty frames, one garment. Five models from five continents, six setups each —
+              flipping past at shutter speed so you can feel the <b>range</b>. Every frame in a row
+              is the <b>same face</b>. Hover a thumbnail to pause; click it to jump.
+            </p>
+          </div>
 
           <div className="lr-box" id="panel">
             <div className="lr-top">
@@ -516,15 +550,24 @@ export default async function LandingPage() {
           </div>
         </div>
       </section>
+      {/* Copy left, sheet right. Full-width the sheet was taller than the
+          viewport and the paragraph above it was read and forgotten before the
+          frames arrived; side by side they are read together, and the sheet
+          lands at a size that fits on screen. */}
       <section className="demo" id="demo">
-        <div className="wrap">
-          <div className="rv">
+        <div className="wrap demo-grid">
+          <div className="demo-copy rv">
             <span className="eyebrow">Live on this page · webassets/shoot</span>
             <h2 className="sec-h2">One garment in. A full shoot out.</h2>
             <p className="sec-p">
               Five real shoots on one sheet — the <b>input</b> and everything it became. It advances
               on its own; use <b>◀ ▶</b> to browse at your own pace.
             </p>
+            <div className="demo-cta">
+              <a href="/register" className="btn btn-cta" data-c="">
+                Run it on your garment <span className="arw">→</span>
+              </a>
+            </div>
           </div>
 
           <div className="sheet" id="sheetBox">
@@ -554,11 +597,6 @@ export default async function LandingPage() {
             </div>
           </div>
 
-          <div className="rv" style={{ marginTop: 34, display: 'flex', justifyContent:'center' }}>
-            <a href="/register" className="btn btn-cta" data-c="">
-              Run it on your garment <span className="arw">→</span>
-            </a>
-          </div>
         </div>
       </section>
       {/* ── the output: stills become reels ── */}
@@ -646,7 +684,10 @@ export default async function LandingPage() {
               {RAIL_CARDS.map((c) => (
                 <div className="rcard" key={c.idx}>
                   <div>
-                    <div className="idx">{c.idx}</div>
+                    <div className="rhead">
+                      <span className="ricon">{c.icon}</span>
+                      <span className="idx">{c.idx}</span>
+                    </div>
                     <h3>{c.h}</h3>
                     <p>{c.p}</p>
                   </div>
@@ -719,16 +760,6 @@ export default async function LandingPage() {
                   <span className="gm-dot" />
                 </div>
                 <div className="gm-media" id="genieMedia" />
-                <div className="gm-foot">
-                  <span className="gm-line">
-                    <b>You</b>red saree, nice background
-                  </span>
-                  <span className="gm-line gm-out">
-                    <b>Genie</b>Full-length editorial of a deep-red silk saree — 85mm, soft key
-                    from camera-left, warm sandstone backdrop, three-quarter turn, gold zari
-                    catching the light.
-                  </span>
-                </div>
               </div>
             </div>
           </div>
@@ -904,7 +935,7 @@ export default async function LandingPage() {
             kettle boils.
           </p>
           <a href="/register" className="btn btn-cta" data-c="">
-            Start with free credits <span className="arw">→</span>
+            Start with free trial <span className="arw">→</span>
           </a>
         </div>
       </section>

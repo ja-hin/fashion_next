@@ -5,6 +5,11 @@
      register a fashion product wants. Geist keeps the body and the technical
      labels quiet and modern underneath it, so the serif is the only voice
      raised on the page. */
+  /* One size for every section heading. Each section used to carry its own,
+     which had drifted from 2.5rem to 4rem across the page and left the
+     sections looking unrelated to each other. */
+  --h2:clamp(2rem,2.6vw,3.6rem);
+
   --serif:"Playfair Display",Georgia,serif;
   --sans:"Geist","Geist Fallback",system-ui,-apple-system,sans-serif;
   --mono:"Geist Mono","Geist Mono Fallback",ui-monospace,monospace;
@@ -49,6 +54,9 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:9998;
 a{color:inherit;text-decoration:none}
 img{display:block}
 h1,h2,h3{margin:0;font-family:var(--serif);font-weight:500;letter-spacing:-.014em;line-height:1.08}
+/* Section headings. The per-section rules below all point at the same token,
+   so the size is set in exactly one place. */
+.sec-h2{font-size:var(--h2);margin-top:16px}
 .wrap{max-width:1280px;margin:0 auto;padding:0 32px}
 .eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.26em;text-transform:uppercase;color:var(--flame);font-weight:700}
 .k-label{font-family:var(--mono);font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
@@ -233,16 +241,50 @@ footer .logo-img{height:46px}
 /* ---------- horizontal rail ---------- */
 .rail-sec{position:relative;background:var(--bg2);transition:background .5s}
 .rail-head{padding:50px 20px 20px;text-align: center;}
-.rail-head h2{font-size:clamp(2rem,4.6vw,3.6rem);margin-top:16px}
+.rail-head h2{font-size:var(--h2);margin-top:16px}
 .rail-pinzone{position:relative}
 .rail-pin{position:sticky;top:0;height:100svh;min-height:620px;display:flex;align-items:center;overflow:hidden}
 .rail-track{display:flex;gap:26px;padding:0 32px;will-change:transform}
-.rcard{flex:0 0 clamp(320px,34vw,460px);height:min(72svh,600px);border:1px solid var(--line-soft);border-radius:8px;background:var(--card);
-  padding:34px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;transition:border-color .3s,background .5s;box-shadow:var(--shadow)}
-.rcard:hover{border-color:rgba(228,87,46,.55)}
+.rcard{flex:0 0 clamp(320px,34vw,460px);height:min(72svh,600px);
+  border:1px solid var(--line-soft);border-radius:18px;background:var(--card);
+  padding:32px;display:flex;flex-direction:column;justify-content:space-between;
+  position:relative;overflow:hidden;box-shadow:var(--shadow);
+  /* `translate` is left free for the reveal below, so the two compose instead
+     of overwriting each other — the lift is the only thing on `transform`. */
+  transition:transform .4s cubic-bezier(.2,.8,.2,1),border-color .35s,box-shadow .4s}
+/* A light source rather than a flat plane: the wash pools at the corner the
+   icon sits in, so the eye starts at the head of the card. */
+.rcard::before{content:"";position:absolute;left:0;right:0;top:0;height:190px;pointer-events:none;
+  background:radial-gradient(120% 100% at 10% 0%,
+    color-mix(in srgb,var(--flame) 10%,transparent),transparent 68%)}
+.rcard:hover{transform:translateY(-6px);
+  border-color:color-mix(in srgb,var(--flame) 45%,transparent);
+  box-shadow:0 44px 74px -42px rgba(23,21,15,.78)}
+
+/* head — the icon tile and the index read as one line */
+.rcard .rhead{display:flex;align-items:center;gap:13px;position:relative}
+.rcard .ricon{width:46px;height:46px;flex:0 0 auto;border-radius:14px;
+  display:grid;place-items:center;color:var(--flame);
+  background:color-mix(in srgb,var(--flame) 11%,var(--card));
+  border:1px solid color-mix(in srgb,var(--flame) 26%,transparent);
+  transition:transform .45s cubic-bezier(.2,.8,.2,1),background .35s,border-color .35s}
+.rcard .ricon svg{width:22px;height:22px;display:block}
+/* The tile is the only thing that moves independently of the card, which is
+   what makes the lift read as a card picking itself up rather than a slide. */
+.rcard:hover .ricon{transform:translateY(-2px) rotate(-7deg);
+  background:color-mix(in srgb,var(--flame) 19%,var(--card));
+  border-color:color-mix(in srgb,var(--flame) 45%,transparent)}
+
 .rcard .idx{font-family:var(--mono);font-size:.68rem;letter-spacing:.2em;color:var(--flame)}
-.rcard h3{font-size:clamp(1.5rem,2.3vw,2.1rem);margin:20px 0 14px}
+.rcard h3{font-size:clamp(1.5rem,2.3vw,2.1rem);margin:22px 0 14px}
 .rcard p{color:var(--dim);font-size:.98rem;margin:0;max-width:36ch}
+
+/* Each card rises as the rail carries it in. Gated behind `.reveal`, which
+   landing.js adds — without JS nothing is ever hidden in the first place.
+   On `translate`, not `transform`, so the hover lift stays independent. */
+.rail-track.reveal .rcard{opacity:0;translate:0 30px}
+.rail-track.reveal .rcard.in{opacity:1;translate:none;
+  transition:opacity .6s cubic-bezier(.2,.7,.2,1),translate .6s cubic-bezier(.2,.8,.2,1)}
 .rcard .visual{height:44%;border-radius:5px;overflow:hidden;position:relative;background:var(--bg);border:1px solid var(--line-soft)}
 .rcard .visual>img{width:100%;height:100%;object-fit:cover}
 .rcard .visual svg{width:100%;height:100%}
@@ -274,7 +316,7 @@ footer .logo-img{height:46px}
 /* Four proof points. Cards on the page's grey rather than cells divided by
    hairlines: each number is a separate claim, and its own white plane is what
    makes it read as one instead of as a row in a table. */
-.stats{padding:clamp(54px,7vw,86px) 0}
+.stats{padding:50px 0 0 0}
 .stats-in{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(12px,1.4vw,18px)}
 .stat{position:relative;overflow:hidden;background:var(--card);
   border:1px solid var(--line-soft);border-radius:18px;
@@ -344,11 +386,17 @@ footer .logo-img{height:46px}
 }
 
 /* ---------- contact sheet demo (dark in both themes — it's a light table) ---------- */
-.demo{padding:50px 0}
-.demo-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:64px;align-items:center}
-.demo h2{font-size:clamp(2rem,4.4vw,3.4rem);margin-top:16px}
+.demo{padding:clamp(46px,6vw,74px) 0}
+.demo-grid{display:grid;grid-template-columns:.88fr 1.12fr;gap:clamp(30px,4.5vw,60px);align-items:center}
+/* Sized for a column, not for the full measure: at the old clamp the headline
+   ran to four lines beside the sheet. */
+.demo h2{font-size:var(--h2);margin-top:14px}
+.demo .sec-p{color:var(--dim);font-size:1.02rem;max-width:40ch;margin:18px 0 0;line-height:1.6}
+.demo .sec-p b{color:var(--text)}
+.demo-cta{margin-top:30px}
 .demo p.d{color:var(--dim);font-size:1.06rem;max-width:46ch;margin:20px 0 30px}
-.sheet{position:relative;background:var(--sheet-bg);border:1px solid var(--line-soft);border-radius:8px;padding:20px;box-shadow:var(--shadow)}
+.sheet{position:relative;background:var(--sheet-bg);border:1px solid var(--line-soft);
+  border-radius:12px;padding:clamp(14px,1.4vw,20px);box-shadow:var(--shadow)}
 .sheet-top{display:flex;justify-content:space-between;margin-bottom:14px}
 .sheet-top .lbl,.sheet-foot .lbl{font-family:var(--mono);font-size:.64rem;letter-spacing:.18em;color:#8f8676;text-transform:uppercase}
 .sheet-top .roll{font-family:var(--mono);font-size:.64rem;color:#F0774E;letter-spacing:.1em}
@@ -401,7 +449,7 @@ footer .logo-img{height:46px}
 /* ---------- pricing ---------- */
 .pricing{padding:50px 0 0 0;background:var(--bg2);border-top:1px solid var(--line-soft);transition:background .5s}
 .pricing .head{text-align:center;max-width:760px;margin:0 auto 64px}
-.pricing h2{font-size:clamp(2.2rem,5vw,4rem);margin-top:16px}
+.pricing h2{font-size:var(--h2);margin-top:16px}
 .pricing .head p{color:var(--dim);margin-top:20px}
 .plans{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
 .plan{border:1px solid var(--line-soft);border-radius:8px;padding:32px 26px;background:var(--card);display:flex;flex-direction:column;position:relative;transition:transform .35s cubic-bezier(.2,.7,.2,1),border-color .35s,box-shadow .35s,background .5s}
@@ -528,6 +576,13 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
    The claim being made is range WITH identity held, so the minimap matters as
    much as the loupe: every frame in a row is visibly the same face. */
 .castworld{padding:50px 0 0}
+/* The head centres as one block on a shared measure — the same `-head` pattern
+   the reels, create and cats sections use. */
+.castworld-head{text-align:center;max-width:760px;margin:0 auto}
+.castworld-head h2{font-size:var(--h2);margin-top:16px}
+.castworld-head .sec-p{color:var(--dim);font-size:1.02rem;line-height:1.6;
+  margin:18px auto 0;max-width:62ch}
+.castworld-head .sec-p b{color:var(--text)}
 .lr-box{background:var(--sheet-bg);border:1px solid var(--line-soft);border-radius:10px;padding:22px;box-shadow:var(--shadow);margin-top:46px}
 .lr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:12px;flex-wrap:wrap}
 .lr-box .lbl{font-family:var(--mono);font-size:.64rem;letter-spacing:.18em;color:#8f8676;text-transform:uppercase}
@@ -635,23 +690,26 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
   animation:sweep 6s linear infinite}
 /* the garments being worked on — a card, not a pill: this is the one choice
    the visitor should be able to see rather than read */
-/* minmax(0,…) so a long garment name shrinks its card instead of pushing it
-   past the panel's edge — 1fr alone floors each track at its content width. */
-.hiw-garments{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.gcard{display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer;
-  background:var(--bg2);border:1px solid var(--line-soft);border-radius:14px;padding:10px 12px;
+/* A left-aligned wrap row, not a full-width two-column grid. Garment was the
+   only group in this card that spanned the whole column, which made a choice
+   between two items look heavier than the model, backdrop and pose rows under
+   it. Now every group in the card is a row of small controls that start at the
+   same left edge. */
+.hiw-garments{display:flex;flex-wrap:wrap;gap:8px}
+.gcard{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;cursor:pointer;
+  width:88px;background:var(--bg2);border:1px solid var(--line-soft);border-radius:12px;padding:8px;
   color:var(--text);font-family:inherit;transition:border-color .25s,background .25s,transform .2s}
 .gcard:hover{border-color:var(--text);transform:translateY(-1px)}
 .gcard.on{border-color:var(--flame);background:color-mix(in srgb,var(--flame) 8%,var(--card))}
-.gcard .gt{width:50px;height:50px;border-radius:9px;overflow:hidden;flex:0 0 auto;background:var(--card)}
+.gcard .gt{width:38px;height:38px;border-radius:8px;overflow:hidden;flex:0 0 auto;background:var(--card)}
 .gcard .gt img,.gcard .gt svg{width:100%;height:100%;object-fit:cover;display:block}
-.gcard .gm{min-width:0}
-.gcard .gn{display:block;font-weight:600;font-size:.94rem;
+.gcard .gm{min-width:0;max-width:100%}
+.gcard .gn{display:block;font-weight:600;font-size:.7rem;line-height:1.25;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* Two lines of sub-copy would make the two cards different heights the moment
-   one garment's line is longer than the other's. */
-.gcard .gs{display:block;color:var(--muted);font-size:.76rem;margin-top:2px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* The flow line ("Flat-lay → draped on-model") has nowhere to sit on a tile
+   this size, and the section's own copy already makes the same point. It stays
+   in the markup and moves to the button's tooltip rather than being deleted. */
+.gcard .gs{display:none}
 
 .hiw-group{margin-top:24px}
 .hiw-group:first-child{margin-top:0}
@@ -684,7 +742,7 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 @media(max-width:560px){
   /* Two cards side by side leave the names truncated to nothing at this
      width, and the name is what the card is for. */
-  .hiw-garments{grid-template-columns:1fr}
+  /* The tiles already wrap; nothing to re-track at this width. */
   .hiw-tab{padding:.62em 1.1em;font-size:.88rem}
 }
 @media(prefers-reduced-motion:reduce){
@@ -794,8 +852,22 @@ body.mnav-open .mnav-sheet{transform:none}
    picture instead of the box means the frame's corners and its neighbours stay
    put, and the type layered over it is never resampled. */
 .cpanel img,.cpanel svg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 30%;
-  transform-origin:center;transition:transform .7s cubic-bezier(.22,.9,.3,1)}
-.cpanel.on img,.cpanel.on svg{transform:scale(1.08)}
+  /* Both anchors point at the top, because two separate things crop the head.
+
+     `transform-origin` handles the scale(1.08): about the centre it grows the
+     picture in every direction at once, and the half growing upward is the
+     half with the face in it.
+
+     `object-position` handles the bigger one. Closed, the panel is narrow and
+     tall, so `cover` fits by height and nothing is cropped vertically. Open,
+     it is ~6x wider, so `cover` switches to fitting by width and the image
+     overflows the box vertically by a lot — and 50% 30% then holds the crop
+     30% down, which on a full-length shot lands below the chin. Panning to
+     the top edge as it opens keeps the head in frame at every width. */
+  transform-origin:50% 0;
+  transition:transform .7s cubic-bezier(.22,.9,.3,1),
+             object-position .7s cubic-bezier(.22,.9,.3,1)}
+.cpanel.on img,.cpanel.on svg{transform:scale(1.08);object-position:50% 20%}
 /* keeps the type legible whatever the photograph is doing underneath it */
 .cpanel::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(transparent 42%,rgba(10,9,8,.82))}
@@ -929,7 +1001,7 @@ body.mnav-open .mnav-sheet{transform:none}
 
 .genie-copy{position:relative;z-index:1;text-align:center;max-width:58ch;will-change:opacity,transform}
 .genie-copy .eyebrow{color:var(--genie)}
-.genie-copy h2{font-size:clamp(1.9rem,4.2vw,3.2rem);margin-top:14px}
+.genie-copy h2{font-size:var(--h2);margin-top:14px}
 .genie-copy h2 em{font-style:italic;color:var(--genie)}
 .genie-copy p{color:var(--dim);font-size:1.02rem;margin:16px auto 0;max-width:46ch}
 .genie-hint{display:inline-block;margin-top:20px;font-family:var(--mono);font-size:.64rem;
@@ -1042,7 +1114,7 @@ body.mnav-open .mnav-sheet{transform:none}
    frame, the hover, and the two shapes the row takes. */
 .reels{padding:50px 0 90px;overflow:hidden}
 .reels-head{text-align:center;max-width:760px}
-.reels-head h2{font-size:clamp(2rem,4.6vw,3.6rem);margin-top:16px}
+.reels-head h2{font-size:var(--h2);margin-top:16px}
 .reels-head h2 em{font-style:italic;color:var(--flame)}
 .reels-head .sec-p{margin:18px auto 0;max-width:52ch}
 

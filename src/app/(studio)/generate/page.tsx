@@ -12,6 +12,7 @@ import ModelPickerModal from '@/components/ModelPickerModal';
 import EnsembleTagModal from '@/components/EnsembleTagModal';
 import GarmentPickerModal from '@/components/GarmentPickerModal';
 import { garmentToRefs } from '@/lib/client/garment-refs';
+import { ChevronLeftIcon } from '@/components/icons';
 
 export default function GeneratePage() {
   const s = useStudio();
@@ -145,7 +146,49 @@ export default function GeneratePage() {
 
   return (
     <>
-      <aside className="hidden max-h-full flex-shrink-0 overflow-y-auto border-r border-line bg-bg lg:block">
+      {/* A column, not a plain scroller: the toggle has to stay put while the
+          form scrolls under it, which it cannot do inside the scrolling box. */}
+      <aside
+        className={`hidden max-h-full flex-shrink-0 flex-col border-r border-line bg-bg transition-[width] duration-200 lg:flex ${
+          s.setupCollapsed ? 'w-[46px]' : 'w-[336px]'
+        }`}
+      >
+        <div
+          className={`flex flex-shrink-0 items-center gap-2 pt-3 ${
+            s.setupCollapsed ? 'justify-center px-0' : 'px-[22px] pl-6'
+          }`}
+        >
+          {!s.setupCollapsed && (
+            <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted">
+              Shoot setup
+            </span>
+          )}
+          <button
+            onClick={() => s.setSetupCollapsed(!s.setupCollapsed)}
+            title={s.setupCollapsed ? 'Show shoot setup' : 'Hide shoot setup'}
+            aria-label={s.setupCollapsed ? 'Show shoot setup' : 'Hide shoot setup'}
+            aria-expanded={!s.setupCollapsed}
+            className={`flex h-[28px] w-[28px] flex-shrink-0 items-center justify-center rounded-lg text-muted transition hover:bg-surface2 hover:text-ink ${
+              s.setupCollapsed ? '' : 'ml-auto'
+            }`}
+          >
+            <ChevronLeftIcon className={`h-4 w-4 ${s.setupCollapsed ? 'rotate-180' : ''}`} />
+          </button>
+        </div>
+
+        {/* Folded away, the strip still says what it is and re-opens on click —
+            a bare chevron gives no clue what is behind it. */}
+        {s.setupCollapsed && (
+          <button
+            onClick={() => s.setSetupCollapsed(false)}
+            className="flex flex-1 items-start justify-center pt-4 text-[10px] font-bold uppercase tracking-[0.14em] text-muted transition hover:text-ink"
+            style={{ writingMode: 'vertical-rl' }}
+          >
+            Shoot setup
+          </button>
+        )}
+
+        <div className={`min-h-0 flex-1 overflow-y-auto ${s.setupCollapsed ? 'hidden' : ''}`}>
         <SetupPanel
           setup={s.setup}
           onSetup={s.patchSetup}
@@ -185,6 +228,7 @@ export default function GeneratePage() {
             s.setEnsemble([]);
           }}
         />
+        </div>
       </aside>
 
       <main className="flex-1 overflow-y-auto px-5 py-6 sm:px-7">

@@ -19,12 +19,15 @@ export default function ModelFolderModal({
   onClose,
   onZoom,
   onBalance,
+  onUse,
   onChanged,
 }: {
   mid: string;
   onClose: () => void;
   onZoom: (items: LbItem[], index: number) => void;
   onBalance: (b: number) => void;
+  /** Arm the Generate tab with this model and go there. */
+  onUse: (m: SavedModel) => void;
   onChanged: () => void;
 }) {
   const dialog = useDialog();
@@ -298,6 +301,16 @@ export default function ModelFolderModal({
               </b>
             </div>
           </div>
+
+          {/* The panel's primary action, so it follows the details rather than
+              sitting at the foot of the column — the bottom edge stays with
+              Delete, which is where the destructive action belongs. */}
+          <button
+            onClick={() => onUse(model)}
+            className="mt-4 w-full rounded-[10px] bg-accent py-2.5 text-[12.5px] font-bold text-white transition hover:brightness-110"
+          >
+            Use this model →
+          </button>
 
           <button
             onClick={removeModel}

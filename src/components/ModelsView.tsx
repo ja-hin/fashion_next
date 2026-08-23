@@ -11,10 +11,13 @@ import type { SavedModel, LbItem } from '@/lib/client/types';
 export default function ModelsView({
   onZoom,
   onBalance,
+  onUseModel,
   refreshKey,
 }: {
   onZoom: (items: LbItem[], index: number) => void;
   onBalance: (b: number) => void;
+  /** Arm the Generate tab with this model and go there. */
+  onUseModel: (m: SavedModel) => void;
   /** Bumped by the parent after a model is saved, to force a reload. */
   refreshKey: number;
 }) {
@@ -146,6 +149,19 @@ export default function ModelsView({
               <div className="p-3">
                 <div className="truncate text-[13px] font-bold">{m.name}</div>
                 <div className="mt-0.5 text-[11px] text-muted">{tags}</div>
+                {/* Always shown rather than revealed on hover: a card that only
+                    offers its main action to a mouse offers nothing on a
+                    tablet. stopPropagation so it does not also open the
+                    folder the card click is bound to. */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onUseModel(m);
+                  }}
+                  className="mt-2.5 w-full rounded-lg bg-accent-soft py-2 text-[11.5px] font-bold text-accent transition-colors hover:bg-accent hover:text-white"
+                >
+                  Use this model
+                </button>
               </div>
             </div>
           );
@@ -158,6 +174,7 @@ export default function ModelsView({
           onClose={() => setOpenMid(null)}
           onZoom={onZoom}
           onBalance={onBalance}
+          onUse={onUseModel}
           onChanged={load}
         />
       )}
