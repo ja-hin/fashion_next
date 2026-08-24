@@ -193,7 +193,7 @@ async function probeChain(base){
 (function(){
   const el=document.getElementById("rotw");if(!el)return;
   if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;
-  const words=["sarees","kurtis & co-ords","Myntra listings","lookbooks","streetwear","festive drops"];
+  const words=["Amazon & Myntra listings","kurtis, sarees & co-ords","t-shirts & western wear","festive & wedding drops"];
   let i=0;
   setInterval(()=>{
     el.classList.add("sw");
@@ -281,11 +281,31 @@ function setRailHeight(){
 setRailHeight();addEventListener("resize",setRailHeight);
 const fmtIN=n=>n.toLocaleString("en-IN",{maximumFractionDigits:n<100?1:0});
 
+/* ---- the nav gets out of the way ------------------------------------- */
+/* Hidden on the way down, back on the way up — but only past the hero. While
+   the opening screen is still on show the bar is part of it, and a header that
+   vanished inside the first shot would read as a glitch rather than as room
+   being made. A few pixels of deadband so a trackpad's jitter cannot flap it,
+   and the mobile sheet always wins: it is anchored to the bar, so hiding one
+   without the other would leave a menu open with no way back to it. */
+const heroEl=document.querySelector(".hero");
+let navLastY=window.scrollY;
+function navChrome(y){
+  if(!nav)return;
+  const past=y>(heroEl?heroEl.offsetHeight:innerHeight);
+  if(!past||document.body.classList.contains("mnav-open")){
+    nav.classList.remove("nav-away");navLastY=y;return;
+  }
+  const dy=y-navLastY;
+  if(Math.abs(dy)>6){nav.classList.toggle("nav-away",dy>0);navLastY=y;}
+}
+
 function tick(){
   scrollY_s=reduce?window.scrollY:lerp(scrollY_s,window.scrollY,0.12);
   const doc=document.documentElement;
   progress.style.width=(window.scrollY/(doc.scrollHeight-innerHeight)*100)+"%";
   nav.classList.toggle("solid",window.scrollY>40);
+  navChrome(window.scrollY);
 
   const np=zoneProgress(narrWrap);
   const p1=clamp(1-(np-0.28)/0.22,0,1);
@@ -911,12 +931,32 @@ const STRIP_ITEMS=[
     render();
   }
 
+  /* Two figures on a 24 grid, keyed by category id. Deliberately the restroom
+     pictogram — an A-line body against a straight one — because that pairing is
+     read as "women / men" instantly and at any size, where a dress-versus-shirt
+     pair asks the eye to identify two garments first. The words are still there
+     as the button's label and tooltip. */
+  const CAT_ICON={
+    womenswear:'<circle cx="12" cy="4.9" r="2.6"/>'+
+               '<path d="M12 8.4c-2 0-3.2 1.2-3.7 3L6.9 17h10.2l-1.4-5.6c-.5-1.8-1.7-3-3.7-3z"/>'+
+               '<path d="M9.9 17l-.5 4M14.1 17l.5 4"/>',
+    menswear:'<circle cx="12" cy="4.9" r="2.6"/>'+
+             '<path d="M8.4 17v-5.4A3.6 3.6 0 0 1 12 8a3.6 3.6 0 0 1 3.6 3.6V17z"/>'+
+             '<path d="M10.2 17v4M13.8 17v4"/>'
+  };
+  const catSVG=id=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"`+
+    ` stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CAT_ICON[id]||""}</svg>`;
+
   const tabHost=document.getElementById("hiwCats");
   const tabs=CATS.map((c,i)=>{
     const b=document.createElement("button");
     b.type="button";b.className="hiw-tab"+(i===ci?" on":"");b.dataset.c="";
     b.setAttribute("role","tab");b.setAttribute("aria-selected",String(i===ci));
-    b.textContent=c.n;
+    /* The name leaves the button but not the page: it stays the accessible
+       name and the tooltip, so nothing is lost to a screen reader or to a
+       visitor who does not read the silhouette. */
+    b.innerHTML=catSVG(c.id);
+    b.title=c.n;b.setAttribute("aria-label",c.n);
     b.addEventListener("click",()=>{
       if(ci===i)return;
       ci=i;gi=0;mi=0;pi=0;
@@ -1001,7 +1041,9 @@ const STRIP_ITEMS=[
   row.appendChild(next);
 
   panels.forEach(p=>{
-    p.addEventListener("mouseenter",()=>open(p));
+    /* Stacked, the scroll is in charge — a tap that also fires mouseenter
+       would otherwise yank the selection off whatever the scroll had chosen. */
+    p.addEventListener("mouseenter",()=>{if(!narrow.matches)open(p);});
     p.addEventListener("focus",()=>open(p));
     /* First tap opens, second follows the link — otherwise a phone user would
        never see the copy before being navigated away. */
@@ -1012,9 +1054,63 @@ const STRIP_ITEMS=[
     });
   });
   row.addEventListener("mouseleave",e=>{
+    if(narrow.matches)return;              /* stacked, the scroll owns it */
     if(next.contains(e.relatedTarget))return;
     open(null);
   });
+
+  /* ---- stacked: the scroll picks the open card ----------------------- */
+  /* On a phone the panels are a column of bars and there is no hover to open
+     one with, so the section would sit there closed until tapped. Scroll
+     position drives it instead: come down the page and each card opens as it
+     reaches the reading line, closing the one before it.
+     A tap still works, and now usually goes straight through to the link —
+     the card under your thumb is already the open one.
+
+     The section is PINNED while this happens: the zone below is given extra
+     height, the row sticks to the top of it, and that extra height is what the
+     scroll spends stepping through the cards. Without it, arriving at speed
+     flies past all four — the whole point of the section is that you see each
+     door, and a fast flick should cost you the scroll rather than the content.
+
+     The index comes from progress through the zone, not from any panel's live
+     position. Opening a card is a ~290px layout change, so a rule measured off
+     the panels is measuring edges its own last decision just moved: nearest-
+     to-line flaps, and top-edge-passed settles but paces unevenly. The zone's
+     height never changes, so its progress is a clean, evenly divided input. */
+  const narrow=matchMedia("(max-width:860px)");
+  const zone=document.getElementById("createZone");
+  /* Scroll spent on each card, as a fraction of the viewport. Bigger holds
+     each card longer and makes the section harder to rush. */
+  const HOLD=0.55;
+  let ticking=false;
+
+  /* The pin needs one viewport to sit in plus the travel the cards consume.
+     Cleared above the breakpoint so the desktop fan keeps its natural height. */
+  function sizeZone(){
+    if(!zone)return;
+    zone.style.height=narrow.matches
+      ? Math.round(innerHeight*(1+panels.length*HOLD))+"px"
+      : "";
+  }
+
+  function pickByScroll(){
+    ticking=false;
+    if(!narrow.matches||!zone)return;
+    const t=zoneProgress(zone);
+    const k=Math.max(0,Math.min(panels.length-1,Math.floor(t*panels.length)));
+    if(k!==idx)open(panels[k]);
+  }
+  function onScroll(){
+    if(ticking)return;
+    ticking=true;requestAnimationFrame(pickByScroll);
+  }
+  addEventListener("scroll",onScroll,{passive:true});
+  addEventListener("resize",()=>{sizeZone();onScroll();});
+  /* Crossing the breakpoint hands control over cleanly rather than leaving a
+     card stuck open in a layout that never chose it. */
+  narrow.addEventListener("change",()=>{open(null);sizeZone();onScroll();});
+  sizeZone();onScroll();
 })();
 
 /* =============== "built for brands at every stage" deck =============== */
@@ -1026,21 +1122,21 @@ const STRIP_ITEMS=[
   const stage=document.getElementById("catsStage"),pillBox=document.getElementById("catsPills");
   if(!stage||!pillBox)return;
 
+  /* `slug` is the only thing outside this file: a card looks for its photo at
+     /webassets/cats/<slug> and falls back to the drawn croquis when there is
+     none, so adding artwork later needs no code change. The deck's geometry is
+     entirely N-driven, so the length of this list is free. */
   const CATS=[
-    {slug:"kidswear", n:"Kidswear", pose:"front",
-     p:"Generate playful kidswear shoots with scalable model options and marketplace-ready outputs"},
-    {slug:"lingerie", n:"Lingerie & Swimwear", pose:"front",
-     p:"Create refined lingerie and swimwear shoots with controlled styling and multi-angle variations"},
-    {slug:"plus-size",n:"Plus-size", pose:"hip",
-     p:"Show real fit with plus-size models and consistent sizing across the whole catalogue"},
-    {slug:"seniors",  n:"Seniors", pose:"front",
-     p:"Cast older models with dignity and shoot the same garment across every age you sell to"},
-    {slug:"teens",    n:"Teens", pose:"walk",
-     p:"Shoot teen ranges with age-appropriate styling and the energy the category asks for"},
+    {slug:"western",  n:"Western Wear", pose:"front",
+     p:"Scale western wear shoots with standardised lifestyle backgrounds and marketplace variations"},
+    {slug:"tshirt",   n:"T-shirt", pose:"mfront",
+     p:"Shoot every colourway and print of one tee — front, back and detail — on the same model"},
+    {slug:"swimwear", n:"Swimwear", pose:"hip",
+     p:"Shoot swim ranges with controlled styling, consistent bodies and multi-angle variations"},
     {slug:"ethnic",   n:"Ethnic Wear", pose:"saree",
      p:"Drape sarees, kurtis and lehengas accurately, with festive scenes built for the season"},
-    {slug:"western",  n:"Western Wear", pose:"front",
-     p:"Scale western wear shoots with standardised lifestyle backgrounds and marketplace variations"}
+    {slug:"ensemble", n:"Ensemble", pose:"walk",
+     p:"Assemble a whole look — garment, layer and accessory — onto one model in a single shot"}
   ];
   const N=CATS.length;
   let active=0;
@@ -1070,9 +1166,9 @@ const STRIP_ITEMS=[
         im.src=u;im.alt=`${c.n} — AI on-model photography sample`;im.loading=i?"lazy":"eager";
         a.prepend(im);
       } else {
-        /* Deliberately the drawn croquis, not a borrowed photo: an adult in the
-           Kidswear card or a studio frame under "Ethnic Wear" would misrepresent
-           the category, and an obvious placeholder is the honest failure. */
+        /* Deliberately the drawn croquis, not a borrowed photo: a studio frame
+           under "Ethnic Wear" or a dress under "T-shirt" would misrepresent the
+           category, and an obvious placeholder is the honest failure. */
         const d=document.createElement("div");
         d.style.cssText="position:absolute;inset:0";
         d.innerHTML=frameSVG(c.pose,BACKDROPS[i%BACKDROPS.length]);
@@ -1746,4 +1842,86 @@ const STRIP_ITEMS=[
 
   let rt;
   addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(()=>{if(opened)layout();},150);});
+})();
+
+/* =============== pricing packs: a slider on the phone =============== */
+/* Below 620px the plans grid becomes a snap rail (see landing.css). This makes
+ * it read as a slider rather than as a row that happens to overflow: it moves
+ * on its own, and the dots say how many packs there are and which one you are
+ * looking at. Everything here is inert above the breakpoint — on the desktop
+ * grid there is nothing to scroll and no dots to show. */
+(function planSlider(){
+  const rail=document.querySelector(".plans");
+  const dotBox=document.getElementById("planDots");
+  if(!rail||!dotBox)return;
+  const cards=[...rail.querySelectorAll(".plan")];
+  if(cards.length<2)return;                 /* one pack is not a slider */
+
+  const narrow=matchMedia("(max-width:620px)");
+  const STEP=4500;                          /* ms each pack holds */
+  const RESUME=7000;                        /* idle before autoplay resumes */
+  let at=0,timer=null,resume=null,settle=null,selfScroll=0;
+
+  const dots=cards.map((c,i)=>{
+    const b=document.createElement("button");
+    b.type="button";b.className="pdot";b.dataset.c="";
+    b.setAttribute("aria-label",`Show pack ${i+1} of ${cards.length}`);
+    b.addEventListener("click",()=>{go(i);hold();});
+    dotBox.appendChild(b);
+    return b;
+  });
+
+  function paint(){
+    dots.forEach((d,i)=>{
+      d.classList.toggle("on",i===at);
+      d.setAttribute("aria-current",String(i===at));
+    });
+  }
+
+  function go(i){
+    at=(i+cards.length)%cards.length;
+    const c=cards[at];
+    /* `selfScroll` is what stops our own smooth scroll being read back as the
+       user's and pausing the autoplay we just started. */
+    selfScroll=performance.now()+800;
+    rail.scrollTo({left:Math.max(0,c.offsetLeft-(rail.clientWidth-c.offsetWidth)/2),
+                   behavior:reduce?"auto":"smooth"});
+    paint();
+  }
+
+  function play(){
+    if(reduce||!narrow.matches)return;      /* reduced motion: dots only */
+    clearInterval(timer);
+    timer=setInterval(()=>go(at+1),STEP);
+  }
+  function stop(){clearInterval(timer);}
+  /* A hand on the rail wins. Autoplay stands down and picks up again only
+     after the rail has been left alone — nothing is more annoying than a
+     carousel that pulls away while you are reading it. */
+  function hold(){stop();clearTimeout(resume);resume=setTimeout(play,RESUME);}
+
+  rail.addEventListener("scroll",()=>{
+    if(!narrow.matches||performance.now()<selfScroll)return;
+    hold();
+    clearTimeout(settle);
+    settle=setTimeout(()=>{                 /* settle, then adopt where it landed */
+      const mid=rail.scrollLeft+rail.clientWidth/2;
+      let best=at,bd=Infinity;
+      cards.forEach((c,i)=>{
+        const d=Math.abs(c.offsetLeft+c.offsetWidth/2-mid);
+        if(d<bd){bd=d;best=i;}
+      });
+      at=best;paint();
+    },140);
+  },{passive:true});
+  rail.addEventListener("pointerdown",hold);
+
+  function sync(){
+    dotBox.hidden=!narrow.matches;
+    if(narrow.matches){paint();play();}else{stop();clearTimeout(resume);}
+  }
+  narrow.addEventListener("change",sync);
+  /* Nothing advances behind you. */
+  new IntersectionObserver(es=>{es[0].isIntersecting?play():stop();},{threshold:0}).observe(rail);
+  sync();
 })();

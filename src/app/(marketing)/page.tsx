@@ -218,6 +218,40 @@ const RAIL_CARDS = [
   },
 ];
 
+/**
+ * The three proof points, and the doors into the product beneath them.
+ *
+ * Every number here is a claim this page already makes elsewhere — the 10x in
+ * the cost counter, the 2 min and the ₹25 in the stats band. Nothing new is
+ * asserted, so there is one set of numbers to keep honest rather than two.
+ */
+const WHY_STATS = [
+  {
+    n: '10×',
+    t: 'Lower production cost',
+    d: 'What a studio shoot costs per photo, against one prepaid credit here — no crew, no location, no reshoot fee.',
+  },
+  {
+    n: '2 min',
+    t: 'Upload to full shoot',
+    d: 'One garment photo in, a finished on-model set back, generated while you wait rather than booked for next week.',
+  },
+  {
+    n: '₹25',
+    t: 'Per photo, prepaid',
+    d: 'The rate on the largest pack. No subscription, no seats and no minimum SKUs — you pay for photos.',
+  },
+];
+
+const USE_CASES = [
+  'Launch collections',
+  'Catalogues at scale',
+  'Update listings',
+  'Every marketplace',
+  'Sample designs',
+  'Visual lookbooks',
+];
+
 const ASSURANCES = [
   'No minimum SKUs — shoot one kurti or a thousand',
   'Restart any shoot later with full continuity',
@@ -257,7 +291,7 @@ export default async function LandingPage() {
             {/* eslint-enable @next/next/no-img-element */}
           </a>
           <nav className="nav-links">
-            <a href="#story" data-c="">Why</a>
+            <a href="#why" data-c="">Why</a>
             <a href="#features" data-c="">Features</a>
             <a href="#demo" data-c="">See it run</a>
             <a href="/pricing" data-c="">Pricing</a>
@@ -296,7 +330,7 @@ export default async function LandingPage() {
         <div className="mnav-sheet" role="dialog" aria-modal="true" aria-label="Menu">
           <nav className="mnav-links">
             <a href="#how" data-c="">How it works</a>
-            <a href="#story" data-c="">Why</a>
+            <a href="#why" data-c="">Why</a>
             <a href="#features" data-c="">Features</a>
             <a href="#demo" data-c="">See it run</a>
             <a href="/pricing" data-c="">Pricing</a>
@@ -321,22 +355,19 @@ export default async function LandingPage() {
         <div className="wrap hero-grid">
           <div>
             <h1>
-              <span className="ln"><span>Making studio photography</span></span>
-              <span className="ln"><span><em>universally</em> accessible</span></span>
+              <span className="ln"><span>Fashion </span></span>
+              <span className="ln"><span><em>photoshoots & videos</em> for your brand in minutes.</span></span>
             </h1>
             <p className="sub">
-              AI on-model fashion photography for D2C brands and ecommerce sellers in India. One
-              garment photo — or an on-model shot — becomes a full editorial shoot for{' '}
-              <span className="rotw" id="rotw">sarees</span> — <b>photo-real output that
-              doesn&apos;t look AI-generated</b> — in minutes, not weeks.
+              Create a full on-model editorial shoot with AI for{' '}
+              <span className="rotw" id="rotw">Amazon & Myntra listings</span> <br></br><b>from one garment photo. Studio-grade, photo-real stills</b> and reel-ready videos from the same shoot for D2C brands and ecommerce sellers. No photographer, no model booking, no studio.
             </p>
             <div className="hero-cta">
               <a href="/register" className="btn btn-cta" data-c="">
-                Start with free trial <span className="arw">→</span>
+                Start free trial <span className="arw">→</span>
               </a>
               <a href="#demo" className="btn btn-line" data-c="">See a shoot run</a>
             </div>
-            <p className="hero-note">No studio · No crew · No minimum SKUs · Prepaid in ₹</p>
           </div>
 
           {/* Each frame carries its own media layer so the photograph can swap
@@ -361,9 +392,6 @@ export default async function LandingPage() {
               <div className="pl-media" id="mC" />
               <span className="cap" id="capC">S1 · FRAME 04</span>
             </div>
-            <div className="stamp">
-              SHOT ON <b>AIMAGEGEN</b> · <span className="rec" id="rec">● REC 00:00</span>
-            </div>
           </div>
         </div>
       </section>
@@ -378,7 +406,16 @@ export default async function LandingPage() {
             <span className="eyebrow">What do you want to create?</span>
             <h2 className="sec-h2">Photos, models, video, or listings. Start where you need to.</h2>
           </div>
-          <div className="create-row" id="createRow" />
+          {/* The row sits in a pin zone on a phone: the section sticks while the
+              scroll steps through the cards, so arriving at speed cannot skip
+              past them. Both wrappers are inert above 860px — the zone gets no
+              height and the pin no stickiness — so the desktop fan is
+              untouched. Sized and driven by landing.js. */}
+          <div className="create-pinzone" id="createZone">
+            <div className="create-pin">
+              <div className="create-row" id="createRow" />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -448,11 +485,6 @@ export default async function LandingPage() {
                 <div className="hiw-opts" id="hiwPoses" role="group" aria-label="Pose" />
               </div>
 
-              <div className="hiw-cta">
-                <a href="/register" className="btn btn-cta" data-c="">
-                  Generate this shot free <span className="arw">→</span>
-                </a>
-              </div>
             </div>
 
             <div className="hiw-view" id="hiwView">
@@ -514,7 +546,6 @@ export default async function LandingPage() {
 
           <div className="lr-box" id="panel">
             <div className="lr-top">
-              <span className="lbl">Library · 1 garment · 5 models × 6 setups · auto-advance 0.45s</span>
               <span className="roll">● identity locked per row</span>
             </div>
 
@@ -536,17 +567,9 @@ export default async function LandingPage() {
                   <div className="mm-cols" id="mmCols" />
                   <div id="mmRows" />
                 </div>
-                <div className="mm-legend">
-                  <span className="same">● Same face across each row →</span>
-                  <span className="lbl" id="pauseState">PLAYING</span>
-                </div>
               </div>
             </div>
 
-            <div className="lr-foot">
-              <span className="lbl">30 frames · generated from one upload</span>
-              <span className="lbl">Cells replaceable via webassets/m&#123;row&#125;p&#123;col&#125;.jpg</span>
-            </div>
           </div>
         </div>
       </section>
@@ -563,17 +586,11 @@ export default async function LandingPage() {
               Five real shoots on one sheet — the <b>input</b> and everything it became. It advances
               on its own; use <b>◀ ▶</b> to browse at your own pace.
             </p>
-            <div className="demo-cta">
-              <a href="/register" className="btn btn-cta" data-c="">
-                Run it on your garment <span className="arw">→</span>
-              </a>
-            </div>
           </div>
 
           <div className="sheet" id="sheetBox">
             <div className="sheet-top">
               <span className="lbl" id="topLbl">CONTACT SHEET · SET 01 / 05</span>
-              <span className="roll">● REC · consistency locked</span>
             </div>
             <div className="scan" id="scan" />
             <div className="frames" id="frames" />
@@ -767,11 +784,9 @@ export default async function LandingPage() {
       </section>
 
       {/* ── stats ── */}
-      <div className="stats">
+      {/* <div className="stats">
         <div className="wrap stats-in">
           <div className="stat card-glow">
-            {/* The mark is its own element so it can be set in the sans — see
-                the note on `.stat .num .pre` in landing.css. */}
             <div className="num" data-count="25" data-prefix="<i class='pre'>₹</i>">
               <i className="pre">₹</i>0
             </div>
@@ -790,10 +805,70 @@ export default async function LandingPage() {
             <div className="cap k-label">Credit validity, prepaid</div>
           </div>
         </div>
-      </div>
+      </div> */}
+
+      {/* ── why brands choose us ── */}
+      {/* A dark band between the demos and the price: the page has just spent
+          six sections showing what the product does, and this is the summary a
+          visitor scrolls back to before deciding. Static markup — nothing here
+          needs landing.js. */}
+      <section className="why" id="why">
+        <div className="wrap">
+          <div className="why-head rv">
+            <span className="eyebrow why-eyebrow">Why brands choose AImageGen</span>
+          </div>
+
+          <div className="why-grid rv">
+            {WHY_STATS.map((s, i) => (
+              <div className="wcard" key={s.t} style={{ '--i': i } as React.CSSProperties}>
+                <div className="n">{s.n}</div>
+                <div className="t">{s.t}</div>
+                <p className="d">{s.d}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="why-sep" />
+
+          <div className="why-use rv">
+            <span className="eyebrow use-eyebrow">What&rsquo;s your use case?</span>
+            {/* A ticker on every width. Four copies of the list, not two: the
+                track only reads as endless while one copy is at least as wide
+                as the viewport, and six chips are ~1100px — fine on a phone,
+                a visible gap on a 1920 desktop. Four covers both, and the
+                keyframe travels exactly one copy so the seam never shows.
+                Copies after the first are hidden from the accessibility tree
+                and taken out of the tab order, so the ticker is six links to a
+                screen reader and to the keyboard, not twenty-four. */}
+            <div className="use-marquee">
+              <div className="use-track">
+                {[0, 1, 2, 3].map((copy) => (
+                  <div
+                    className="use-row"
+                    key={copy}
+                    aria-hidden={copy > 0 ? true : undefined}
+                  >
+                    {USE_CASES.map((u) => (
+                      <a
+                        href="/register"
+                        className="use-chip"
+                        key={u}
+                        data-c=""
+                        tabIndex={copy > 0 ? -1 : undefined}
+                      >
+                        {u} <span className="arw">→</span>
+                      </a>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ── assurances ── */}
-      <section className="assure">
+      {/* <section className="assure">
         <div className="wrap">
           <div className="rv" style={{ marginBottom: 34 }}>
             <span className="eyebrow">The fine print — in your favour</span>
@@ -810,7 +885,7 @@ export default async function LandingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* ── demo: the contact sheet ── */}
       {/* Full width rather than the old half-column: the sheet is six frames
@@ -896,6 +971,10 @@ export default async function LandingPage() {
               );
             })}
           </div>
+          {/* Filled by landing.js and shown only where the grid becomes a rail.
+              Empty here rather than four hardcoded dots so the count can never
+              fall out of step with the number of packs. */}
+          <div className="plan-dots" id="planDots" hidden />
           <div className="pnote rv">
             Enterprise from ₹6/photo · Talk to us for custom volume, dedicated models &amp;
             onboarding
