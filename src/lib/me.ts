@@ -24,6 +24,8 @@ export interface MePayload {
   styles?: string[];
   prices?: { imagine: Record<string, number>; saved: Record<string, number> };
   genie?: { free: number; price: number; max: number };
+  /** Credits for one 10-second video. */
+  video_price?: number;
   /**
    * True while this account is on the free credits, so its images are served
    * with the brand watermark. Flips to false permanently on the first payment.
@@ -49,6 +51,7 @@ export async function getMePayload(): Promise<MePayload> {
     styles: Object.keys(STYLES),
     prices: s.prices,
     genie: { free: s.genie_free, price: s.genie_price, max: s.genie_max },
+    video_price: s.video_price,
     watermark: shouldWatermark(u),
   };
 }

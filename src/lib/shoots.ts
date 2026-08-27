@@ -14,7 +14,7 @@
 import 'server-only';
 import { shoots } from './mongo';
 import { safeName, shootNoStr } from './settings';
-import type { ShootDoc, UserDoc, ManifestItem } from './types';
+import type { ShootDoc, UserDoc, ManifestItem, ShootVideo } from './types';
 
 export async function getShoot(pid: string): Promise<ShootDoc | null> {
   if (!pid) return null;
@@ -33,6 +33,11 @@ export async function updateShoot(pid: string, patch: Partial<ShootDoc>): Promis
 /** Append one image to a shoot's manifest atomically. */
 export async function pushManifest(pid: string, item: ManifestItem): Promise<void> {
   await (await shoots()).updateOne({ _id: pid }, { $push: { manifest: item } });
+}
+
+/** Append one generated video to a shoot, atomically. */
+export async function pushVideo(pid: string, item: ShootVideo): Promise<void> {
+  await (await shoots()).updateOne({ _id: pid }, { $push: { videos: item } });
 }
 
 export async function deleteShoot(pid: string): Promise<void> {

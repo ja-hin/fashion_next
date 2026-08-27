@@ -63,8 +63,12 @@ interface Props {
   onOpenPicker: () => void;
   noModelError: boolean;
   heroCost: number;
+  /** Credits for one 10-second video. */
+  videoCost: number;
   busy: boolean;
   onGenerate: () => void;
+  /** Straight to video from the uploaded photos, skipping the hero. */
+  onGenerateVideo: () => void;
   hasShoot: boolean;
   onNewShoot: () => void;
 }
@@ -89,8 +93,10 @@ export default function SetupPanel({
   onOpenPicker,
   noModelError,
   heroCost,
+  videoCost,
   busy,
   onGenerate,
+  onGenerateVideo,
   hasShoot,
   onNewShoot,
 }: Props) {
@@ -336,6 +342,25 @@ export default function SetupPanel({
         {/* The hero is one image whatever the reference count, so the quote is
             the single-image rate for the chosen resolution × model source. */}
         {!busy && heroCost > 0 && ` · ${heroCost} credit${heroCost === 1 ? '' : 's'}`}
+      </button>
+
+      {/* The other door out of the same uploads. Secondary, because a hero is
+          the cheaper first step and the one most shoots want — but a customer
+          who only came for a reel should not have to buy a photo first.
+          Disabled until something has been uploaded: the garment photos ARE the
+          reference, so there is nothing to lock onto without them. */}
+      <button
+        onClick={onGenerateVideo}
+        disabled={busy || !ensemble.length}
+        title={
+          ensemble.length
+            ? 'Make a 10-second video from these photos'
+            : 'Upload a garment photo first'
+        }
+        className="mt-2 flex w-full items-center justify-center gap-2 rounded-[11px] border border-line p-[11px] text-[13px] font-bold text-ink transition hover:-translate-y-px hover:border-ink disabled:translate-y-0 disabled:opacity-50"
+      >
+        ▶ Generate video
+        {videoCost > 0 && ` · ${videoCost} credits`}
       </button>
 
       {/* <div className="mt-2.5 text-[11px] leading-[1.5] text-muted">

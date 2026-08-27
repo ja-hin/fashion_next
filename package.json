@@ -12,7 +12,7 @@
     "migrate": "node scripts/migrate.mjs"
   },
   "dependencies": {
-    "@google/genai": "^1.30.0",
+    "@google/genai": "^2.18.0",
     "@types/nodemailer": "^8.0.1",
     "archiver": "^7.0.1",
     "mongodb": "^6.21.0",

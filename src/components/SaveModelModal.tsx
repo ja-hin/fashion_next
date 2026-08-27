@@ -156,7 +156,7 @@ export default function SaveModelModal({
                   {sel ? '✓' : ''}
                 </span>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={imgSrc(im.img, 'thumb')} alt={im.pose} className="block h-[130px] w-full object-cover" />
+                <img src={imgSrc(im.img, 'thumb')} alt={im.pose} className="block h-[130px] w-full object-cover object-top" />
                 <div className="truncate px-1.5 py-[5px] text-[10px] font-semibold text-muted">
                   {im.pose}
                 </div>

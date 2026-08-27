@@ -8,7 +8,7 @@
   /* One size for every section heading. Each section used to carry its own,
      which had drifted from 2.5rem to 4rem across the page and left the
      sections looking unrelated to each other. */
-  --h2:clamp(2rem,2.6vw,3.6rem);
+  --h2:20px;
 
   --serif:"Playfair Display",Georgia,serif;
   --sans:"Geist","Geist Fallback",system-ui,-apple-system,sans-serif;
@@ -23,7 +23,8 @@
   --shadow:0 30px 70px -35px rgba(23,21,15,.5);
   --grain-blend:multiply; --grain-op:.05;
   --veil:radial-gradient(ellipse 72% 62% at 50% 45%, rgba(241,236,225,.62), rgba(241,236,225,.97) 78%);
-  --nav-bg:#e5e5e5;
+  /* The bar is dark in both states — see the note by `header.nav.solid`. */
+  --nav-bg:rgba(10,9,8,.86);
   --glow:radial-gradient(circle, rgba(228,87,46,.12), transparent 62%);
 }
 [data-theme="dark"]{
@@ -56,8 +57,8 @@ img{display:block}
 h1,h2,h3{margin:0;font-family:var(--serif);font-weight:500;letter-spacing:-.014em;line-height:1.08}
 /* Section headings. The per-section rules below all point at the same token,
    so the size is set in exactly one place. */
-.sec-h2{font-size:var(--h2);margin-bottom:16px}
-.wrap{max-width:1280px;margin:0 auto;padding:0 32px}
+.sec-h2{font-size:var(--h2);margin:6px 0; font-weight: bold;}
+.wrap{max-width:1280px;margin:0 auto;padding:0 17px}
 .eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.26em;text-transform:uppercase;color:var(--flame);font-weight:700}
 .k-label{font-family:var(--mono);font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
 
@@ -106,7 +107,14 @@ header.nav{position:fixed;top:0;left:0;right:0;z-index:900;border-bottom:1px sol
    rather than `top`, so it is a compositor transform and does not lay the page
    out again on every frame of the slide. */
 header.nav.nav-away{transform:translateY(-100%)}
-header.nav.solid{background:var(--nav-bg);backdrop-filter:blur(12px);border-color:var(--line-soft)}
+/* Dark once it solidifies, not light. It starts transparent over the dark hero
+   and used to flip to the page's cream on scroll, which meant the logo, links
+   and burger all had to swap colour mid-scroll. Keeping it dark throughout
+   makes the bar one object that fades in rather than two that trade places —
+   and the hairline goes light with it, since a dark-on-light rule is invisible
+   against this. */
+header.nav.solid{background:var(--nav-bg);backdrop-filter:blur(12px);
+  border-color:rgba(237,231,218,.12)}
 .nav-in{display:flex;align-items:center;justify-content:space-between;height:74px;gap:18px}
 .logo{display:inline-flex;align-items:center}
 .logo-img{height:45px;width:auto;display:block}
@@ -398,6 +406,25 @@ footer .logo-img{height:46px}
 .demo h2{font-size:var(--h2);margin-top:14px}
 .demo .sec-p{color:var(--dim);font-size:1.02rem;max-width:40ch;margin:18px 0 0;line-height:1.6}
 .demo .sec-p b{color:var(--text)}
+
+/* ── one block, two lengths ───────────────────────────────────────────
+   Write the long version for a desktop column and a short one for a phone,
+   mark them `desktop` and `mobile`, and they swap at the breakpoint.
+
+   Not tied to `sec-p`: the third place that needed this was a bare <p> inside
+   .genie-copy, and qualifying the rule would have meant either duplicating it
+   or bolting an unrelated class onto that paragraph purely as a hook.
+
+   `revert` rather than `block`, so the pair works on whatever element it is
+   put on — a <div> or a <ul> gets its own natural display back, not a <p>'s.
+
+   Declared before the breakpoint that reverses them: these have equal
+   specificity, so whichever came last would otherwise win outright. */
+.mobile{display:none}
+@media(max-width:720px){
+  .desktop{display:none}
+  .mobile{display:revert}
+}
 .demo-cta{margin-top:30px}
 .demo p.d{color:var(--dim);font-size:1.06rem;max-width:46ch;margin:20px 0 30px}
 .sheet{position:relative;background:var(--sheet-bg);border:1px solid var(--line-soft);
@@ -511,6 +538,7 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 .rv.in{opacity:1;transform:none}
 
 @media(max-width:960px){
+  .rv.in{text-align: center;}
   .nav-links{display:none}
   /* The collage stacks under the copy rather than beside it, and loses height —
      a 76svh photo block below the fold is all a phone would show. */
@@ -518,7 +546,7 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
   .hero-grid{grid-template-columns:1fr;gap:44px}
   .collage{height:60svh}
   .stats-in{grid-template-columns:1fr 1fr}
-  .demo-grid{grid-template-columns:1fr;gap:44px}
+  .demo-grid{grid-template-columns:1fr;gap:24px}
   .plans{grid-template-columns:1fr 1fr}
   .cost-bars{gap:30px}
 }
@@ -769,12 +797,14 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
   border-radius:100px;padding:8px 15px;font-size:.82rem;backdrop-filter:blur(6px)}
 
 @media(max-width:860px){
+
   /* Stacked, the whole widget has to fit one phone screen. It is a thing you
      drive, and a control whose result is 400px below it is a control you
      cannot tell is working — so every part is trimmed to keep the frame in
      view while you tap. No `order` override on purpose: the card still reads
      in the order it is used, category through pose, then the frame those
      choices produce. */
+  .hiw-center{display: flex; flex-direction: column; align-items: center; text-align: center;}  
   .hiw-card{grid-template-columns:1fr;gap:12px;padding:16px}
   .hiw-group{margin-top:13px}
   .hiw-group .k-label{margin-bottom:6px}
@@ -815,28 +845,28 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 .hero .btn-line{border-color:rgba(237,231,218,.34);color:#EDE7DA; padding: 0.8em;}
 .hero .btn-line:hover{border-color:#EDE7DA;background:rgba(237,231,218,.06)}
 
-/* The nav is transparent until it solidifies, so while it is over the hero it
-   has to be styled for the dark — otherwise the black logo and dark links
-   vanish into it on the light theme. */
-header.nav:not(.solid) .logo-light{display:none}
-header.nav:not(.solid) .logo-dark{display:block}
-header.nav:not(.solid) .nav-links a{color:rgba(237,231,218,.72)}
-header.nav:not(.solid) .nav-links a:hover{color:#EDE7DA}
-header.nav:not(.solid) .btn-line{border-color:rgba(237,231,218,.35);color:#EDE7DA}
-header.nav:not(.solid) .btn-line:hover{border-color:#EDE7DA;background:rgba(237,231,218,.06)}
+/* The bar is dark whether it is transparent over the hero or solid over the
+   page, so its contents are light-on-dark throughout. These were once gated on
+   `:not(.solid)`; with the solid state dark too there is nothing left to gate. */
+header.nav .logo-light{display:none}
+header.nav .logo-dark{display:block}
+header.nav .nav-links a{color:rgba(237,231,218,.72)}
+header.nav .nav-links a:hover{color:#EDE7DA}
+header.nav .btn-line{border-color:rgba(237,231,218,.35);color:#EDE7DA}
+header.nav .btn-line:hover{border-color:#EDE7DA;background:rgba(237,231,218,.06)}
 
 /* ---------- mobile navigation ---------- */
 /* Below 960px the inline links and CTAs are hidden, so the burger IS the
-   navigation — it is never hidden, and it inherits the nav's light-on-dark
-   treatment while the bar sits over the hero. */
+   navigation — it is never hidden, and it takes the nav's light-on-dark
+   treatment at every scroll position. */
 .burger{display:none;position:relative;width:42px;height:42px;border:1px solid var(--line);border-radius:100px;
   background:transparent;cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px;
   transition:border-color .25s,background .25s}
 .burger span{display:block;width:17px;height:1.5px;background:var(--text);border-radius:2px;
   transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .2s}
 .burger:hover{border-color:var(--text)}
-header.nav:not(.solid) .burger{border-color:rgba(237,231,218,.32)}
-header.nav:not(.solid) .burger span{background:#EDE7DA}
+header.nav .burger{border-color:rgba(237,231,218,.32)}
+header.nav .burger span{background:#EDE7DA}
 /* the bars become the X while the sheet is open */
 body.mnav-open .burger span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
 body.mnav-open .burger span:nth-child(2){opacity:0}

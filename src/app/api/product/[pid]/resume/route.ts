@@ -48,6 +48,15 @@ export const GET = handler(
       style: shoot.opts?.style ?? '',
       hero_exists: heroExists,
       images,
+      // Restored with the stills — a reload that dropped the videos would look
+      // exactly like the bug where they were never saved at all.
+      videos: (shoot.videos ?? []).map((v) => ({
+        file: v.file,
+        url: shootUrl(pid, v.file),
+        preset: v.preset,
+        aspect: v.aspect,
+        created: v.created,
+      })),
     });
   },
 );

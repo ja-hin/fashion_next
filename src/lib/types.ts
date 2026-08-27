@@ -154,6 +154,26 @@ export interface ShootDoc {
   refs?: Array<{ file: string; role: RefRole }>;
   hero_file: string | null;
   manifest: ManifestItem[];
+  /**
+   * Generated videos, newest last.
+   *
+   * A separate list rather than manifest entries because every consumer of the
+   * manifest assumes an image: the results grid renders an <img>, "save as
+   * model" reads poses off it as reference stills, and the gallery takes its
+   * thumbnail from it. An mp4 in there breaks all three.
+   */
+  videos?: ShootVideo[];
+  created: string;
+}
+
+/** One generated clip, stored beside the shoot's stills. */
+export interface ShootVideo {
+  file: string;
+  /** Preset label, e.g. "Turntable / 360" — shown under the card. */
+  preset: string;
+  aspect: string;
+  /** The frames it was built from, so the lock is auditable after the fact. */
+  frames: string[];
   created: string;
 }
 
@@ -250,7 +270,7 @@ export interface PublicModel {
  */
 export interface LogDoc {
   ts: string; // ISO, seconds precision
-  type: 'image' | 'genie' | 'charsheet';
+  type: 'image' | 'genie' | 'charsheet' | 'video';
   pid?: string;
   shoot?: string;
   seed?: number | string;
@@ -283,6 +303,8 @@ export interface SettingsDoc {
   price_per_image: number;
   genie_free: number;
   genie_price: number;
+  /** Credits for one 10-second video. */
+  video_price: number;
   genie_max: number;
   shoot_seq: number;
   /** Counter behind the sequential user ids (U0001…). */

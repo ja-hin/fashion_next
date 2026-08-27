@@ -11,6 +11,7 @@ import GenerateView from '@/components/GenerateView';
 import ModelPickerModal from '@/components/ModelPickerModal';
 import EnsembleTagModal from '@/components/EnsembleTagModal';
 import GarmentPickerModal from '@/components/GarmentPickerModal';
+import VideoModal from '@/components/VideoModal';
 import { garmentToRefs } from '@/lib/client/garment-refs';
 import { ChevronLeftIcon } from '@/components/icons';
 
@@ -20,6 +21,8 @@ export default function GeneratePage() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [tagOpen, setTagOpen] = useState(false);
   const [garmentPickerOpen, setGarmentPickerOpen] = useState(false);
+  /** Straight-to-video from the uploads, before any shoot exists. */
+  const [directVideo, setDirectVideo] = useState(false);
 
   /**
    * A garment picked from the library, pulled back into ordinary tagged refs.
@@ -220,6 +223,8 @@ export default function GeneratePage() {
           onOpenPicker={() => setPickerOpen(true)}
           noModelError={s.noModelError}
           heroCost={s.priceFor('')}
+          videoCost={s.me.video_price ?? 0}
+          onGenerateVideo={() => setDirectVideo(true)}
           busy={s.shoot.generating}
           onGenerate={generateHero}
           hasShoot={!!s.shoot.pid || s.shoot.generating}
@@ -231,11 +236,28 @@ export default function GeneratePage() {
         </div>
       </aside>
 
+      {directVideo && (
+        <VideoModal
+          // No shoot yet — the route creates one around the finished video.
+          pid={null}
+          frames={[]}
+          uploads={s.ensemble.map((e) => e.file)}
+          price={s.me.video_price ?? 0}
+          onClose={() => setDirectVideo(false)}
+          onBalance={s.setBalance}
+          // Nothing to add to a results grid that is not showing this shoot —
+          // the clip lives on the shoot the route just made, and the Gallery is
+          // where it is found.
+          onCreated={() => {}}
+        />
+      )}
+
       <main className="flex-1 overflow-y-auto px-5 py-6 sm:px-7">
         <GenerateView
           shoot={s.shoot}
           category={s.setup.category}
           geniePrice={s.me.genie?.price ?? 0}
+          videoPrice={s.me.video_price ?? 0}
           priceFor={s.priceFor}
           onBalance={s.setBalance}
           onZoom={s.openZoom}

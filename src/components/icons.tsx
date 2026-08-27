@@ -129,6 +129,21 @@ export const PersonPlusIcon = ({ className = 'w-4 h-4' }: P) => (
   </svg>
 );
 
+/**
+ * A film clapper, not another play triangle: "Continue shoot" already owns the
+ * triangle in the same toolbar, and two identical glyphs beside each other say
+ * nothing about which is which.
+ */
+export const VideoCameraIcon = ({ className = 'w-[15px] h-[15px]' }: P) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"
+       strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <rect x="2.5" y="9" width="14" height="11" rx="2" />
+    <path d="M16.5 13.2l5-2.6v9l-5-2.6z" />
+    <path d="M4.6 9 7 4.4M9.6 9 12 4.4M14.6 9 17 4.4" />
+    <path d="M2.9 6.6 18.2 3.4" />
+  </svg>
+);
+
 export const PlayIcon = ({ className = 'w-[15px] h-[15px]' }: P) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
     <path d="M8 5v14l11-7z" />

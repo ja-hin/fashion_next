@@ -7,6 +7,7 @@ import type {
   JobState,
   PoseSettings,
   ResumePayload,
+  VideoItem,
   JobResult,
 } from './types';
 
@@ -38,6 +39,10 @@ export interface ShootApi {
   pid: string | null;
   shootNo: string;
   cards: CardItem[];
+  /** Clips generated from this shoot's frames, oldest first. */
+  videos: VideoItem[];
+  /** Called by the video modal so a new clip lands in the grid at once. */
+  addVideo: (v: VideoItem) => void;
   /** Number of images currently generating — rendered as shimmer placeholders. */
   pendingCount: number;
   generating: boolean;
@@ -63,6 +68,7 @@ export function useShoot(onError: (msg: string) => void): ShootApi {
   const [pid, setPid] = useState<string | null>(null);
   const [shootNo, setShootNo] = useState('');
   const [cards, setCards] = useState<CardItem[]>([]);
+  const [videos, setVideos] = useState<VideoItem[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
   const [generating, setGenerating] = useState(false);
   const [resumedBanner, setResumedBanner] = useState<{ title: string; count: number } | null>(null);
@@ -131,6 +137,7 @@ export function useShoot(onError: (msg: string) => void): ShootApi {
     async (fd: FormData, onBalance: (b: number) => void) => {
       setGenerating(true);
       setCards([]);
+      setVideos([]);
       setResumedBanner(null);
       setPendingCount(1);
       try {
@@ -209,6 +216,7 @@ export function useShoot(onError: (msg: string) => void): ShootApi {
         },
       })),
     );
+    setVideos(j.videos ?? []);
     setResumedBanner({ title: j.title, count: j.images.length });
     return j;
   }, []);
@@ -221,6 +229,7 @@ export function useShoot(onError: (msg: string) => void): ShootApi {
     setPidBoth(null);
     setShootNo('');
     setCards([]);
+    setVideos([]);
     setPendingCount(0);
     setGenerating(false);
     setResumedBanner(null);
@@ -230,6 +239,8 @@ export function useShoot(onError: (msg: string) => void): ShootApi {
     pid,
     shootNo,
     cards,
+    videos,
+    addVideo: (v: VideoItem) => setVideos((cur) => [...cur, v]),
     pendingCount,
     generating,
     resumedBanner,

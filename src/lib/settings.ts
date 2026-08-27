@@ -11,6 +11,7 @@ import {
   PRICE_PER_IMAGE,
   GENIE_FREE_PER_PROMPT,
   GENIE_PRICE_PER_IMPROVE,
+  VIDEO_PRICE,
   GENIE_MAX_PER_PROMPT,
 } from './config';
 import { financialYear } from './invoice';
@@ -27,6 +28,7 @@ const DEFAULTS: SettingsDoc = {
   price_per_image: PRICE_PER_IMAGE,
   genie_free: GENIE_FREE_PER_PROMPT,
   genie_price: GENIE_PRICE_PER_IMPROVE,
+  video_price: VIDEO_PRICE,
   genie_max: GENIE_MAX_PER_PROMPT,
   shoot_seq: 0,
   user_seq: 0,

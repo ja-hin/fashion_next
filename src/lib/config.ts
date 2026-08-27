@@ -48,6 +48,13 @@ export const HERO_MODEL_ID = env('HERO_MODEL_ID', 'gemini-3.1-flash-image');
  */
 export const TEXT_MODEL_ID = env('TEXT_MODEL_ID', 'gemini-2.5-flash');
 
+/**
+ * The video model. Overridable because this one is a preview id that Google
+ * renames, and because the Veo family is the obvious alternative if Omni's
+ * per-token pricing ever stops making sense for a 10-second clip.
+ */
+export const VIDEO_MODEL_ID = env('VIDEO_MODEL_ID', 'gemini-omni-flash-preview');
+
 // ── Razorpay ────────────────────────────────────────────────────────
 // KEY_ID is public (it is handed to Razorpay Checkout in the browser).
 // KEY_SECRET and WEBHOOK_SECRET are server-only and must never be imported
@@ -139,6 +146,14 @@ export const DATA_DIR = env('DATA_DIR', './data');
 export const GENIE_FREE_PER_PROMPT = 1;
 export const GENIE_PRICE_PER_IMPROVE = 0.1;
 export const GENIE_MAX_PER_PROMPT = 5;
+
+/**
+ * Credits for one 10-second video. Set against a measured API cost of ~₹101.5
+ * a clip (≈20 credits at the base ₹5/credit), so this is roughly the same
+ * margin a 1K photo carries. Admin-editable in Settings — the model is preview
+ * and its price will move.
+ */
+export const VIDEO_PRICE = 35;
 
 // ── What a call costs US, in USD per 1,000,000 tokens ───────────────
 // Purely for the "Cost (USD)" column in the Logs tab — this is our own spend

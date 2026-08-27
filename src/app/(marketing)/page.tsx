@@ -227,19 +227,19 @@ const RAIL_CARDS = [
  */
 const WHY_STATS = [
   {
-    n: '10×',
+    n: '80%',
     t: 'Lower production cost',
-    d: 'What a studio shoot costs per photo, against one prepaid credit here — no crew, no location, no reshoot fee.',
+    d: 'Save up to 80% against a traditional studio shoot. No crew, no location, no model day-rates, no reshoot fees.',
   },
   {
     n: '2 min',
     t: 'Upload to full shoot',
-    d: 'One garment photo in, a finished on-model set back, generated while you wait rather than booked for next week.',
+    d: 'One garment photo in, a finished on-model set back. Generated while you wait, not booked for next week.',
   },
   {
-    n: '₹25',
-    t: 'Per photo, prepaid',
-    d: 'The rate on the largest pack. No subscription, no seats and no minimum SKUs — you pay for photos.',
+    n: '0',
+    t: 'Minimums, subscriptions, lock-ins',
+    d: 'No minimum SKUs, no monthly plan, no seats. Shoot one garment or a thousand, whenever you like.',
   },
 ];
 
@@ -355,12 +355,11 @@ export default async function LandingPage() {
         <div className="wrap hero-grid">
           <div>
             <h1>
-              <span className="ln"><span>Fashion </span></span>
-              <span className="ln"><span><em>photoshoots & videos</em> for your brand in minutes.</span></span>
+              <span className="ln"><span><em>Fashion photoshoots & videos</em> for your brand in minutes.</span></span>
             </h1>
             <p className="sub">
               Create a full on-model editorial shoot with AI for{' '}
-              <span className="rotw" id="rotw">Amazon & Myntra listings</span> <br></br><b>from one garment photo. Studio-grade, photo-real stills</b> and reel-ready videos from the same shoot for D2C brands and ecommerce sellers. No photographer, no model booking, no studio.
+              <span className="rotw" id="rotw">Amazon & Myntra listings</span> <br></br><b>Studio-grade, photo-real stills</b> and reel-ready videos from the same shoot for D2C brands and ecommerce sellers. No photographer, no model booking, no studio.
             </p>
             <div className="hero-cta">
               <a href="/register" className="btn btn-cta" data-c="">
@@ -404,7 +403,8 @@ export default async function LandingPage() {
         <div className="wrap">
           <div className="create-head rv">
             <span className="eyebrow">What do you want to create?</span>
-            <h2 className="sec-h2">Photos, models, video, or listings. Start where you need to.</h2>
+            <h2 className="sec-h2">Photos, models, video</h2>
+            <span>On-model photography, custom AI models, reel-ready video — start where you need to.</span>
           </div>
           {/* The row sits in a pin zone on a phone: the section sticks while the
               scroll steps through the cards, so arriving at speed cannot skip
@@ -452,13 +452,12 @@ export default async function LandingPage() {
             <span className="eyebrow">How it works</span>
             <h2 className="sec-h2">From garment to finished photo</h2>
             <p className="sec-p">
-              Upload a garment, set the model, scene and pose, and generate studio-grade photos.
-              Try the shot setup below.
+              Upload a garment, pick a model, backdrop and pose. Generate studio-grade, on-model photo. Flip through the options below to see how a shot comes together.
             </p>
           </div>
 
           <div className="hiw-card">
-            <div>
+            <div className='hiw-center'>
               {/* Womenswear / Menswear. Each carries its own garments, cast and
                   poses, so everything below is rebuilt when this changes —
                   which is why it sits above the rest of the controls. */}
@@ -535,12 +534,10 @@ export default async function LandingPage() {
               — the same `-head` pattern the reels, create and cats sections
               already use. */}
           <div className="castworld-head rv">
-            <span className="eyebrow">Casting · One garment · Any model · Any backdrop</span>
+            <span className="eyebrow">CAST ANY MODEL IN ANY BACKDROP</span>
             <h2 className="sec-h2">Cast the world. Shoot it your way.</h2>
             <p className="sec-p">
-              Thirty frames, one garment. Five models from five continents, six setups each —
-              flipping past at shutter speed so you can feel the <b>range</b>. Every frame in a row
-              is the <b>same face</b>. Hover a thumbnail to pause; click it to jump.
+              Cast any model you can imagine. Any skin tone, body type and look, against any backdrop, from studio seamless to a sunlit street. Delhi, Dubai or Dallas.
             </p>
           </div>
 
@@ -580,12 +577,20 @@ export default async function LandingPage() {
       <section className="demo" id="demo">
         <div className="wrap demo-grid">
           <div className="demo-copy rv">
-            <span className="eyebrow">Live on this page · webassets/shoot</span>
-            <h2 className="sec-h2">One garment in. A full shoot out.</h2>
-            <p className="sec-p">
-              Five real shoots on one sheet — the <b>input</b> and everything it became. It advances
-              on its own; use <b>◀ ▶</b> to browse at your own pace.
+            <span className="eyebrow">AI fashion shoot studio</span>
+            <h2 className="sec-h2">One garment photo IN. A full catalogue OUT.</h2>
+            <p className="sec-p desktop">
+              Every angle a listing needs: front, back, three-quarter and close-up, all from a single garment photo, all worn by the same model. Shoot by shoot, your catalogue builds itself. <br></br>
+
+Every shoot on Faishon Studio is consistency locked. The neckline, the drape, the exact shade of the fabric, the model's face: nothing shifts from frame to frame, or from shoot to shoot. Every detail stays consistent. No drift, no surprises.<br></br>
+
+Consistency is what makes the set catalogue-ready. No shot lists, no studio day, no reshoots for the missing angle. The whole set arrives together, correctly framed for Amazon, Flipkart, Myntra and Meesho.
             </p>
+            <p className="sec-p mobile">
+            Front, back, three-quarter and close-up, all from one garment photo, all on the same model. Every shoot is consistency locked: no drift, no surprises, no reshoots.
+
+Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
+</p>
           </div>
 
           <div className="sheet" id="sheetBox">
@@ -624,13 +629,15 @@ export default async function LandingPage() {
           CSS. */}
       <section className="reels" id="reels">
         <div className="wrap reels-head rv">
-          <span className="eyebrow">The output</span>
+          <span className="eyebrow">Fashion video</span>
           <h2>
             Turn a photoshoot into <em>scroll-stopping video</em>.
           </h2>
-          <p className="sec-p">
-            Every card here is one frame in time — a single still brought to life, moment by
-            moment, into a reel your feed cannot scroll past.
+          <p className="sec-p desktop">
+            Turn every shoot into reel-ready video: the same model, the same garment, brought to life for Instagram, product pages and ads. Start from ready-made presets for ultra-realistic Instagram fashion reels, ads and PDP videos. Customize any preset, or direct your own: set the mood, the movement and the camera, and shoot the editorial look you imagined.
+          </p>
+          <p className="sec-p mobile">
+            Turn every shoot into reel-ready ultra-realistic videos for Instagram, PDPs and ads. Start from ready-made presets, customize them, or direct your own editorial look.
           </p>
         </div>
         {/* Outside .wrap: the arc is wider than the text column by design, and
@@ -650,8 +657,10 @@ export default async function LandingPage() {
       <section className="cats" id="cats">
         <div className="wrap">
           <div className="cats-head rv">
-            <h2 className="sec-h2">Built for brands at every stage.</h2>
-            <p className="sec-p">Pick the category that fits your brand:</p>
+            <span className="eyebrow">EVERY APPAREL CATEGORY</span>
+
+            <h2 className="sec-h2">Built for every category.</h2>
+            <p className="sec-p">Sarees to streetwear, kurtis to knitwears: category-right models, framing and styling. Pick yours:</p>
           </div>
           <div className="cats-pills" id="catsPills" role="tablist" aria-label="Category" />
         </div>
@@ -732,17 +741,17 @@ export default async function LandingPage() {
           <div className="pin">
             <div className="genie-veil" id="genieVeil" />
             <div className="genie-copy" id="genieCopy">
-              <span className="eyebrow">Prompt Genie</span>
+              <span className="eyebrow">PROMPT GENIE · YOUR AI ART DIRECTOR</span>
               <h2>
-                Not sure what to <em>ask for?</em>
+                Every shoot comes with an<em> art director.</em>
               </h2>
-              <p>
-                Type a half-formed idea. Genie rewrites it into a brief a photographer would
-                recognise — lens, light, pose, background — before a single credit is spent.
+              <p className="desktop">
+                Direct it yourself if you like: pick the pose, the backdrop, the light and the mood, down to the last detail. Every frame answers to you.
+<br></br>Or just tell Genie the idea. Describe what you imagine in plain words and Genie develops it the way an art director would: pose, lighting, framing and mood, composed into a complete shoot brief in seconds. Not quite there? Say &ldquo;warmer light&rdquo; or &ldquo;make it festive&rdquo; and Genie reworks the direction, before a single credit is spent.
               </p>
-              <span className="genie-hint" id="genieHint">
-                Keep scrolling to summon <span className="arw">↓</span>
-              </span>
+              <p className="mobile">
+                Direct every detail yourself: pose, backdrop, light, mood. Or hand Genie the idea and your AI art director develops it into a complete shoot in seconds. Say &ldquo;warmer light&rdquo; and it reworks, before a single credit is spent.
+              </p>
             </div>
 
             <div className="genie-stage">
@@ -815,7 +824,7 @@ export default async function LandingPage() {
       <section className="why" id="why">
         <div className="wrap">
           <div className="why-head rv">
-            <span className="eyebrow why-eyebrow">Why brands choose AImageGen</span>
+            <span className="eyebrow why-eyebrow">Why brands choose Faishon Studio</span>
           </div>
 
           <div className="why-grid rv">

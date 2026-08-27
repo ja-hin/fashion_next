@@ -50,12 +50,17 @@ export default function ResultCard({
             ⚠ {card.warn}
           </div>
         )}
+        {/* `object-top`, not the default centre crop. The card is 4:5 but a
+            frame can be generated at 9:16, and a centred crop of a tall render
+            into a shorter box takes the head and the feet in equal measure —
+            so the face goes. Anchored to the top, the crop comes off the
+            bottom, which is the cheaper half of a fashion shot to lose. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imgSrc(card.img, 'thumb')}
           alt={card.pose}
           onClick={onZoom}
-          className="block h-full w-full cursor-zoom-in object-cover"
+          className="block h-full w-full cursor-zoom-in object-cover object-top"
         />
       </div>
 

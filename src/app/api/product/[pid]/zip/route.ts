@@ -40,6 +40,19 @@ export const GET = handler(
           used.set(base, n);
           archive.append(bytes, { name: n === 1 ? `${base}.jpg` : `${base}_${n}.jpg` });
         }
+
+        // Clips go in the same download. "Download all" that quietly omitted
+        // the thing that cost 35 credits would be the wrong kind of surprise.
+        // No watermark pass — that is an image operation.
+        for (const v of shoot.videos ?? []) {
+          const stored = await storage.get(shootKey(pid, v.file));
+          if (!stored) continue;
+          const base = `${prefix}_${safeName(v.preset)}`;
+          const n = (used.get(base) ?? 0) + 1;
+          used.set(base, n);
+          archive.append(stored, { name: n === 1 ? `${base}.mp4` : `${base}_${n}.mp4` });
+        }
+
         await archive.finalize();
       } catch (e) {
         archive.abort();

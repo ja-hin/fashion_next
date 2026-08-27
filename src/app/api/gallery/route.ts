@@ -56,9 +56,16 @@ export const GET = handler(async (req: Request) => {
   const items = [];
   for (const s of rows) {
     const man = s.manifest ?? [];
-    if (!man.length) continue;
+    const vids = s.videos ?? [];
+    // A shoot generated straight to video has no stills at all. Skipping on the
+    // manifest alone would hide it completely — the same bug as a clip written
+    // to disk that nothing lists, one level up.
+    if (!man.length && !vids.length) continue;
 
-    const thumbFile = s.hero_file ?? man[0].file;
+    // Falls back to the uploaded garment for a video-only shoot: it is a real
+    // image, where a poster frame would mean decoding the mp4 server-side.
+    const thumbFile = s.hero_file ?? man[0]?.file ?? s.garment_file;
+    if (!thumbFile) continue;
     const created = s.created ?? '';
     const name = (s.name ?? '').trim();
     const shootNo = shootNoStr(s.no);
@@ -75,6 +82,7 @@ export const GET = handler(async (req: Request) => {
         name.toLowerCase(),
         shootNo.toLowerCase(),
         man.map((m) => m.pose).join(' ').toLowerCase(),
+        vids.map((v) => v.preset).join(' ').toLowerCase(),
         created,
         // Admins can search by who made it; regular users have no owner data
         // in scope, so this adds nothing to their haystack.
@@ -94,6 +102,9 @@ export const GET = handler(async (req: Request) => {
       created,
       date: created.slice(0, 10),
       count: man.length,
+      /* Surfaced so a shoot card can say it has clips. Deliberately a separate
+         number from `count`, which every consumer reads as "images". */
+      videos: vids.length,
       thumb: shootUrl(s._id, thumbFile),
       category,
       model: s.opts?.style ?? '',

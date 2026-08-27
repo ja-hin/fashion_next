@@ -11,12 +11,21 @@ import type { GalleryGroup, LbItem } from '@/lib/client/types';
 
 interface Props {
   onContinueShoot: (pid: string) => void;
+  /** Credits for one 10-second video. */
+  videoPrice: number;
+  onBalance: (b: number) => void;
   onSaveAsModel: (pid: string) => void;
   onZoom: (items: LbItem[], index: number) => void;
 }
 
 /** Every shoot with at least one image, grouped by date. */
-export default function GalleryView({ onContinueShoot, onSaveAsModel, onZoom }: Props) {
+export default function GalleryView({
+  onContinueShoot,
+  onSaveAsModel,
+  onZoom,
+  videoPrice,
+  onBalance,
+}: Props) {
   const dialog = useDialog();
   const router = useRouter();
   // Admins arrive here from the users table as /gallery?user=U0007. The server
@@ -148,9 +157,26 @@ export default function GalleryView({ onContinueShoot, onSaveAsModel, onZoom }: 
                   onClick={() => setOpenPid(it.pid)}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={imgSrc(it.thumb, 'thumb')} alt="" className="h-full w-full object-cover" />
-                  <div className="absolute bottom-2 right-2 rounded-md bg-black/70 px-2 py-[3px] text-[10px] font-bold text-white">
-                    {it.count} image{it.count === 1 ? '' : 's'}
+                  <img
+                    src={imgSrc(it.thumb, 'thumb')}
+                    alt=""
+                    className="h-full w-full object-cover object-top"
+                  />
+                  <div className="absolute bottom-2 right-2 flex gap-1.5">
+                    {/* Suppressed at zero: a shoot made straight to video has no
+                        stills, and "0 images" describes what it is not. */}
+                    {!!it.count && (
+                      <span className="rounded-md bg-black/70 px-2 py-[3px] text-[10px] font-bold text-white">
+                        {it.count} image{it.count === 1 ? '' : 's'}
+                      </span>
+                    )}
+                    {/* Its own chip rather than folded into the count — a shoot
+                        with clips is a different thing to open than one without. */}
+                    {!!it.videos && (
+                      <span className="rounded-md bg-accent/90 px-2 py-[3px] text-[10px] font-bold text-white">
+                        ▶ {it.videos} video{it.videos === 1 ? '' : 's'}
+                      </span>
+                    )}
                   </div>
 
                   {/* Only admins receive owner data, so this can't leak. */}
@@ -221,6 +247,8 @@ export default function GalleryView({ onContinueShoot, onSaveAsModel, onZoom }: 
       {openPid && (
         <FolderModal
           pid={openPid}
+          videoPrice={videoPrice}
+          onBalance={onBalance}
           onClose={() => setOpenPid(null)}
           onZoom={onZoom}
           onContinue={(pid) => {

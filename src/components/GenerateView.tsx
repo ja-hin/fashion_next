@@ -8,7 +8,8 @@ import AddCard from './AddCard';
 import GenieCard from './GenieCard';
 import GenieDrawer from './GenieDrawer';
 import BatchPanel from './BatchPanel';
-import { PersonPlusIcon, DownloadIcon } from './icons';
+import VideoModal from './VideoModal';
+import { PersonPlusIcon, DownloadIcon, PlayIcon } from './icons';
 import { useDialog } from './Dialog';
 import type { ShootApi } from '@/lib/client/useShoot';
 import type { LbItem, PoseSettings } from '@/lib/client/types';
@@ -18,6 +19,8 @@ interface Props {
   /** The shoot's category — decides which pose list the add/batch pickers show. */
   category: string;
   geniePrice: number;
+  /** Credits for one 10-second video, from settings. */
+  videoPrice: number;
   priceFor: (resolution: string) => number;
   onBalance: (b: number) => void;
   onZoom: (items: LbItem[], index: number) => void;
@@ -29,6 +32,7 @@ export default function GenerateView({
   shoot,
   category,
   geniePrice,
+  videoPrice,
   priceFor,
   onBalance,
   onZoom,
@@ -37,8 +41,9 @@ export default function GenerateView({
   const dialog = useDialog();
   const [batchMode, setBatchMode] = useState(false);
   const [genieOpen, setGenieOpen] = useState(false);
+  const [videoOpen, setVideoOpen] = useState(false);
 
-  const { pid, shootNo, cards, pendingCount, resumedBanner } = shoot;
+  const { pid, shootNo, cards, videos, pendingCount, resumedBanner } = shoot;
   const hasResults = cards.length > 0 || pendingCount > 0;
 
   if (!hasResults) {
@@ -90,10 +95,20 @@ export default function GenerateView({
             Shoot {shootNo} · locked
           </span>
         )}
+        {/* Before "Save as model" because it acts on the frames already on
+            screen, where that one acts on the person inside them. */}
+        <button
+          onClick={() => setVideoOpen(true)}
+          disabled={!pid || !cards.some((c) => c.img)}
+          title="Turn these frames into a 10-second video"
+          className="ml-auto inline-flex items-center gap-2 rounded-[9px] border border-line px-[15px] py-[9px] text-[13px] font-bold text-ink transition hover:-translate-y-px hover:border-ink disabled:opacity-50"
+        >
+          <PlayIcon /> Generate video
+        </button>
         <button
           onClick={() => pid && onSaveAsModel(pid)}
           disabled={!pid}
-          className="ml-auto inline-flex items-center gap-2 rounded-[9px] border border-accent-soft bg-accent-soft px-[15px] py-[9px] text-[13px] font-bold text-accent transition hover:-translate-y-px hover:bg-accent hover:text-white disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-[9px] border border-accent-soft bg-accent-soft px-[15px] py-[9px] text-[13px] font-bold text-accent transition hover:-translate-y-px hover:bg-accent hover:text-white disabled:opacity-50"
         >
           <PersonPlusIcon /> Save as model
         </button>
@@ -139,6 +154,56 @@ export default function GenerateView({
           />
         ))}
 
+        {/* Clips sit in the same grid as the stills they were built from — a
+            video of this shoot belongs with this shoot, not on a page of its
+            own. Poster is the first frame it locked onto, so the card reads as
+            part of the set before anything plays. */}
+        {videos.map((v) => (
+          <div
+            key={v.file}
+            className="w-[212px] overflow-hidden rounded-card border border-line bg-surface shadow-card transition hover:-translate-y-[3px] hover:shadow-pop"
+          >
+            {/* The same 212×4:5 footprint as a still, not the clip's own ratio.
+                Sized by its ratio a 9:16 card runs half again as tall as its
+                neighbours and a 16:9 card half as short, and the grid stops
+                reading as one set. `object-contain` letterboxes into the shared
+                box, so neither orientation is cropped to achieve it. */}
+            <div className="relative aspect-[4/5] bg-black">
+              {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+              <video
+                src={v.url}
+                controls
+                loop
+                playsInline
+                preload="metadata"
+                className="absolute inset-0 h-full w-full object-contain"
+              />
+              <span className="pointer-events-none absolute left-2 top-2 rounded-[5px] bg-black/70 px-[7px] py-[3px] text-[9px] font-bold text-white">
+                {v.aspect} · 10s
+              </span>
+            </div>
+            {/* Deliberately the same footer as ResultCard, down to the padding
+                and the bare icon. A boxed download button is ~12px taller than
+                an inline one, which is enough on its own to leave these cards
+                standing proud of the stills beside them. */}
+            <div className="flex items-center justify-between gap-1.5 px-[11px] py-[9px]">
+              <span className="truncate text-xs font-semibold" title={v.preset}>
+                {v.preset}
+              </span>
+              <span className="flex flex-shrink-0 items-center gap-2 text-muted">
+                <a
+                  title="Download"
+                  href={pid ? `/api/product/${pid}/file/${v.file}` : v.url}
+                  download
+                  className="hover:text-brand"
+                >
+                  <DownloadIcon />
+                </a>
+              </span>
+            </div>
+          </div>
+        ))}
+
         {Array.from({ length: pendingCount }).map((_, i) => (
           <Skeleton key={`sk-${i}`} />
         ))}
@@ -178,6 +243,19 @@ export default function GenerateView({
         onApply={(pose, settings) => shoot.addOne(pose, settings, onBalance)}
         onGenerate={(rows) => shoot.runBatch(rows, onBalance)}
       />
+
+      {videoOpen && pid && (
+        <VideoModal
+          pid={pid}
+          frames={cards
+            .filter((c) => c.img && c.file)
+            .map((c) => ({ file: c.file, url: c.img, label: c.pose }))}
+          price={videoPrice}
+          onClose={() => setVideoOpen(false)}
+          onBalance={onBalance}
+          onCreated={shoot.addVideo}
+        />
+      )}
 
       {pid && batchMode && (
         <BatchPanel

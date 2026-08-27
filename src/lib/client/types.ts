@@ -16,6 +16,8 @@ export interface Me {
   styles?: string[];
   prices?: { imagine: Record<string, number>; saved: Record<string, number> };
   genie?: { free: number; price: number; max: number };
+  /** Credits for one 10-second video. */
+  video_price?: number;
   /** On the free credits — generated images are served with the watermark. */
   watermark?: boolean;
 }
@@ -41,6 +43,15 @@ export interface JobState {
 }
 
 /** A rendered result card, plus the settings it was generated with (for Retry). */
+/** A generated clip listed under a shoot's results. */
+export interface VideoItem {
+  file: string;
+  url: string;
+  preset: string;
+  aspect: string;
+  created: string;
+}
+
 export interface CardItem {
   pose: string;
   img: string;
@@ -71,6 +82,8 @@ export interface GalleryItem {
   created: string;
   date: string;
   count: number;
+  /** How many clips this shoot has — separate from `count`, which is images. */
+  videos?: number;
   thumb: string;
   category: string;
   model: string;
@@ -111,10 +124,30 @@ export interface SavedModel {
 }
 
 export interface ShootImage {
+  /** Filename inside the shoot folder — what the video route locks onto. */
+  file: string;
   pose: string;
   url: string;
   dlurl: string;
   dl: string;
+}
+
+/** A garment photo a shoot was built from, as the folder lists it. */
+export interface FolderRef {
+  file: string;
+  url: string;
+  role: string;
+}
+
+/** A clip as the shoot folder lists it. */
+export interface FolderVideo {
+  file: string;
+  url: string;
+  dlurl: string;
+  dl: string;
+  preset: string;
+  aspect: string;
+  created: string;
 }
 
 export interface ResumeImage {
@@ -139,6 +172,7 @@ export interface ResumePayload {
   style: string;
   hero_exists: boolean;
   images: ResumeImage[];
+  videos?: VideoItem[];
 }
 
 export interface LogRow {

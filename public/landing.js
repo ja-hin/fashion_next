@@ -160,13 +160,13 @@ async function probeChain(base){
   setInterval(()=>{
     if(paused||reduceH)return;
     recSec++;
-    rec.textContent="● REC "+String(Math.floor(recSec/60)).padStart(2,"0")+":"+String(recSec%60).padStart(2,"0");
+    if(rec)rec.textContent="● REC "+String(Math.floor(recSec/60)).padStart(2,"0")+":"+String(recSec%60).padStart(2,"0");
   },1000);
 
   if(reduceH){
     const s=sets[0];
     plates.forEach((_,k)=>place(plates[k],s,k%s.urls.length));
-    rec.textContent="NO STUDIO";
+    if(rec)rec.textContent="NO STUDIO";
     return;
   }
 
@@ -575,7 +575,7 @@ const STRIP_ITEMS=[
      grid is the part that pauses. */
   function setPaused(on){
     paused=on;
-    pauseState.textContent=on?"PAUSED — HOVERING":"PLAYING";
+    if(pauseState)pauseState.textContent=on?"PAUSED — HOVERING":"PLAYING";
   }
   cells.forEach(c=>{
     c.addEventListener("mouseenter",()=>setPaused(true));
@@ -982,11 +982,11 @@ const STRIP_ITEMS=[
 
   const PANELS=[
     {slot:"photography",fb:"front",  pose:"front",name:"Photography",
-     h:"AI Fashion Photography", p:"Studio-grade on-model photos from a single garment shot.", href:"/register"},
+     h:"Photography", p:"Turn one garment photo into a full on-model catalogue-ready shoot.", href:"/register"},
     {slot:"models",     fb:"hip",    pose:"hip",  name:"Models",
-     h:"AI Fashion Model Generator", p:"A cast of AI models, every size and skin tone — reusable across shoots.", href:"/register"},
+     h:"Models", p:"Cast models from across the world, every skin tone, body type and look and save them forever.", href:"/register"},
     {slot:"video",      fb:"walk",   pose:"walk", name:"Video",
-     h:"AI Fashion Video", p:"Turn a finished frame into motion for reels and product pages.", href:"/register"},
+     h:"Video", p:"Turn any photoshoot into reel-ready video for PDPs, Instagram and ads.", href:"/register"},
   ];
 
   const panels=PANELS.map((it,i)=>{
@@ -999,7 +999,6 @@ const STRIP_ITEMS=[
        <span class="cdetail">
          <h3>${it.h}</h3>
          <p>${it.p}</p>
-         <span class="center">Enter <span class="arw">→</span></span>
        </span>`);
     row.appendChild(a);
 
@@ -1127,16 +1126,18 @@ const STRIP_ITEMS=[
      none, so adding artwork later needs no code change. The deck's geometry is
      entirely N-driven, so the length of this list is free. */
   const CATS=[
-    {slug:"western",  n:"Western Wear", pose:"front",
-     p:"Scale western wear shoots with standardised lifestyle backgrounds and marketplace variations"},
-    {slug:"tshirt",   n:"T-shirt", pose:"mfront",
-     p:"Shoot every colourway and print of one tee — front, back and detail — on the same model"},
-    {slug:"swimwear", n:"Swimwear", pose:"hip",
-     p:"Shoot swim ranges with controlled styling, consistent bodies and multi-angle variations"},
-    {slug:"ethnic",   n:"Ethnic Wear", pose:"saree",
-     p:"Drape sarees, kurtis and lehengas accurately, with festive scenes built for the season"},
-    {slug:"ensemble", n:"Ensemble", pose:"walk",
-     p:"Assemble a whole look — garment, layer and accessory — onto one model in a single shot"}
+    {slug:"ethnic",     n:"Ethnic wear", pose:"saree",
+     p:"Sarees, kurtis and lehengas, drape-true and festive-ready"},
+    {slug:"western",    n:"Western wear", pose:"front",
+     p:"Dresses, tops and co-ords, shot editorial-clean"},
+    {slug:"streetwear", n:"T-shirts & streetwear", pose:"mfront",
+     p:"Graphic tees and drops with lookbook attitude"},
+    {slug:"swimwear",   n:"Swimwear", pose:"hip",
+     p:"Resort and swim in sunlit, tasteful frames, marketplace-safe"},
+    {slug:"coord",      n:"Co-ord sets", pose:"walk",
+     p:"Matched top and bottom, shot as one look, print-true across both pieces"},
+    {slug:"athleisure", n:"Athleisure", pose:"mwalk",
+     p:"Movement-ready poses that show stretch, fit and function"}
   ];
   const N=CATS.length;
   let active=0;
@@ -1151,7 +1152,6 @@ const STRIP_ITEMS=[
       `<span class="ccard-in">
          <h3>${c.n}</h3>
          <p>${c.p}</p>
-         <span class="clearn">Learn More <span class="arw">→</span></span>
        </span>`);
     /* A side card's first job is to come forward, not to navigate. */
     a.addEventListener("click",e=>{
@@ -1460,7 +1460,10 @@ const STRIP_ITEMS=[
 
     copy.style.opacity=rise*(1-.55*m);
     copy.style.transform=`translateY(${(1-er)*26}px)`;
-    hint.style.opacity=rise*(1-clamp((t-0.16)/0.16,0,1));
+    // Guarded like the rest: frame() is called synchronously when the loop
+    // starts, so a missing hint here does not fade a caption — it throws out of
+    // this IIFE and stops every section further down the file from running.
+    if(hint)hint.style.opacity=rise*(1-clamp((t-0.16)/0.16,0,1));
 
     /* Shrinking into the burst rather than fading: the smoke leaves from the
        tile's centre, so the tile has to end up there too. */

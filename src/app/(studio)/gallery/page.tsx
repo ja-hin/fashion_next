@@ -15,6 +15,8 @@ export default function GalleryPage() {
       <GalleryView
         onZoom={s.openZoom}
         onSaveAsModel={s.openSaveModel}
+        videoPrice={s.me.video_price ?? 0}
+        onBalance={s.setBalance}
         onContinueShoot={async (pid) => {
           try {
             await s.shoot.resume(pid);

@@ -12,6 +12,7 @@ const MIME: Record<string, string> = {
   jpeg: 'image/jpeg',
   png: 'image/png',
   webp: 'image/webp',
+  mp4: 'video/mp4',
 };
 
 /**
@@ -37,6 +38,50 @@ export const GET = handler(
     const { user } = await requireOwnedShoot(pid);
 
     const name = baseName(decodeURIComponent(file));
+
+    // ── video ──────────────────────────────────────────────────────────
+    // A generated clip lives in the same shoot folder and behind the same
+    // ownership check, but none of what follows applies to it: there are no
+    // WebP derivatives of an mp4, and sharp cannot watermark one. It also has
+    // to answer Range requests — Safari will not play a video at all from a
+    // plain 200, and seeking anywhere needs it.
+    if (name.toLowerCase().endsWith('.mp4')) {
+      const bytes = await storage.get(shootKey(pid, name));
+      if (!bytes) throw new HttpError(404, 'Not found');
+
+      const range = req.headers.get('range');
+      const m = range?.match(/bytes=(\d*)-(\d*)/);
+      if (m) {
+        const start = m[1] ? Number(m[1]) : 0;
+        const end = m[2] ? Math.min(Number(m[2]), bytes.length - 1) : bytes.length - 1;
+        if (start >= bytes.length || start > end) {
+          return new Response(null, {
+            status: 416,
+            headers: { 'Content-Range': `bytes */${bytes.length}` },
+          });
+        }
+        const slice = bytes.subarray(start, end + 1);
+        return new Response(new Uint8Array(slice), {
+          status: 206,
+          headers: {
+            'Content-Type': 'video/mp4',
+            'Content-Length': String(slice.length),
+            'Content-Range': `bytes ${start}-${end}/${bytes.length}`,
+            'Accept-Ranges': 'bytes',
+            'Cache-Control': 'private, max-age=3600',
+          },
+        });
+      }
+      return new Response(new Uint8Array(bytes), {
+        headers: {
+          'Content-Type': 'video/mp4',
+          'Content-Length': String(bytes.length),
+          'Accept-Ranges': 'bytes',
+          'Cache-Control': 'private, max-age=3600',
+        },
+      });
+    }
+
     const variant = parseVariant(new URL(req.url).searchParams.get('v'));
     const wm = shouldWatermark(user);
     // The variant is part of the identity of the response, so thumb and web
