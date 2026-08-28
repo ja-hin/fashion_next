@@ -257,24 +257,32 @@ footer .logo-img{height:46px}
    a frame carrying a numbered pill, then a tight block of type. Written with
    literals where it must be dark by design rather than by theme, the same way
    the hero band is. */
-.rail-sec{position:relative;background:#0E0C09;color:#EDE7DA}
+.rail-sec{position:relative;background:var(--bg2);transition:background .5s}
 .rail-head{max-width:1180px;margin:0 auto;padding:clamp(44px,5vw,68px) 24px 0;text-align:center}
-.rail-head h2{font-size:var(--h2);margin-top:16px;color:#EDE7DA}
+.rail-head h2{font-size:var(--h2);margin-top:16px}
 .rail-head h2 em{font-style:italic;color:var(--flame)}
 .rail-head .eyebrow{color:var(--flame)}
-.rail-head .sec-p{color:#8C8578;font-size:1.02rem;line-height:1.6;max-width:56ch;margin:18px auto 0}
+.rail-head .sec-p{color:var(--dim);font-size:1.02rem;line-height:1.6;max-width:56ch;margin:18px auto 0}
 
 .rail-pinzone{position:relative}
-.rail-pin{position:sticky;top:0;height:100svh;min-height:480px;display:flex;align-items:center;overflow:hidden}
+.rail-pin{position:sticky;top:0;height:80svh;min-height:480px;display:flex;align-items:center;overflow:hidden}
 .rail-track{display:flex;gap:18px;padding:0 24px;width:max-content;will-change:transform;align-items:stretch}
 
-.rcard{position:relative;width:296px;flex:0 0 auto;background:#141210;
-  border:1px solid rgba(237,231,218,.12);border-radius:10px;overflow:hidden;
+/* Light, on the page's own surface. The dark version leaned on its border
+   alone to separate card from band; on light that reads as a flat outline, so
+   the card carries a soft shadow instead and the border goes back to being a
+   hairline. */
+.rcard{position:relative;width:296px;flex:0 0 auto;background:var(--card);
+  border:1px solid var(--line-soft);border-radius:10px;overflow:hidden;
+  box-shadow:0 10px 26px -20px rgba(23,21,15,.5);
   /* `translate` is left free for the reveal below, so the two compose instead
      of overwriting each other — the lift is the only thing on `transform`. */
-  transition:transform .35s cubic-bezier(.2,.7,.2,1),border-color .35s}
-.rcard:hover{transform:translateY(-8px);border-color:rgba(240,74,23,.55)}
+  transition:transform .35s cubic-bezier(.2,.7,.2,1),border-color .35s,box-shadow .35s}
+.rcard:hover{transform:translateY(-8px);border-color:rgba(228,87,46,.55);
+  box-shadow:0 26px 46px -28px rgba(23,21,15,.55)}
 
+/* Still dark behind the picture — it is a photographic frame, and a light
+   ground would flash white before the image paints. */
 .rcard .pimg{position:relative;aspect-ratio:4/3.1;background:#1b1915;overflow:hidden}
 .rcard .pimg img,.rcard .pimg svg{width:100%;height:100%;object-fit:cover;display:block;
   transition:transform .6s cubic-bezier(.2,.7,.2,1)}
@@ -290,16 +298,16 @@ footer .logo-img{height:46px}
 
 .rcard .pt{padding:16px 18px 20px}
 .rcard h3{margin:0;font-family:var(--sans);font-weight:600;font-size:1.04rem;
-  line-height:1.3;letter-spacing:0;color:#EDE7DA}
+  line-height:1.3;letter-spacing:0;color:var(--text)}
 /* The reference highlights one phrase per heading rather than the whole line. */
-.rcard h3 b{color:#FF6B3D;font-weight:600}
-.rcard p{margin:9px 0 0;color:#8C8578;font-size:.88rem;line-height:1.55}
+.rcard h3 b{color:var(--flame);font-weight:600}
+.rcard p{margin:9px 0 0;color:var(--dim);font-size:.88rem;line-height:1.55}
 
 /* The foot labels, under the rail. */
 .pl-foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
   padding-bottom:clamp(30px,4vw,48px)}
 .pl-lbl{font-family:var(--mono);font-size:.56rem;letter-spacing:.16em;
-  color:#8C8578;text-transform:uppercase}
+  color:var(--muted);text-transform:uppercase}
 
 /* Each card rises as the track carries it in. Gated behind `.reveal`, which
    landing.js adds — without JS nothing is ever hidden in the first place. */
@@ -307,8 +315,7 @@ footer .logo-img{height:46px}
 .rail-track.reveal .rcard.in{opacity:1;translate:none;
   transition:opacity .55s cubic-bezier(.2,.7,.2,1),translate .55s cubic-bezier(.2,.8,.2,1)}
 
-.rail-progress{position:absolute;bottom:34px;left:32px;right:32px;height:1px;
-  background:rgba(237,231,218,.14)}
+.rail-progress{position:absolute;bottom:34px;left:32px;right:32px;height:1px;background:var(--line-soft)}
 .rail-progress .fill{height:100%;width:0%;background:var(--flame)}
 .drag-hint{position:absolute;top:34px;right:32px;font-family:var(--mono);font-size:.64rem;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
 /* prompt visuals */
@@ -1396,6 +1403,8 @@ body.mnav-open .mnav-sheet{transform:none}
   .why-grid{grid-template-columns:1fr}
   /* The marquee already runs at every width — nothing to convert to a rail. */
   .use-chip{font-size:.9rem;padding:.62em 1.05em}
+  .ens { flex-direction: column;
+  }
 }
 
 /* The page-wide reduced-motion rule clamps animation-duration, which would
@@ -1405,4 +1414,113 @@ body.mnav-open .mnav-sheet{transform:none}
 @media(prefers-reduced-motion:reduce){
   .use-track{animation:none!important;overflow-x:auto;max-width:100%}
   .use-marquee{-webkit-mask:none;mask:none}
+}
+
+/* ---------- ensemble: the styling map ---------- */
+/* Six pieces beside one figure, each tied to the spot it is styled onto.
+   Light, on the page's own surface — this sits between two light sections and
+   a dark band here would read as a different site. */
+.ens{ display: flex;
+    align-items: center; padding:clamp(30px,3.6vw,50px) 0}
+.ens-head{text-align:center;max-width:720px;margin:0 auto}
+.ens-head h2{font-size:var(--h2);margin-top:16px}
+.ens-head h2 em{font-style:italic;color:var(--flame)}
+.ens-head .sec-p{color:var(--dim);font-size:1.02rem;line-height:1.6;max-width:56ch;margin:18px auto 0}
+
+/* Sized to its contents and centred, not stretched across the text column.
+   Given a `1fr` right track the stage centred inside a 700px column while the
+   pieces stayed pinned left — a widget with a hole in the middle, and a
+   tie-line that spanned the gap while the real distance was three times it.
+   Both tracks are fixed now, so the gap IS the distance between them. */
+.ens-grid{--ens-gap:clamp(18px,2.4vw,32px);
+  display:grid;grid-template-columns:minmax(0,208px) minmax(0,296px);
+  justify-content:center;gap:var(--ens-gap);align-items:center;
+  margin-top:clamp(20px,2.4vw,32px)}
+
+/* ---- the pieces ---- */
+.ens-pieces{display:flex;flex-direction:column;gap:6px;min-width:0}
+.ens-piece{position:relative;display:flex;align-items:center;gap:11px;text-align:left;
+  background:var(--card);border:1px solid var(--line-soft);border-radius:12px;
+  padding:7px 9px;cursor:pointer;font-family:inherit;color:var(--text);
+  transition:border-color .25s,transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+.ens-piece:hover{transform:translateX(2px)}
+.ens-piece.on{border-color:var(--flame);
+  box-shadow:0 10px 24px -18px rgba(228,87,46,.9)}
+
+/* The tie. Drawn from the card's right edge across the grid gap to the frame,
+   so an active piece is visibly connected to the pin it lands on rather than
+   merely lit at the same time. */
+.ens-piece::after{content:"";position:absolute;left:100%;top:50%;height:1px;
+  width:var(--ens-gap);background:linear-gradient(90deg,var(--flame),transparent);
+  transform:scaleX(0);transform-origin:0 50%;
+  transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.ens-piece.on::after{transform:none}
+
+.ep-shot{flex:0 0 auto;width:38px;height:38px;border-radius:8px;overflow:hidden;
+  background:#F5F2EB;border:1px solid var(--line-soft)}
+.ep-shot svg,.ep-shot img{width:100%;height:100%;display:block}
+.ep-shot img{object-fit:cover}
+.ep-meta{min-width:0;flex:1;display:block}
+.ep-meta b{display:block;font-size:.82rem;font-weight:700;line-height:1.2}
+.ep-meta i{display:block;margin-top:1px;font-style:normal;font-size:.68rem;color:var(--muted);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ep-no{flex:0 0 auto;font-family:var(--mono);font-size:.54rem;letter-spacing:.1em;color:var(--muted)}
+.ens-piece.on .ep-no{color:var(--flame)}
+
+/* ---- the figure ---- */
+.ens-stage{position:relative;width:100%;justify-self:center;
+  /* The shoot's own ratio (928x1152). At 2/3 the photograph would be cropped
+     at the sides — and every pin below was measured against the uncropped
+     frame, so a crop would slide them off the pieces they point at. */
+  aspect-ratio:928/1152;border-radius:14px;overflow:hidden;background:#EFEBE3;
+  border:1px solid var(--line-soft);box-shadow:var(--shadow)}
+.ens-figure,.ens-figure svg,.ens-figure img{position:absolute;inset:0;width:100%;height:100%}
+.ens-figure img{object-fit:cover;display:block}
+
+/* ---- the pins ---- */
+.ens-pins{position:absolute;inset:0;pointer-events:none}
+/* A white core with a flame ring and a dark halo: it has to stay legible over
+   a straw hat, a black bag and a bare leg without changing colour for each. */
+.ens-pin{position:absolute;width:11px;height:11px;margin:-5.5px 0 0 -5.5px;border-radius:50%;
+  background:#fff;border:2px solid var(--flame);
+  box-shadow:0 0 0 1px rgba(23,21,15,.35),0 2px 6px rgba(23,21,15,.4);
+  transform:scale(.72);opacity:.45;
+  transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .3s}
+.ens-pin.on{transform:scale(1);opacity:1}
+/* The ring only pulses on the active pin — six pulsing at once would be noise
+   rather than a pointer. */
+.ens-pin.on::after{content:"";position:absolute;inset:-5px;border-radius:50%;
+  border:1.5px solid var(--flame);animation:ensPulse 1.6s ease-out infinite}
+@keyframes ensPulse{from{transform:scale(.7);opacity:.75}to{transform:scale(1.9);opacity:0}}
+
+/* The label, beside the pin it belongs to. */
+.ens-flag{position:absolute;z-index:3;transform:translate(14px,-50%);
+  background:rgba(23,21,15,.82);color:#fff;border-radius:100px;
+  padding:3px 9px;font-family:var(--mono);font-size:.5rem;letter-spacing:.1em;
+  text-transform:uppercase;white-space:nowrap;pointer-events:none;max-width:none;
+  opacity:0;transition:opacity .3s,left .35s cubic-bezier(.2,.8,.2,1),top .35s cubic-bezier(.2,.8,.2,1)}
+.ens-flag.on{opacity:1}
+/* Opens leftward for a pin right of centre — see the note in landing.js. */
+.ens-flag.flip{transform:translate(calc(-100% - 14px),-50%)}
+
+/* Aligned to the widget, not to the page — a caption stretched to the full
+   text column reads as belonging to the section, not to the thing above it. */
+.ens-foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  max-width:calc(208px + 296px + 32px);margin:clamp(12px,1.6vw,18px) auto 0}
+.ens-lbl{font-family:var(--mono);font-size:.56rem;letter-spacing:.16em;
+  color:var(--muted);text-transform:uppercase}
+.ens-same{color:var(--mint)}
+.ens-same::before{content:"● "}
+
+@media(max-width:820px){
+  /* Stacked, there is nothing to the right to tie to, so the line goes and the
+     pieces become a wrapping row above the figure. */
+  .ens-grid{grid-template-columns:1fr;gap:20px}
+  .ens-pieces{flex-direction:row;flex-wrap:wrap;order:2}
+  .ens-piece{flex:1 1 auto;min-width:calc(50% - 4px)}
+  .ens-piece::after{display:none}
+  .ens-stage{order:1;max-width:300px}
+}
+@media(prefers-reduced-motion:reduce){
+  .ens-pin.on::after{animation:none}
 }

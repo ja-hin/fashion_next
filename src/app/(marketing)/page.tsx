@@ -417,6 +417,30 @@ export default async function LandingPage() {
           photograph, this one proves it becomes ANY of them — five models, six
           setups, identity held down each row. Built by landing.js from
           /webassets/m{row}p{col}. */}
+          <section className="ens" id="ensemble">
+        <div className="wrap ens-head rv">
+          <span className="eyebrow">Ensemble · style the whole look</span>
+          <h2 className="sec-h2">
+            Not one garment. The <em>whole outfit.</em>
+          </h2>
+          <p className="sec-p">
+            Upload the pieces — the dress, the heels, the eyewear, the hat, the bag, the necklace.
+            Each one is recognised, given its role, and styled onto a single model as one complete
+            look. Swap any piece and the rest of the look holds.
+          </p>
+        </div>
+
+        <div className="wrap ens-grid rv">
+          <div className="ens-pieces" id="ensPieces" />
+
+          <div className="ens-stage">
+            <div className="ens-figure" id="ensFigure" />
+            <div className="ens-pins" id="ensPins" />
+            <span className="ens-flag" id="ensFlag" />
+          </div>
+        </div>
+
+      </section>
       <section className="castworld" id="casting">
         <div className="wrap-1">
           {/* Wrapped so the three lines centre as one block on a shared measure
@@ -456,6 +480,15 @@ export default async function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ── ensemble: the styling map ── */}
+      {/* Not a before/after: the point of an ensemble shoot is that each piece
+          lands somewhere specific on one model, so the widget SHOWS where. The
+          pieces sit beside the figure, a line ties the active one to its pin,
+          and the pin marks the exact spot it is styled onto. Built by
+          landing.js — the imagery probes for real renders at runtime. */}
+      
+
       {/* Copy left, sheet right. Full-width the sheet was taller than the
           viewport and the paragraph above it was read and forgotten before the
           frames arrived; side by side they are read together, and the sheet
@@ -598,10 +631,6 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
               <div className="fill" id="railFill" />
             </div>
           </div>
-        </div>
-        <div className="wrap pl-foot">
-          <span className="pl-lbl">08 capabilities · included with every shoot</span>
-          <span className="pl-lbl">Scroll ↓ to travel the row</span>
         </div>
       </section>
 

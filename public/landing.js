@@ -312,6 +312,144 @@ const railFill=document.getElementById("railFill");
   track.querySelectorAll(".rcard").forEach(el=>rio.observe(el));
 })();
 
+/* =============== ensemble: the styling map =============== */
+/* Six pieces beside one figure, each pinned to the spot it is styled onto.
+ *
+ * The obvious way to show an ensemble is pieces-in, look-out — but that only
+ * says "they went in somewhere". Marking WHERE each one lands is the thing the
+ * feature actually does, and it is what a stylist would point at.
+ *
+ * Coordinates are percentages of the frame, so they hold whether the figure is
+ * the drawn fallback or a real render dropped into /webassets/ensemble.
+ */
+(function ensembleMap(){
+  const box=document.getElementById("ensPieces");
+  const pinBox=document.getElementById("ensPins");
+  const figure=document.getElementById("ensFigure");
+  const flag=document.getElementById("ensFlag");
+  if(!box||!pinBox||!figure)return;          /* only the marketing page has one */
+
+  /* x/y are percentages of the frame, measured against the shoot photograph —
+     each one lands on the piece itself: the brim, the lens, the pendant, the
+     check, the clasp, the ankle strap. Percentages rather than pixels so the
+     frame can be any size; a replacement render of the same crop keeps them. */
+  const PIECES=[
+    {k:"hat",     n:"Hat",       r:"sits on the crown",   x:49,   y:5},
+    {k:"eyewear", n:"Eyewear",   r:"across the eyes",     x:50.4, y:11.5},
+    {k:"necklace",n:"Necklace",  r:"at the collarbone",   x:50.4, y:23.4},
+    {k:"dress",   n:"Dress",     r:"the base garment",    x:49.6, y:42},
+    {k:"bag",     n:"Bag",       r:"held at the hip",     x:62.3, y:73.3},
+    {k:"heels",   n:"Heels",     r:"on the feet",         x:63,   y:95.5}
+  ];
+
+  /* Drawn packshots, on paper, for a slot with no photograph of its own. */
+  const paper='<rect width="100" height="100" fill="#F5F2EB"/>';
+  const DRAWN={
+    hat:`${paper}<ellipse cx="50" cy="62" rx="34" ry="10" fill="#B48C50"/><path d="M32 60 q0 -26 18 -26 q18 0 18 26 z" fill="#A07A42"/>`,
+    eyewear:`${paper}<circle cx="35" cy="52" r="14" fill="none" stroke="#28241E" stroke-width="4.4"/><circle cx="67" cy="52" r="14" fill="none" stroke="#28241E" stroke-width="4.4"/><path d="M49 52 h4 M21 50 l-8 -4 M81 50 l8 -4" stroke="#28241E" stroke-width="4"/>`,
+    necklace:`${paper}<path d="M28 34 q22 34 44 0" fill="none" stroke="#C8A45C" stroke-width="3.4"/><circle cx="38" cy="49" r="4" fill="#DDBE74"/><circle cx="50" cy="53" r="5" fill="#DDBE74"/><circle cx="62" cy="49" r="4" fill="#DDBE74"/>`,
+    dress:`${paper}<path d="M38 22 q12 -6 24 0 l8 58 q-20 8 -40 0 z" fill="#C24418"/><path d="M44 22 q6 5 12 0" stroke="#8F3010" stroke-width="2.4" fill="none"/>`,
+    bag:`${paper}<rect x="30" y="44" width="40" height="30" rx="3" fill="#8A5A34"/><path d="M38 44 q12 -18 24 0" fill="none" stroke="#8A5A34" stroke-width="3.2"/><rect x="46" y="56" width="8" height="6" rx="1.5" fill="#C8A45C"/>`,
+    heels:`${paper}<path d="M22 62 l44 -16 q8 -2 10 6 l-38 16 z" fill="#7A281E"/><path d="M70 52 l3 24 l-6 0 l-3 -20 z" fill="#7A281E"/><path d="M30 78 l44 -16 q8 -2 10 6 l-38 16 z" fill="#7A281E" opacity=".55"/>`
+  };
+  const packshot=k=>`<svg viewBox="0 0 100 100" aria-hidden="true">${DRAWN[k]||paper}</svg>`;
+
+  /* The figure, drawn to the same coordinates the pins use — hat at 12%, eyes
+     at 18%, collarbone at 27%, and so on down to the shoes at 94%. */
+  const FIGURE=`<svg viewBox="0 0 100 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect width="100" height="150" fill="#EFEBE3"/>
+    <ellipse cx="50" cy="19" rx="21" ry="6" fill="#B48C50"/>
+    <path d="M36 18 q0 -13 14 -13 q14 0 14 13 z" fill="#A07A42"/>
+    <circle cx="50" cy="28" r="9" fill="#E7C6A8"/>
+    <path d="M41 26 a9 9 0 0 1 18 0 z" fill="#2A231C"/>
+    <rect x="42" y="26" width="6.4" height="4" rx="1.4" fill="#28241E"/>
+    <rect x="51.6" y="26" width="6.4" height="4" rx="1.4" fill="#28241E"/>
+    <path d="M48.4 28 h3.2" stroke="#28241E" stroke-width="1.4"/>
+    <path d="M43 38 q7 7 14 0" fill="none" stroke="#C8A45C" stroke-width="1.8"/>
+    <circle cx="50" cy="41.5" r="1.9" fill="#DDBE74"/>
+    <path d="M41 40 q9 -5 18 0 l7 56 q-16 7 -32 0 z" fill="#C24418"/>
+    <path d="M41 41 l-7 26 M59 41 l7 26" stroke="#E7C6A8" stroke-width="4.4" stroke-linecap="round"/>
+    <rect x="66" y="70" width="13" height="11" rx="2" fill="#8A5A34"/>
+    <path d="M69 70 q3.5 -6 7 0" fill="none" stroke="#8A5A34" stroke-width="1.6"/>
+    <path d="M45 96 l-2 40 M55 96 l2 40" stroke="#E7C6A8" stroke-width="5" stroke-linecap="round"/>
+    <path d="M38 138 l9 0 l2 4 l-13 0 z" fill="#7A281E"/>
+    <path d="M53 138 l9 0 l2 4 l-13 0 z" fill="#7A281E"/>
+  </svg>`;
+
+  /* ---- build ---------------------------------------------------------- */
+  const cards=[],pins=[];
+  PIECES.forEach((p,i)=>{
+    const card=document.createElement("button");
+    card.type="button";card.className="ens-piece";card.dataset.c="";
+    card.setAttribute("aria-label",`${p.n} — ${p.r}`);
+    card.innerHTML=`<span class="ep-shot">${packshot(p.k)}</span>`+
+      `<span class="ep-meta"><b>${p.n}</b><i>${p.r}</i></span>`+
+      `<span class="ep-no">${String(i+1).padStart(2,"0")}</span>`;
+    box.appendChild(card);cards.push(card);
+
+    /* The real item, cropped from the same photograph the pins point at — so
+       the card and the pin are demonstrably the same object, not a drawing
+       standing in for one. The drawing above holds the slot until it loads. */
+    probeChain(ASSET_DIR+"ensemble/p"+(i+1)).then(u=>{
+      if(u)card.querySelector(".ep-shot").innerHTML=`<img src="${u}" alt="${p.n}"/>`;
+    });
+
+    const pin=document.createElement("span");
+    pin.className="ens-pin";
+    pin.style.left=p.x+"%";pin.style.top=p.y+"%";
+    pinBox.appendChild(pin);pins.push(pin);
+  });
+
+  figure.innerHTML=FIGURE;
+  /* The shoot itself. Probed first so a drop-in at /webassets/ensemble/model
+     overrides it, then the file as delivered; the drawing holds the frame
+     until one of them loads, so the section is never empty. */
+  (async()=>{
+    const u=await probeChain(ASSET_DIR+"ensemble/model")
+         || await probe("/S0111_standing_front.jpg");
+    if(u)figure.innerHTML=`<img src="${u}" alt="One model wearing every uploaded piece — hat, eyewear, necklace, dress, bag and heels"/>`;
+  })();
+
+  /* ---- the tour ------------------------------------------------------- */
+  let at=-1,timer=null;
+  function show(i){
+    at=i;
+    cards.forEach((c,k)=>c.classList.toggle("on",k===i));
+    pins.forEach((p,k)=>p.classList.toggle("on",k===i));
+    if(flag){
+      const p=PIECES[i];
+      /* The name only. It also carried the role, which put a ~180px pill 170px
+         into a 296px frame — it ran off the right edge on every pin. The role
+         is on the card two inches away; repeating it here bought nothing. */
+      flag.textContent=p.n;
+      /* Flipped to the left of any pin sitting right of centre, so the bag's
+         label opens into the frame rather than out of it. */
+      flag.classList.toggle("flip",p.x>55);
+      flag.style.left=p.x+"%";flag.style.top=p.y+"%";
+      flag.classList.add("on");
+    }
+  }
+  function play(){
+    if(reduce)return;
+    clearInterval(timer);
+    timer=setInterval(()=>show((at+1)%PIECES.length),2200);
+  }
+  function hold(){clearInterval(timer);}
+
+  cards.forEach((c,i)=>{
+    c.addEventListener("pointerenter",()=>{hold();show(i);});
+    c.addEventListener("focus",()=>{hold();show(i);});
+    c.addEventListener("click",()=>{hold();show(i);});
+    c.addEventListener("pointerleave",play);
+    c.addEventListener("blur",play);
+  });
+
+  show(0);
+  /* Nothing cycles behind you. */
+  new IntersectionObserver(es=>{es[0].isIntersecting?play():hold();},{threshold:.2})
+    .observe(box);
+})();
+
 function zoneProgress(el){
   const r=el.getBoundingClientRect();
   const total=el.offsetHeight-innerHeight;
