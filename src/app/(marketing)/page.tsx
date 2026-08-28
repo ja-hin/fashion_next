@@ -108,117 +108,6 @@ const FAQ_LD = {
 };
 
 /**
- * Stroke icons for the platform rail — one per card, drawn on a 24 grid and
- * inheriting `currentColor` so the tile controls the colour in one place.
- * Inline rather than a sprite: eight glyphs is less bytes than the request.
- */
-const I = (d: React.ReactNode) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"
-       strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>
-);
-
-const RAIL_ICONS = {
-  direction: I(<><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0" /><circle cx="16" cy="6" r="2" /><circle cx="10" cy="12" r="2" /><circle cx="18" cy="18" r="2" /></>),
-  faces: I(<><circle cx="9" cy="8" r="3.4" /><path d="M3 19a6 6 0 0 1 12 0" /><path d="M16.5 5.6a3.4 3.4 0 0 1 0 4.8M19 3.2a6.8 6.8 0 0 1 0 9.6" /></>),
-  prompt: I(<><rect x="3" y="4" width="18" height="16" rx="3" /><path d="M7 9.5h6M7 14h4" /><path d="M16 13.4l1.1 2.2 2.2 1.1-2.2 1.1L16 20l-1.1-2.2-2.2-1.1 2.2-1.1z" /></>),
-  genie: I(<><path d="M12 3l1.7 3.9L17.6 8.6l-3.9 1.7L12 14.2l-1.7-3.9L6.4 8.6l3.9-1.7z" /><path d="M18.5 15l.8 1.8 1.8.8-1.8.8-.8 1.8-.8-1.8-1.8-.8 1.8-.8z" /><path d="M5 15.5l.6 1.3 1.3.6-1.3.6L5 19.3l-.6-1.3-1.3-.6 1.3-.6z" /></>),
-  globe: I(<><circle cx="12" cy="12" r="9" /><path d="M3 12h18" /><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18z" /></>),
-  continuity: I(<><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1" /><path d="M3 4v5h5" /><path d="M12 8v4.4l3 1.8" /></>),
-  resolution: I(<><rect x="3" y="5" width="18" height="14" rx="2.5" /><path d="M7 9.5v5M7 12h2.6M7 9.5h2.6" /><path d="M13.4 14.5h3.2M13.4 14.5l3.2-3.2a1.6 1.6 0 1 0-3.2-1.1" /></>),
-  wallet: I(<><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6H18a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z" /><path d="M3 8.5V7a2 2 0 0 1 2-2h9" /><circle cx="17" cy="12.5" r="1.3" /></>),
-};
-
-const RAIL_CARDS = [
-  {
-    idx: '01 / FULL DIRECTION',
-    icon: RAIL_ICONS.direction,
-    h: 'Any model. Any pose. Any backdrop. Any mood.',
-    p: 'Full-body to close-up, studio seamless to sunlit street, editorial to catalogue-clean. Every frame answers to you.',
-    visual: <div className="vgrid" id="vg1" />,
-  },
-  {
-    idx: '02 / YOUR OWN AI MODELS',
-    icon: RAIL_ICONS.faces,
-    h: 'Your own AI models. Every SKU. Same face.',
-    p: 'Build a model once, save her, and she fronts your entire catalogue — the same recognisable face on every product, drop after drop.',
-    visual: <div className="vgrid" id="vg2" />,
-  },
-  {
-    idx: '03 / CUSTOM PROMPTS',
-    icon: RAIL_ICONS.prompt,
-    h: 'Describe the shot. Get the shot.',
-    p: 'Need something specific? Type it — "golden-hour terrace, side profile, dupatta mid-swirl" — and AImageGen composes pose, backdrop, lighting and framing to match, exactly.',
-    visual: <div className="pv" id="pv1" />,
-  },
-  {
-    idx: '04 / PROMPT GENIE',
-    icon: RAIL_ICONS.genie,
-    h: 'Complex prompts, written in seconds.',
-    p: 'Not a prompt engineer? Tell Genie the vibe in plain words and it drafts the full studio-grade prompt — pose, lighting, mood, framing — ready to run or tweak.',
-    visual: <div className="pv" id="pv2" />,
-  },
-  {
-    idx: '05 / GLOBAL CASTING',
-    icon: RAIL_ICONS.globe,
-    h: 'Models from across the world.',
-    p: 'South-Asian presets out of the box — plus faces, skin tones and looks for every market you sell into. Shoot the same garment for Delhi, Dubai and Dallas.',
-    visual: (
-      <div className="swrow">
-        {['#F0D5BE', '#E7C6A8', '#D8AE8C', '#C0946E', '#9A6F4E', '#6F4A30'].map((c) => (
-          <span key={c} className="sw" style={{ background: c }} />
-        ))}
-      </div>
-    ),
-  },
-  {
-    idx: '06 / SHOOT CONTINUITY',
-    icon: RAIL_ICONS.continuity,
-    h: 'Pause today. Reshoot next season.',
-    p: 'Every shoot is saved with its model, look and lighting. Come back weeks later — for a new colourway, a festive drop, one missing angle — and continue with full continuity. No re-booking, ever.',
-    visual: (
-      <div className="pv">
-        <div className="pline">SHOOT #12 · Summer drop · 42 frames</div>
-        <div className="parrow">↳ RESUMED 3 MONTHS LATER</div>
-        <div className="pline genie">
-          same model · same light · +18 new frames<span className="pc" />
-        </div>
-      </div>
-    ),
-  },
-  {
-    idx: '07 / 2K & 4K OUTPUT',
-    icon: RAIL_ICONS.resolution,
-    h: 'Marketplace listing to billboard.',
-    p: 'Standard shots for PDPs and social — or native 2K and 4K renders when the same image has to carry a homepage banner, a hoarding, or print.',
-    visual: (
-      <div className="pv">
-        <div className="ptags" style={{ alignItems: 'center' }}>
-          <span className="ptag">1K · PDP &amp; social</span>
-          <span className="ptag hot">2K · web hero</span>
-          <span className="ptag hot">4K · print &amp; billboard</span>
-        </div>
-        <div className="parrow">↳ TRUE NATIVE RESOLUTION — NOT UPSCALED</div>
-      </div>
-    ),
-  },
-  {
-    idx: '08 / PREPAID WALLET',
-    icon: RAIL_ICONS.wallet,
-    h: 'Pay for photos. Not seats, not months.',
-    p: 'Top up a ₹ credit wallet and spend it whenever you shoot. No subscription, no minimum SKUs, GST-ready invoicing.',
-    visual: (
-      <div className="visual-wallet wallet">
-        <div className="wchip">
-          <span className="k-label">Credit wallet</span>
-          <div className="amt">₹11,999</div>
-          <div className="cr">1,600 CREDITS · ₹7.50/PHOTO</div>
-        </div>
-      </div>
-    ),
-  },
-];
-
-/**
  * The three proof points, and the doors into the product beneath them.
  *
  * Every number here is a claim this page already makes elsewhere — the 10x in
@@ -365,7 +254,7 @@ export default async function LandingPage() {
               <a href="/register" className="btn btn-cta" data-c="">
                 Start free trial <span className="arw">→</span>
               </a>
-              <a href="#demo" className="btn btn-line" data-c="">See a shoot run</a>
+              <a href="#demo" className="btn btn-line" data-c="">Book a Demo</a>
             </div>
           </div>
 
@@ -447,7 +336,7 @@ export default async function LandingPage() {
           drive it themselves before any of the finished-work panels below.
           Wired by landing.js. */}
       <section className="hiw" id="how">
-        <div className="wrap">
+        <div className="wrap-1">
           <div className="hiw-head rv">
             <span className="eyebrow">How it works</span>
             <h2 className="sec-h2">From garment to finished photo</h2>
@@ -529,7 +418,7 @@ export default async function LandingPage() {
           setups, identity held down each row. Built by landing.js from
           /webassets/m{row}p{col}. */}
       <section className="castworld" id="casting">
-        <div className="wrap">
+        <div className="wrap-1">
           {/* Wrapped so the three lines centre as one block on a shared measure
               — the same `-head` pattern the reels, create and cats sections
               already use. */}
@@ -542,9 +431,6 @@ export default async function LandingPage() {
           </div>
 
           <div className="lr-box" id="panel">
-            <div className="lr-top">
-              <span className="roll">● identity locked per row</span>
-            </div>
 
             <div className="lr-main">
               <div className="loupe" id="loupe">
@@ -575,12 +461,12 @@ export default async function LandingPage() {
           frames arrived; side by side they are read together, and the sheet
           lands at a size that fits on screen. */}
       <section className="demo" id="demo">
-        <div className="wrap demo-grid">
+        <div className="wrap-1 demo-grid">
           <div className="demo-copy rv">
             <span className="eyebrow">AI fashion shoot studio</span>
             <h2 className="sec-h2">One garment photo IN. A full catalogue OUT.</h2>
             <p className="sec-p desktop">
-              Every angle a listing needs: front, back, three-quarter and close-up, all from a single garment photo, all worn by the same model. Shoot by shoot, your catalogue builds itself. <br></br>
+              Every angle a listing needs: front, back, three-quarter and close-up, all from a single garment photo, all worn by the same model. Shoot by shoot, your catalogue builds itself. <br></br><br></br>
 
 Every shoot on Faishon Studio is consistency locked. The neckline, the drape, the exact shade of the fabric, the model's face: nothing shifts from frame to frame, or from shoot to shoot. Every detail stays consistent. No drift, no surprises.<br></br>
 
@@ -600,9 +486,6 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
             <div className="scan" id="scan" />
             <div className="frames" id="frames" />
             <div className="sheet-foot">
-              <span className="lbl" id="footLbl">
-                6 FRAMES · SAME MODEL · ~00:02:11 <span className="swipe-hint">· swipe ⇄</span>
-              </span>
               <div className="nav">
                 <button className="nbtn prev" id="prevB" aria-label="Previous set">
                   <svg viewBox="0 0 16 16" fill="none">
@@ -644,10 +527,6 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
             the outer frames are meant to run off the edge of the screen. */}
         <div className="reel-arc" id="reelArc" />
         <div className="wrap">
-          {/* The copy for whichever frame is hovered, filled by landing.js. It
-              reserves its height up front so swapping the text never nudges
-              the hint underneath it. */}
-          <div className="reel-cap" id="reelCap" aria-live="polite" />
         </div>
       </section>
 
@@ -701,30 +580,28 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
       {/* ── feature rail ── */}
       <section className="rail-sec" id="features">
         <div className="wrap rail-head rv">
-          <span className="eyebrow">The platform</span>
-          <h2>Everything a studio does. Nothing a studio costs.</h2>
+          <span className="eyebrow">Inside the studio</span>
+          <h2>
+            Everything a studio does, <em>and more.</em>
+          </h2>
+          <p className="sec-p">
+            Every feature below comes with every shoot. The whole studio, yours from your first
+            upload.
+          </p>
         </div>
         <div className="rail-pinzone" id="railZone">
           <div className="rail-pin">
-            <div className="rail-track" id="railTrack">
-              {RAIL_CARDS.map((c) => (
-                <div className="rcard" key={c.idx}>
-                  <div>
-                    <div className="rhead">
-                      <span className="ricon">{c.icon}</span>
-                      <span className="idx">{c.idx}</span>
-                    </div>
-                    <h3>{c.h}</h3>
-                    <p>{c.p}</p>
-                  </div>
-                  <div className="visual">{c.visual}</div>
-                </div>
-              ))}
-            </div>
+            {/* Filled by landing.js — each card's imagery is probed at runtime,
+                which is a job for the browser, not the server render. */}
+            <div className="rail-track" id="railTrack" />
             <div className="rail-progress">
               <div className="fill" id="railFill" />
             </div>
           </div>
+        </div>
+        <div className="wrap pl-foot">
+          <span className="pl-lbl">08 capabilities · included with every shoot</span>
+          <span className="pl-lbl">Scroll ↓ to travel the row</span>
         </div>
       </section>
 

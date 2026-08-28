@@ -8,7 +8,7 @@
   /* One size for every section heading. Each section used to carry its own,
      which had drifted from 2.5rem to 4rem across the page and left the
      sections looking unrelated to each other. */
-  --h2:20px;
+  --h2:25px;
 
   --serif:"Playfair Display",Georgia,serif;
   --sans:"Geist","Geist Fallback",system-ui,-apple-system,sans-serif;
@@ -59,6 +59,7 @@ h1,h2,h3{margin:0;font-family:var(--serif);font-weight:500;letter-spacing:-.014e
    so the size is set in exactly one place. */
 .sec-h2{font-size:var(--h2);margin:6px 0; font-weight: bold;}
 .wrap{max-width:1280px;margin:0 auto;padding:0 17px}
+.wrap-1{max-width: 1000px;margin:0 auto;padding:0 17px}
 .eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.26em;text-transform:uppercase;color:var(--flame);font-weight:700}
 .k-label{font-family:var(--mono);font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
 
@@ -252,62 +253,62 @@ footer .logo-img{height:46px}
 .cnt-x.on{opacity:1;transform:none}
 
 /* ---------- horizontal rail ---------- */
-.rail-sec{position:relative;background:var(--bg2);transition:background .5s}
-.rail-head{padding:50px 20px 20px;text-align: center;}
-.rail-head h2{font-size:var(--h2);margin-top:16px}
+/* Ported from the platform-panel reference. A dark band with image-led cards:
+   a frame carrying a numbered pill, then a tight block of type. Written with
+   literals where it must be dark by design rather than by theme, the same way
+   the hero band is. */
+.rail-sec{position:relative;background:#0E0C09;color:#EDE7DA}
+.rail-head{max-width:1180px;margin:0 auto;padding:clamp(44px,5vw,68px) 24px 0;text-align:center}
+.rail-head h2{font-size:var(--h2);margin-top:16px;color:#EDE7DA}
+.rail-head h2 em{font-style:italic;color:var(--flame)}
+.rail-head .eyebrow{color:var(--flame)}
+.rail-head .sec-p{color:#8C8578;font-size:1.02rem;line-height:1.6;max-width:56ch;margin:18px auto 0}
+
 .rail-pinzone{position:relative}
-.rail-pin{position:sticky;top:0;height:100svh;min-height:620px;display:flex;align-items:center;overflow:hidden}
-.rail-track{display:flex;gap:26px;padding:0 32px;will-change:transform}
-.rcard{flex:0 0 clamp(320px,34vw,460px);height:min(72svh,600px);
-  border:1px solid var(--line-soft);border-radius:18px;background:var(--card);
-  padding:32px;display:flex;flex-direction:column;justify-content:space-between;
-  position:relative;overflow:hidden;box-shadow:var(--shadow);
+.rail-pin{position:sticky;top:0;height:100svh;min-height:480px;display:flex;align-items:center;overflow:hidden}
+.rail-track{display:flex;gap:18px;padding:0 24px;width:max-content;will-change:transform;align-items:stretch}
+
+.rcard{position:relative;width:296px;flex:0 0 auto;background:#141210;
+  border:1px solid rgba(237,231,218,.12);border-radius:10px;overflow:hidden;
   /* `translate` is left free for the reveal below, so the two compose instead
      of overwriting each other — the lift is the only thing on `transform`. */
-  transition:transform .4s cubic-bezier(.2,.8,.2,1),border-color .35s,box-shadow .4s}
-/* A light source rather than a flat plane: the wash pools at the corner the
-   icon sits in, so the eye starts at the head of the card. */
-.rcard::before{content:"";position:absolute;left:0;right:0;top:0;height:190px;pointer-events:none;
-  background:radial-gradient(120% 100% at 10% 0%,
-    color-mix(in srgb,var(--flame) 10%,transparent),transparent 68%)}
-.rcard:hover{transform:translateY(-6px);
-  border-color:color-mix(in srgb,var(--flame) 45%,transparent);
-  box-shadow:0 44px 74px -42px rgba(23,21,15,.78)}
+  transition:transform .35s cubic-bezier(.2,.7,.2,1),border-color .35s}
+.rcard:hover{transform:translateY(-8px);border-color:rgba(240,74,23,.55)}
 
-/* head — the icon tile and the index read as one line */
-.rcard .rhead{display:flex;align-items:center;gap:13px;position:relative}
-.rcard .ricon{width:46px;height:46px;flex:0 0 auto;border-radius:14px;
-  display:grid;place-items:center;color:var(--flame);
-  background:color-mix(in srgb,var(--flame) 11%,var(--card));
-  border:1px solid color-mix(in srgb,var(--flame) 26%,transparent);
-  transition:transform .45s cubic-bezier(.2,.8,.2,1),background .35s,border-color .35s}
-.rcard .ricon svg{width:22px;height:22px;display:block}
-/* The tile is the only thing that moves independently of the card, which is
-   what makes the lift read as a card picking itself up rather than a slide. */
-.rcard:hover .ricon{transform:translateY(-2px) rotate(-7deg);
-  background:color-mix(in srgb,var(--flame) 19%,var(--card));
-  border-color:color-mix(in srgb,var(--flame) 45%,transparent)}
+.rcard .pimg{position:relative;aspect-ratio:4/3.1;background:#1b1915;overflow:hidden}
+.rcard .pimg img,.rcard .pimg svg{width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.rcard:hover .pimg img{transform:scale(1.05)}
+/* Scrim, so the pill stays legible over any artwork. */
+.rcard .pimg::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(transparent 55%,rgba(14,12,9,.72))}
 
-.rcard .idx{font-family:var(--mono);font-size:.68rem;letter-spacing:.2em;color:var(--flame)}
-.rcard h3{font-size:clamp(1.5rem,2.3vw,2.1rem);margin:22px 0 14px}
-.rcard p{color:var(--dim);font-size:.98rem;margin:0;max-width:36ch}
+.rcard .num{position:absolute;top:10px;left:11px;z-index:2;
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;color:#fff;
+  background:rgba(14,12,9,.6);border:1px solid rgba(240,74,23,.5);
+  border-radius:100px;padding:4px 10px}
 
-/* Each card rises as the rail carries it in. Gated behind `.reveal`, which
-   landing.js adds — without JS nothing is ever hidden in the first place.
-   On `translate`, not `transform`, so the hover lift stays independent. */
-.rail-track.reveal .rcard{opacity:0;translate:0 30px}
+.rcard .pt{padding:16px 18px 20px}
+.rcard h3{margin:0;font-family:var(--sans);font-weight:600;font-size:1.04rem;
+  line-height:1.3;letter-spacing:0;color:#EDE7DA}
+/* The reference highlights one phrase per heading rather than the whole line. */
+.rcard h3 b{color:#FF6B3D;font-weight:600}
+.rcard p{margin:9px 0 0;color:#8C8578;font-size:.88rem;line-height:1.55}
+
+/* The foot labels, under the rail. */
+.pl-foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding-bottom:clamp(30px,4vw,48px)}
+.pl-lbl{font-family:var(--mono);font-size:.56rem;letter-spacing:.16em;
+  color:#8C8578;text-transform:uppercase}
+
+/* Each card rises as the track carries it in. Gated behind `.reveal`, which
+   landing.js adds — without JS nothing is ever hidden in the first place. */
+.rail-track.reveal .rcard{opacity:0;translate:0 26px}
 .rail-track.reveal .rcard.in{opacity:1;translate:none;
-  transition:opacity .6s cubic-bezier(.2,.7,.2,1),translate .6s cubic-bezier(.2,.8,.2,1)}
-.rcard .visual{height:44%;border-radius:5px;overflow:hidden;position:relative;background:var(--bg);border:1px solid var(--line-soft)}
-.rcard .visual>img{width:100%;height:100%;object-fit:cover}
-.rcard .visual svg{width:100%;height:100%}
-.vgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px;height:100%}
-.vgrid>div{border-radius:3px;overflow:hidden;background:var(--bg2);position:relative}
-.vgrid img{width:100%;height:100%;object-fit:cover}
-.vgrid svg{width:100%;height:100%}
-.swrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;height:100%;padding:0 14px}
-.swrow .sw{width:38px;height:38px;border-radius:50%;border:2px solid var(--line)}
-.rail-progress{position:absolute;bottom:34px;left:32px;right:32px;height:1px;background:var(--line-soft)}
+  transition:opacity .55s cubic-bezier(.2,.7,.2,1),translate .55s cubic-bezier(.2,.8,.2,1)}
+
+.rail-progress{position:absolute;bottom:34px;left:32px;right:32px;height:1px;
+  background:rgba(237,231,218,.14)}
 .rail-progress .fill{height:100%;width:0%;background:var(--flame)}
 .drag-hint{position:absolute;top:34px;right:32px;font-family:var(--mono);font-size:.64rem;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
 /* prompt visuals */
@@ -399,12 +400,17 @@ footer .logo-img{height:46px}
 }
 
 /* ---------- contact sheet demo (dark in both themes — it's a light table) ---------- */
-.demo{padding:clamp(46px,6vw,74px) 0}
-.demo-grid{display:grid;grid-template-columns:.88fr 1.12fr;gap:clamp(30px,4.5vw,60px);align-items:center}
+.demo{padding:clamp(34px,4vw,56px) 0}
+/* `auto` on the sheet track, not a fraction: sized as a fraction the sheet
+   grew with the viewport, and its frames are 3:4 — so every extra pixel of
+   width cost a third again in height. The sheet now sets its own width and the
+   copy takes what is left. */
+.demo-grid{display:grid;grid-template-columns:minmax(0,1fr) auto;
+  gap:clamp(26px,3.6vw,52px);align-items:center}
 /* Sized for a column, not for the full measure: at the old clamp the headline
    ran to four lines beside the sheet. */
 .demo h2{font-size:var(--h2);margin-top:14px}
-.demo .sec-p{color:var(--dim);font-size:1.02rem;max-width:40ch;margin:18px 0 0;line-height:1.6}
+.demo .sec-p{color:var(--dim);font-size:1rem;max-width:42ch;margin:14px 0 0;line-height:1.55}
 .demo .sec-p b{color:var(--text)}
 
 /* ── one block, two lengths ───────────────────────────────────────────
@@ -425,14 +431,15 @@ footer .logo-img{height:46px}
   .desktop{display:none}
   .mobile{display:revert}
 }
-.demo-cta{margin-top:30px}
+.demo-cta{margin-top:24px}
 .demo p.d{color:var(--dim);font-size:1.06rem;max-width:46ch;margin:20px 0 30px}
 .sheet{position:relative;background:var(--sheet-bg);border:1px solid var(--line-soft);
-  border-radius:12px;padding:clamp(14px,1.4vw,20px);box-shadow:var(--shadow)}
-.sheet-top{display:flex;justify-content:space-between;margin-bottom:14px}
+  border-radius:12px;padding:clamp(12px,1.2vw,16px);box-shadow:var(--shadow);
+  width:clamp(300px,33vw,452px)}
+.sheet-top{display:flex;justify-content:space-between;margin-bottom:10px}
 .sheet-top .lbl,.sheet-foot .lbl{font-family:var(--mono);font-size:.64rem;letter-spacing:.18em;color:#8f8676;text-transform:uppercase}
 .sheet-top .roll{font-family:var(--mono);font-size:.64rem;color:#F0774E;letter-spacing:.1em}
-.frames{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.frames{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .frame{position:relative;aspect-ratio:3/4;border-radius:3px;overflow:hidden;background:#1b1915;opacity:0;transform:scale(.9) translateY(10px)}
 .frame.pop{animation:pop .6s cubic-bezier(.2,.8,.2,1) forwards}
 @keyframes pop{to{opacity:1;transform:none}}
@@ -447,7 +454,7 @@ footer .logo-img{height:46px}
 .frame.missing{opacity:.28!important;transform:none!important}
 
 /* footer: garment thumbnails navigate between shoots */
-.sheet-foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--sheet-line);gap:12px;flex-wrap:wrap}
+.sheet-foot{display:flex;justify-content:center;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--sheet-line);gap:10px;flex-wrap:wrap}
 .sheet .nav{display:flex;align-items:center;gap:14px}
 .nbtn{position:relative;background:none;border:1px solid rgba(237,231,218,.28);color:#EDE7DA;
   width:38px;height:38px;border-radius:50%;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
@@ -458,7 +465,7 @@ footer .logo-img{height:46px}
 .nbtn.prev:hover svg{transform:translateX(-2px)}
 .nbtn:active{transform:scale(.9)}
 .thumbs{display:flex;gap:9px;align-items:center}
-.thumb{position:relative;width:34px;height:44px;border-radius:5px;border:0;padding:0;cursor:pointer;background:#1b1915;
+.thumb{position:relative;width:24px;height:28px;border-radius:5px;border:0;padding:0;cursor:pointer;background:#1b1915;
   transition:transform .25s cubic-bezier(.2,.8,.2,1),opacity .25s;opacity:.55}
 /* the conic ring doubles as the dwell timer for the current set */
 .thumb::before{content:"";position:absolute;inset:-3px;border-radius:7px;z-index:0;
@@ -547,6 +554,9 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
   .collage{height:60svh}
   .stats-in{grid-template-columns:1fr 1fr}
   .demo-grid{grid-template-columns:1fr;gap:24px}
+  /* Stacked, the sheet has the column to itself — the desktop cap would leave
+     it stranded left of a full-width block of copy. */
+  .sheet{width:100%;max-width:452px;justify-self:center}
   .plans{grid-template-columns:1fr 1fr}
   .cost-bars{gap:30px}
 }
@@ -554,6 +564,7 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
   /* The clamp's 2.9rem floor never kicks in on a phone — 46px of display type
      ate the fold, so the h1 is pinned flat here instead. */
   .hero h1{font-size:26px !important}
+  .p-cap span{ display: flex !important; justify-content: center !important;}
   /* A snap rail, not four stacked cards. Stacked, comparing the packs means
      scrolling nearly four screens and holding the last price in your head;
      side by side you can swipe them against each other, which is the decision
@@ -649,7 +660,7 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 .lr-main{display:grid;grid-template-columns:1.05fr 1fr;gap:24px;align-items:stretch}
 
 /* the loupe — the frame currently being looked at */
-.loupe{position:relative;border-radius:6px;overflow:hidden;background:#1b1915;aspect-ratio:3/4;max-height:560px}
+.loupe{position:relative;border-radius:6px;overflow:hidden;background:#1b1915;aspect-ratio:3/4;max-height:560px; width: 78%;}
 .loupe .media{position:absolute;inset:0;animation:settle .3s cubic-bezier(.2,.8,.2,1)}
 .loupe .media img,.loupe .media svg{width:100%;height:100%;object-fit:cover;display:block}
 @keyframes settle{from{transform:scale(1.035);opacity:.55}to{transform:none;opacity:1}}
@@ -666,13 +677,17 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 .loupe .bar{position:absolute;left:0;bottom:0;height:3px;background:var(--flame);z-index:3;width:0%}
 
 /* the matrix — rows are models, columns are setups */
-.mapside{display:flex;flex-direction:column;gap:14px;min-width:0}
-.mm-cols{display:grid;grid-template-columns:86px repeat(6,1fr);gap:6px}
-.mm-cols .ch{font-family:var(--mono);font-size:.5rem;letter-spacing:.1em;color:#8f8676;text-transform:uppercase;text-align:center;overflow:hidden}
-.mm-row{display:grid;grid-template-columns:86px repeat(6,1fr);gap:6px;margin-top:6px}
-.mm-name{display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0}
-.mm-name .nm{font-family:var(--mono);font-size:.56rem;letter-spacing:.1em;color:#EDE7DA}
-.mm-name .org{font-family:var(--mono);font-size:.48rem;letter-spacing:.1em;color:#8f8676}
+/* Capped, and pushed to the right of its column.
+   The label track used to take 86px of this width; with the names gone that
+   went straight into the six thumbnails, which is why they grew. This puts a
+   ceiling on the matrix instead of letting it spread — five rows of 3:4 cells
+   is also what sets the panel's height, so capping the width caps both. */
+.mapside{display:flex;flex-direction:column;gap:14px;min-width:0;
+  width:100%;max-width:486px;justify-self:end;}
+/* Six even columns, no label track — the header row and the per-row model names
+   are gone (see landing.js), so the grid is the photographs and nothing else. */
+.mm-row{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-top:6px}
+.mm-row:first-child{margin-top:0}
 .mm-cell{aspect-ratio:3/4;border-radius:3px;overflow:hidden;position:relative;background:#1b1915;cursor:pointer;
   outline:2px solid transparent;outline-offset:-2px;transition:outline-color .2s,opacity .2s;opacity:.6}
 .mm-cell img,.mm-cell svg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -692,7 +707,9 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
     margin-top: 8px !important;
   }
   .lr-main{grid-template-columns:1fr}
-  .loupe{max-height:none}
+  .loupe{max-height:none; width: 100%;}
+  /* No .mapside rule here on purpose — the matrix is hidden outright below this
+     width further down the file, so anything set on it would never apply. */
 }
 @media(prefers-reduced-motion:reduce){
   .loupe .media{animation:none}
@@ -761,10 +778,10 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
    same left edge. */
 .hiw-garments{display:flex;flex-wrap:wrap;gap:8px}
 .gcard{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;cursor:pointer;
-  width:88px;background:var(--bg2);border:1px solid var(--line-soft);border-radius:12px;padding:8px;
-  color:var(--text);font-family:inherit;transition:border-color .25s,background .25s,transform .2s}
+  width:88px;background:transparent;border:1px solid white;border-radius:12px;padding:8px;
+  color:white;font-family:inherit;transition:border-color .25s,background .25s,transform .2s}
 .gcard:hover{border-color:var(--text);transform:translateY(-1px)}
-.gcard.on{border-color:var(--flame);background:color-mix(in srgb,var(--flame) 8%,var(--card))}
+.gcard.on{background:transparent; color: white;}
 .gcard .gt{width:38px;height:38px;border-radius:8px;overflow:hidden;flex:0 0 auto;background:var(--card)}
 .gcard .gt img,.gcard .gt svg{width:100%;height:100%;object-fit:cover;display:block}
 .gcard .gm{min-width:0;max-width:100%}
@@ -915,7 +932,7 @@ body.mnav-open .mnav-sheet{transform:none}
 .create-head{text-align:center;max-width:720px;margin:0 auto}
 .create-head .sec-p{margin-left:auto;margin-right:auto}
 /* `relative` so the round advance control can be pinned to the row's edge. */
-.create-row{position:relative;display:flex;gap:14px;margin-top:44px;height:min(45svh,600px)}
+.create-row{position:relative;display:flex;gap:14px;margin-top:24px;height:min(45svh,600px)}
 .cnext{position:absolute;right:-19px;top:50%;transform:translateY(-50%);z-index:4;
   width:44px;height:44px;border-radius:50%;border:0;cursor:pointer;
   background:var(--flame);color:#fff;display:flex;align-items:center;justify-content:center;
@@ -933,7 +950,7 @@ body.mnav-open .mnav-sheet{transform:none}
 /* The card is a fixed window; the image behind it is what moves. Scaling the
    picture instead of the box means the frame's corners and its neighbours stay
    put, and the type layered over it is never resampled. */
-.cpanel img,.cpanel svg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 30%;
+.cpanel img,.cpanel svg,.cpanel video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 30%;
   /* Both anchors point at the top, because two separate things crop the head.
 
      `transform-origin` handles the scale(1.08): about the centre it grows the
@@ -949,7 +966,7 @@ body.mnav-open .mnav-sheet{transform:none}
   transform-origin:50% 0;
   transition:transform .7s cubic-bezier(.22,.9,.3,1),
              object-position .7s cubic-bezier(.22,.9,.3,1)}
-.cpanel.on img,.cpanel.on svg{transform:scale(1.08);object-position:50% 20%}
+.cpanel.on img,.cpanel.on svg,.cpanel.on video{transform:scale(1.08);object-position:50% 6%}
 /* keeps the type legible whatever the photograph is doing underneath it */
 .cpanel::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(transparent 42%,rgba(10,9,8,.82))}
@@ -979,7 +996,11 @@ body.mnav-open .mnav-sheet{transform:none}
      inside it is what actually sticks. Above this breakpoint both are plain
      wrappers with no height and no stickiness. */
   .create-pin{position:sticky;top:0;display:flex;align-items:center}
-  .create-row{flex-direction:column;height:auto;gap:12px;margin-top:0;width:100%}
+  .create-row{flex-direction:column;height:auto;gap:12px;margin-top:14px;width:100%}
+  .mapside{display: none;}
+  .lr-box{margin-top: 10px;}
+  .sheet-foot{justify-content: center;}
+  
   /* Sized so the whole stack — one open card plus three closed — fits inside
      the pinned viewport. A row taller than the pin would have its last card
      cut off with no way to scroll to it, since scrolling is what advances the
@@ -992,14 +1013,14 @@ body.mnav-open .mnav-sheet{transform:none}
   .cnext{display:none}              /* nothing to advance to — all four show */
 }
 @media(prefers-reduced-motion:reduce){
-  .cpanel,.cpanel img,.cpanel svg,.cpanel .cname,.cpanel .cdetail{transition:none}
+  .cpanel,.cpanel img,.cpanel svg,.cpanel video,.cpanel .cname,.cpanel .cdetail{transition:none}
 }
 
 /* ---------- "built for brands at every stage" category carousel ---------- */
 /* Pills pick a category; the deck fans three cards with the chosen one upright
    in the middle. The tilt on the outer two is what stops this reading as three
    equal cards in a row — they are clearly waiting their turn. */
-.cats{padding:50px 0 0;overflow:hidden}
+.cats{overflow:hidden}
 .cats-head{text-align:center;max-width:680px;margin:0 auto}
 .cats-head .sec-p{margin:14px auto 0}
 .cats-pills{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:30px}
@@ -1089,11 +1110,11 @@ body.mnav-open .mnav-sheet{transform:none}
   background:radial-gradient(ellipse 74% 62% at 50% 58%,color-mix(in srgb,var(--genie) 16%,transparent),transparent 70%),
              rgba(8,7,6,.66)}
 
-.genie-copy{position:relative;z-index:1;text-align:center;max-width:58ch;will-change:opacity,transform}
+.genie-copy{position:relative;z-index:1;text-align:center;will-change:opacity,transform}
 .genie-copy .eyebrow{color:var(--genie)}
 .genie-copy h2{font-size:var(--h2);margin-top:14px}
 .genie-copy h2 em{font-style:italic;color:var(--genie)}
-.genie-copy p{color:var(--dim);font-size:1.02rem;margin:16px auto 0;max-width:46ch}
+.genie-copy p{color:var(--dim);font-size:1.02rem;margin:16px auto 0;max-width:76ch}
 .genie-hint{display:inline-block;margin-top:20px;font-family:var(--mono);font-size:.64rem;
   letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
 .genie-hint .arw{color:var(--genie)}
@@ -1192,6 +1213,9 @@ body.mnav-open .mnav-sheet{transform:none}
   /* The rewritten brief is the point of the panel; the one-line prompt above
      it is not worth the two lines it wraps to at this width. */
   .gm-foot .gm-line:not(.gm-out){display:none}
+  .cats{
+    padding-top:20px;
+  }
 }
 @media(prefers-reduced-motion:reduce){
   .gt-in,.gt-orb::before{animation:none}
@@ -1202,11 +1226,11 @@ body.mnav-open .mnav-sheet{transform:none}
    on how wide the card actually rendered, so it cannot be a static list of
    rotations. Everything here is the part that does not depend on that: the
    frame, the hover, and the two shapes the row takes. */
-.reels{padding:50px 0 90px;overflow:hidden}
+.reels{padding:50px 0 0px;overflow:hidden}
 .reels-head{text-align:center;max-width:760px}
 .reels-head h2{font-size:var(--h2);margin-top:16px}
 .reels-head h2 em{font-style:italic;color:var(--flame)}
-.reels-head .sec-p{margin:18px auto 0;max-width:52ch}
+.reels-head .sec-p{margin:18px auto 0;max-width:86ch}
 
 /* The frame stays light in the dark theme: these are meant to read as prints
    laid out on a table, and a near-black border round a photo on a near-black
@@ -1253,17 +1277,31 @@ body.mnav-open .mnav-sheet{transform:none}
 /* The caption for the hovered frame, in the gap the arc leaves beneath it.
    A fixed min-height rather than an auto one: the text swaps on every hover,
    and a box that resized with it would walk the hint below up and down. */
-.reel-cap{min-height:78px;margin-top:-45px;text-align:center;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px}
-.reel-cap b{font-family:var(--serif);font-size:clamp(1.15rem,2vw,1.6rem);
-  font-weight:500;color:var(--text);line-height:1.15}
-.reel-cap span{font-family:var(--mono);font-size:.62rem;letter-spacing:.2em;
-  text-transform:uppercase;color:var(--muted)}
-/* Replayed by removing and re-adding the class, so every swap animates —
-   a transition would only fire on the first one. */
-.reel-cap.swap b,.reel-cap.swap span{animation:capIn .42s cubic-bezier(.2,.8,.2,1) both}
-.reel-cap.swap span{animation-delay:.05s}
-@keyframes capIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+/* The caption, on the frame it describes.
+   Sat below the arc it could only ever name one of eleven fanned cards, and
+   the one it named was whichever you happened to be pointing at — so the row
+   had a line of text that changed under you as you moved. On the card it is
+   attached to the thing it is about, and every frame carries its own. */
+.reel-cap-in{position:absolute;left:0;right:0;bottom:0;z-index:3;
+  padding:26px 12px 11px;text-align:center;pointer-events:none;
+  /* Reaching well above the text so it fades into the picture rather than
+     ending on a visible edge. */
+  background:linear-gradient(transparent,rgba(10,9,8,.55) 38%,rgba(10,9,8,.92));
+  opacity:0;transform:translateY(8px);
+  transition:opacity .32s cubic-bezier(.2,.8,.2,1),transform .32s cubic-bezier(.2,.8,.2,1)}
+.reel-cap-in b{display:block;font-family:var(--serif);font-weight:500;
+  font-size:1.02rem;line-height:1.2;color:#fff}
+.reel-cap-in i{display:block;margin-top:4px;font-style:normal;font-family:var(--mono);
+  font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.72);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Shown on the card the row has raised — hover, keyboard focus, or the frame
+   the tour is playing. Exactly the three states that already straighten a card
+   out of the arc, so the caption arrives with the card rather than on its own
+   separate rule. */
+.reel:hover .reel-cap-in,
+.reel:focus-within .reel-cap-in,
+.reel.playing .reel-cap-in{opacity:1;transform:none}
 
 .reel-hint{margin-top:clamp(26px,4vw,44px);text-align:center;font-family:var(--mono);
   font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}

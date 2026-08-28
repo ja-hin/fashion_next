@@ -201,30 +201,6 @@ async function probeChain(base){
   },2600);
 })();
 
-/* rail visuals */
-function fillGrid(id,items){
-  const g=document.getElementById(id);
-  items.forEach((it,i)=>{
-    const d=document.createElement("div");
-    d.appendChild(mkImg(it.img,260,it.p,BACKDROPS[i%BACKDROPS.length]));
-    g.appendChild(d);
-  });
-}
-/* 01 — any pose/backdrop/mood: four different shots */
-fillGrid("vg1",[{img:"extra2",p:"front"},{img:"extra3",p:"hip"},{img:"extra4",p:"walk"},{img:"extra5",p:"close"}]);
-/* 02 — your own AI models, same face across SKUs */
-fillGrid("vg2",[{img:"front",p:"front"},{img:"walk",p:"walk"},{img:"back",p:"back"},{img:"closeup",p:"close"}]);
-/* 03 — custom prompt: typed prompt + resolved shot tags */
-document.getElementById("pv1").innerHTML=`
-  <div class="pline">&gt; golden-hour terrace, side profile, dupatta mid-swirl<span class="pc"></span></div>
-  <div class="parrow">↳ COMPOSED</div>
-  <div class="ptags"><span class="ptag hot">side profile</span><span class="ptag hot">golden hour</span><span class="ptag">terrace bg</span><span class="ptag">fabric in motion</span><span class="ptag">3/4 framing</span></div>`;
-/* 04 — Prompt Genie: plain words in, studio-grade prompt out */
-document.getElementById("pv2").innerHTML=`
-  <div class="pline">you: "festive, rich, wedding-guest vibe"</div>
-  <div class="parrow">↳ GENIE DRAFTS IN 2s</div>
-  <div class="pline genie">&gt; editorial full-body, warm tungsten haze, sandstone arch backdrop, jewellery visible, confident stance, soft rim light<span class="pc"></span></div>`;
-
 /* =============== custom cursor =============== */
 const cur=document.getElementById("cur");
 let cx=innerWidth/2,cy=innerHeight/2,tx=cx,ty=cy;
@@ -253,21 +229,88 @@ const railZone=document.getElementById("railZone");
 const railTrack=document.getElementById("railTrack");
 const railFill=document.getElementById("railFill");
 
-/* Each rail card rises as the track carries it into view. The class goes on
-   from here rather than sitting in the stylesheet so that a page without JS
-   never hides them — nothing is concealed until something can reveal it.
-   IntersectionObserver is honest about the pin's `overflow:hidden`, so a card
-   still parked off the right edge reports as not intersecting and waits its
-   turn; unobserving makes it a one-shot, so the rail scrubbed backwards does
-   not replay eight animations. */
-if(railTrack){
-  railTrack.classList.add("reveal");
+/* =============== the platform rail: eight capability cards =============== */
+/* Ported from the platform-panel reference. Built here rather than in the page
+ * because each card's imagery is resolved at runtime: a real render at
+ * /webassets/platform/cN if one has been dropped in, the reference's Unsplash
+ * placeholder while it has not, and a drawn frame if even that is unreachable.
+ * The horizontal travel is scrubbed from scroll further down and is unchanged.
+ */
+(function platformRail(){
+  const track=document.getElementById("railTrack");
+  if(!track)return;                         /* only the marketing page has one */
+
+  const CARDS=[
+    {t:'Any input, <b>auto-detected</b>',
+     b:'Flat-lay, packshot or a photo of someone wearing it. Category and gender detected the moment you upload.',
+     img:"photo-1521572163474-6864f9cf17ab", bg:"#54452f", pose:"full"},
+    {t:'Full <b>art direction</b>',
+     b:'Pose, backdrop, lighting, framing and mood. Every frame answers to you.',
+     img:"photo-1483985988355-763728e1935b", bg:"#40506b", pose:"full"},
+    {t:'<b>Marketplace-ready</b> framing',
+     b:'Crops and compositions built for Amazon, Flipkart, Myntra and Meesho listings.',
+     img:"photo-1515886657613-9f3515b0c78f", bg:"#3c4a41", pose:"full"},
+    {t:'Shoot <b>continuity</b>',
+     b:'Pause today, reshoot next season. Same model, same light, full continuity, no re-booking.',
+     img:"photo-1529626455594-4ff0802cfb7e", bg:"#3f3f52", pose:"close"},
+    {t:'Native <b>2K &amp; 4K</b>',
+     b:'From product page to billboard, the same shoot scales. True native resolution, not upscaled.',
+     img:"photo-1496747611176-843222e1e57c", bg:"#5d4a5a", pose:"full"},
+    {t:'<b>100% commercial</b> rights',
+     b:'Every image is yours, everywhere, forever. No licensing windows, no renewals, no usage fees.',
+     img:"photo-1509631179647-0177331693ae", bg:"#7a5a41", pose:"full"},
+    {t:'Prepaid wallet, <b>GST invoicing</b>',
+     b:'No subscription, no seats, no minimum SKUs. Load a wallet in rupees and shoot when you like.',
+     img:"photo-1539109136881-3be0616acf4b", bg:"#54452f", pose:"full"},
+    {t:'Your designs <b>stay yours</b>',
+     b:"Your uploads power your shoots and nothing else. Never shared, never resold, handled under India's DPDP law.",
+     img:"photo-1583391733956-6c78276477e2", bg:"#40506b", pose:"full"}
+  ];
+
+  const skin="#C98F63",hair="#1E1712",gar="#C24418";
+  const fallSVG=(bg,pose)=>`<svg viewBox="0 0 120 90" preserveAspectRatio="xMidYMid slice">`+
+    `<rect width="120" height="90" fill="${bg}"/>`+
+    `<circle cx="60" cy="26" r="9" fill="${skin}"/><path d="M51,24 a9,9 0 0 1 18,0 z" fill="${hair}"/>`+
+    (pose==="close"
+      ? `<circle cx="60" cy="52" r="22" fill="${skin}"/><path d="M38 52 a22 22 0 0 1 44 0 z" fill="${hair}"/>`
+      : `<path d="M51 37 q9 -5 18 0 l5 38 q-14 6 -28 0 z" fill="${gar}"/>`)+
+    `</svg>`;
+
+  CARDS.forEach(async (c,i)=>{
+    const card=document.createElement("article");
+    card.className="rcard";
+    /* Appended before the imagery resolves so the eight keep the order they are
+       written in — awaiting first would let whichever image loads fastest land
+       first, and the numbers would not match the copy. */
+    track.appendChild(card);
+
+    let media=await probeChain(ASSET_DIR+"platform/c"+(i+1));
+    if(!media)media=await probe(U(c.img,640));
+    const plain=c.t.replace(/<[^>]+>/g,"");
+    const inner=media
+      ? `<img src="${media}" alt="Faishon Studio — ${plain}" loading="${i>1?"lazy":"eager"}"/>`
+      : fallSVG(c.bg,c.pose);
+
+    card.innerHTML=
+      `<div class="pimg">${inner}<span class="num">${String(i+1).padStart(2,"0")}</span></div>`+
+      `<div class="pt"><h3>${c.t}</h3><p>${c.b}</p></div>`;
+  });
+
+  /* Each card rises as the track carries it into view.
+     Wired HERE, after the loop, and not at module scope: the cards are built by
+     this function, so an observer set up earlier in the file would query an
+     empty track, observe nothing, and leave every card at the opacity:0 that
+     `.reveal` applies — an invisible rail.
+
+     Unobserving makes it one-shot, so scrubbing the rail backwards does not
+     replay eight animations. */
+  track.classList.add("reveal");
   const rio=new IntersectionObserver(es=>{es.forEach(e=>{
     if(!e.isIntersecting)return;
     e.target.classList.add("in");rio.unobserve(e.target);
   });},{threshold:.12});
-  railTrack.querySelectorAll(".rcard").forEach(el=>rio.observe(el));
-}
+  track.querySelectorAll(".rcard").forEach(el=>rio.observe(el));
+})();
 
 function zoneProgress(el){
   const r=el.getBoundingClientRect();
@@ -518,17 +561,27 @@ const STRIP_ITEMS=[
   /* ---- the matrix ---- */
   const mmCols=document.getElementById("mmCols"),mmRows=document.getElementById("mmRows");
   const cells=[];
-  mmCols.innerHTML=`<div></div>`+COLS.map(c=>`<div class="ch">${c.sh}</div>`).join("");
+
+  /* No column headers and no row labels: the grid is thirty photographs, and
+     naming every model and every backdrop around the edges asks the eye to read
+     a table before it looks at any of them. The loupe still names whichever
+     frame is playing, which is the only one being looked at.
+
+     The header element stays in the markup and is removed HERE rather than
+     deleted from the page. Guarded, this works whether or not it exists — so
+     the two files cannot fall out of step and take the whole script down with
+     them, which is exactly how this section broke once already. */
+  if(mmCols)mmCols.remove();
+
   MODELS.forEach((m,ri)=>{
     const row=document.createElement("div");row.className="mm-row";
-    row.innerHTML=`<div class="mm-name"><span class="nm">${m.n.toUpperCase()}</span><span class="org">${m.o}</span></div>`;
     COLS.forEach((_,ci)=>{
       const idx=ri*M+ci;
       const cell=document.createElement("div");cell.className="mm-cell";
       cell.addEventListener("click",()=>{show(idx);restartTimer();});
       row.appendChild(cell);cells.push(cell);
     });
-    mmRows.appendChild(row);
+    if(mmRows)mmRows.appendChild(row);
   });
 
   function paintCell(idx){
@@ -674,7 +727,6 @@ const STRIP_ITEMS=[
       const st=sets[i];
       thumbs.forEach((t,k)=>{t.classList.toggle("on",k===i);t.style.setProperty("--p",0);});
       topLbl.textContent=`CONTACT SHEET · SET ${String(i+1).padStart(2,"0")} / ${String(sets.length).padStart(2,"0")}`;
-      footLbl.textContent=`${1+st.outs.filter(Boolean).length} FRAMES · SAME MODEL · ~00:02:11`;
 
       framesBox.innerHTML="";
       /* frame 00 is the upload — the thing everything else came from */
@@ -1532,11 +1584,29 @@ const STRIP_ITEMS=[
   const arc=document.getElementById("reelArc");
   if(!arc)return;                           /* only the marketing page has one */
 
-  const REEL_DIR=ASSET_DIR+"reels/";
-  /* Fallback stills, in shoot order, for slots with no poster of their own. */
-  const FALLBACK=["m4p1","m4p2","m4p3","m4p4","m4p5","m4p6","m1p1","m1p2","m1p3"];
-  const N=FALLBACK.length;
-  const STEP=7.4;                           /* degrees between neighbours */
+  /* The clips, in the order they fan. Real files in /VDOs, named for the preset
+     that produced them — `file` is the name on disk and `t` is what the caption
+     shows, so a rename is one string, not two places to keep in step. */
+  const REEL_DIR="/VDOs/";
+  const CLIPS=[
+    {file:"Studio PDP.mp4",     t:"Studio PDP",     s:"Clean seamless backdrop · slow turns · detail push-in"},
+    {file:"Editorial.mp4",      t:"Editorial",      s:"Fast cinematic cuts · full-body to detail"},
+    {file:"On Location-2.mp4",  t:"On location",    s:"Sunlit street · natural relaxed motion"},
+    {file:"Detail  Fabric.mp4", t:"Detail / fabric",s:"Macro on texture, drape and print"},
+    {file:"Turn Table.mp4",     t:"Turntable / 360",s:"Clean product-forward rotation"},
+    {file:"Runway.mp4",         t:"Runway",         s:"Confident stride to camera · dramatic light"},
+    {file:"Insta Reel.mp4",     t:"Instagram reel", s:"Trendy rapid cuts · social-first vertical"},
+    {file:"Slow-mo Glam.mp4",   t:"Slow-mo glam",   s:"Luxurious slow motion · fabric and hair flow"},
+    {file:"Golden Hour-2.mp4",  t:"Golden hour",    s:"Warm sunset backlight · aspirational"},
+    {file:"Street Style.mp4",   t:"Street style",   s:"Edgy urban · dynamic and cool"},
+    {file:"Editorial-2.mp4",    t:"Editorial, take two", s:"The same brief, a second read"}
+  ];
+  const N=CLIPS.length;
+  /* Derived, not fixed: the fan should occupy the same arc whatever the clip
+     count is. A constant per-card step widened the whole spread every time a
+     file was added, and the outer cards walked off the screen. */
+  const SPREAD=59.2;                        /* total degrees, end to end */
+  const STEP=SPREAD/Math.max(1,N-1);
 
   const wide=matchMedia("(min-width:861px)");
   /* Wording only — NOT a gate on the listeners. `(hover:hover)` reads false on
@@ -1549,54 +1619,46 @@ const STRIP_ITEMS=[
                                           :"Tap a frame to play it";};
   say(canHover);
 
-  /* One line per frame, in the same order as FALLBACK — the copy that fills
-     the space under the arc while a card is hovered. The resting entry is what
-     shows when nothing is, so the block is never blank and never collapses. */
-  const REST={t:"Nine frames, one shoot",s:"Every still here is its own clip"};
-  const CAPS=[
-    {t:"The approach",     s:"Frame 01 · walking into the light"},
-    {t:"Three-quarter turn",s:"Frame 02 · shoulders open to camera"},
-    {t:"Full stride",      s:"Frame 03 · the skirt caught mid-step"},
-    {t:"Profile",          s:"Frame 04 · chin lifted, eyes off camera"},
-    {t:"Fabric detail",    s:"Frame 05 · the print at close range"},
-    {t:"Texture pass",     s:"Frame 06 · weave, drape and sheen"},
-    {t:"Held pose",        s:"Frame 07 · hat brim, hands easy"},
-    {t:"Back view",        s:"Frame 08 · the shape from behind"},
-    {t:"Last look",        s:"Frame 09 · one beat before the cut"}
-  ];
-
-  const cap=document.getElementById("reelCap");
-  let capT=null,capS=null;
-  if(cap){
-    cap.innerHTML="<b></b><span></span>";
-    capT=cap.querySelector("b");capS=cap.querySelector("span");
-  }
-  /* Passing null means "nothing hovered" and puts the resting line back. */
-  function setCap(c){
-    if(!cap)return;
-    const d=(c&&CAPS[c.i])||REST;
-    if(capT.textContent===d.t)return;         /* same card — don't replay */
-    capT.textContent=d.t;capS.textContent=d.s;
-    cap.classList.remove("swap");
-    void cap.offsetWidth;                     /* reflow, so the animation restarts */
-    cap.classList.add("swap");
-  }
-  setCap(null);
 
   /* ---- the cards ------------------------------------------------------ */
-  const cards=FALLBACK.map((slot,i)=>{
+  const cards=CLIPS.map((clip,i)=>{
     const card=document.createElement("div");
     card.className="reel";
 
     const box=document.createElement("button");
     box.type="button";box.className="reel-in";box.dataset.c="";
-    box.setAttribute("aria-label",`Play clip ${i+1} of ${N}`);
-    box.appendChild(mkImg(slot,420,"front",BACKDROPS[i%BACKDROPS.length],
-      `AI fashion video still — frame ${i+1} of a generated shoot`));
+    box.setAttribute("aria-label",`Play ${clip.t} — clip ${i+1} of ${N}`);
+
+    /* The clip IS the card, from the first paint — there is no still underneath
+       to swap out. `#t=0.1` is the poster: it makes the browser seek to a tenth
+       of a second and paint THAT frame, so what you see at rest is the video's
+       own opening rather than a black box or a separate thumbnail that has to
+       be kept in step with the file. `preload="metadata"` is what keeps eleven
+       of these from pulling 30 MB on load — enough to draw the frame, no more. */
+    const v=document.createElement("video");
+    v.src=encodeURI(REEL_DIR+clip.file)+"#t=0.1";
+    v.loop=true;v.muted=true;v.playsInline=true;v.preload="metadata";
+    v.setAttribute("playsinline","");
+    box.appendChild(v);
+
+    const badge=document.createElement("span");
+    badge.className="reel-play";
+    box.appendChild(badge);
+
+    /* The caption rides on the frame it describes rather than sitting in a
+       shared line under the arc. With eleven cards fanned out, a single line
+       below could only ever name one of them — on the card, every frame says
+       what it is the moment you reach it. */
+    const cap=document.createElement("span");
+    cap.className="reel-cap-in";
+    cap.innerHTML=`<b></b><i></i>`;
+    cap.querySelector("b").textContent=clip.t;
+    cap.querySelector("i").textContent=`Clip ${String(i+1).padStart(2,"0")} · ${clip.s}`;
+    box.appendChild(cap);
 
     card.appendChild(box);
     arc.appendChild(card);
-    return {card,box,i,video:null,start:0};
+    return {card,box,i,video:v,start:0};
   });
 
   /* ---- the arc -------------------------------------------------------- */
@@ -1650,59 +1712,6 @@ const STRIP_ITEMS=[
     c.video.play().catch(()=>{});            /* a blocked autoplay is not an error */
   }
 
-  /* The clip replaces the still only once there is one to play, so a slot with
-     no file keeps its frame and never shows a dead player. */
-  async function attach(c,i){
-    const playable=url=>new Promise(done=>{
-      const v=document.createElement("video");
-      v.preload="metadata";v.muted=true;
-      v.onloadedmetadata=()=>done(true);v.onerror=()=>done(false);
-      v.src=url;
-    });
-
-    let src=null,shared=false;
-    for(const e of ["mp4","webm"]){
-      const url=REEL_DIR+"r"+(i+1)+"."+e;
-      if(await playable(url)){src=url;break;}
-    }
-    if(!src)for(const e of ["mp4","webm"]){
-      const url=REEL_DIR+"demo."+e;
-      if(await playable(url)){src=url;shared=true;break;}
-    }
-    if(!src)return;
-
-    const v=document.createElement("video");
-    v.src=src;v.loop=true;v.muted=true;v.playsInline=true;
-    /* Own clip: nothing loads until it is asked for. Shared clip: the metadata
-       has to be in hand to know where this card's slice starts, and all nine
-       ask for the same URL, so it costs one fetch. */
-    v.preload=shared?"metadata":"none";
-    v.setAttribute("playsinline","");
-
-    /* Nine cards on one file would otherwise be nine copies of the same
-       second. Each takes its own slice of the clip instead, which is what the
-       copy above the fan promises: one frame in time, card by card. */
-    if(shared)v.addEventListener("loadedmetadata",()=>{
-      if(!isFinite(v.duration))return;
-      c.start=v.duration*i/N;
-      if(v.paused)v.currentTime=c.start;
-    },{once:true});
-    const poster=await probeChain(REEL_DIR+"r"+(i+1));
-    if(poster)v.poster=poster;
-    else{
-      /* No poster of its own: hold the still that is already on screen, so the
-         swap to the clip does not flash an empty black box. */
-      const img=c.box.querySelector("img");
-      if(img)v.poster=img.currentSrc||img.src;
-    }
-
-    c.box.textContent="";
-    c.box.appendChild(v);
-    const badge=document.createElement("span");
-    badge.className="reel-play";
-    c.box.appendChild(badge);
-    c.video=v;
-  }
 
   cards.forEach(c=>{
     /* A tap fires pointerenter and then click, so without this the tap would
@@ -1716,18 +1725,16 @@ const STRIP_ITEMS=[
       if(e.pointerType==="mouse"&&!canHover){canHover=true;say(true);}
       else if(e.pointerType==="touch"&&canHover){canHover=false;say(false);}
       entered=e.pointerType!=="mouse";
-      setCap(c);start(c);
+      start(c);
     });
-    c.card.addEventListener("pointerleave",()=>{setCap(null);stop(c);});
+    c.card.addEventListener("pointerleave",()=>{stop(c);});
 
     /* Keyboard reaches the same thing the pointer does. */
-    c.box.addEventListener("focus",()=>{setCap(c);start(c);});
-    c.box.addEventListener("blur",()=>{setCap(null);stop(c);});
+    c.box.addEventListener("focus",()=>{start(c);});
+    c.box.addEventListener("blur",()=>{stop(c);});
 
-    /* Caption first and unconditionally: a slot with no clip attached still
-       has something to say. */
+    /* Caption first: it is free and instant, where playback may be refused. */
     c.box.addEventListener("click",()=>{
-      setCap(c);
       tourAt=c.i;                             /* the tour carries on from here */
       if(!c.video)return;
       if(entered){entered=false;return;}      /* the tap already started it */
@@ -1758,7 +1765,7 @@ const STRIP_ITEMS=[
   function show(i){
     const c=cards[i];
     if(!c)return;
-    tourAt=i;setCap(c);start(c);centre(c);
+    tourAt=i;start(c);centre(c);
   }
 
   /* Skips slots that never got a clip: a card with nothing to play would sit
@@ -1773,9 +1780,9 @@ const STRIP_ITEMS=[
 
   function step(){
     const i=nextIdx();
-    /* Nothing attached yet — the clips probe asynchronously, so wait rather
-       than giving up and leaving the row frozen on its stills forever. */
-    if(i<0){tourT=setTimeout(step,600);return;}
+    /* Every card has its clip from the first paint now, so this only guards
+       the degenerate case of an empty list. */
+    if(i<0)return;
     show(i);
     tourT=setTimeout(step,DWELL);
   }
@@ -1832,7 +1839,6 @@ const STRIP_ITEMS=[
     });
     layout();
     setTimeout(()=>cards.forEach(({card})=>{card.style.transitionDelay="";}),1200);
-    cards.forEach((c,i)=>attach(c,i));
   },{threshold:.15}).observe(arc);
 
   /* Nothing plays behind you: the tour halts with the clip when the row leaves
@@ -1840,7 +1846,7 @@ const STRIP_ITEMS=[
      to the section neither finds it frozen nor restarts it from the top. */
   new IntersectionObserver(es=>{
     if(es[0].isIntersecting){tourPlay();return;}
-    tourPause();stop(playing);setCap(null);
+    tourPause();stop(playing);
   },{threshold:0}).observe(arc);
 
   let rt;
