@@ -228,6 +228,9 @@ const cntX=document.getElementById("cntX");
 const railZone=document.getElementById("railZone");
 const railTrack=document.getElementById("railTrack");
 const railFill=document.getElementById("railFill");
+const priceZone=document.getElementById("priceZone");
+const priceTrack=document.getElementById("priceTrack");
+const priceFill=document.getElementById("priceFill");
 
 /* =============== the platform rail: eight capability cards =============== */
 /* Ported from the platform-panel reference. Built here rather than in the page
@@ -292,7 +295,7 @@ const railFill=document.getElementById("railFill");
       : fallSVG(c.bg,c.pose);
 
     card.innerHTML=
-      `<div class="pimg">${inner}<span class="num">${String(i+1).padStart(2,"0")}</span></div>`+
+      `<div class="pimg">${inner}</div>`+
       `<div class="pt"><h3>${c.t}</h3><p>${c.b}</p></div>`;
   });
 
@@ -450,16 +453,136 @@ const railFill=document.getElementById("railFill");
     .observe(box);
 })();
 
+/* =============== in-page anchor scrolling =============== */
+/* `scroll-behavior:smooth` on the root is not an option here: the comment in
+ * landing.css explains that the root has to stay untouched or every sticky pin
+ * on the page dies. So the smoothing is done per click instead, which also
+ * lets a jump be instant under prefers-reduced-motion.
+ *
+ * Delegated from the document so it covers the header, the mobile sheet and
+ * the footer without three sets of listeners — and so a link added later works
+ * without wiring.
+ */
+addEventListener("click",e=>{
+  const a=e.target instanceof Element?e.target.closest('a[href^="#"]'):null;
+  if(!a)return;
+  const id=a.getAttribute("href").slice(1);
+  if(!id)return;
+  const target=document.getElementById(id);
+  if(!target)return;                        /* let the browser handle a dead one */
+  e.preventDefault();
+  target.scrollIntoView({behavior:reduce?"auto":"smooth",block:"start"});
+  /* The address bar should still show where you are, but without a second jump
+     on top of the smooth one. */
+  history.replaceState(null,"","#"+id);
+  /* A tap in the mobile sheet has to close it, or the destination scrolls in
+     behind a full-screen menu. */
+  document.body.classList.remove("mnav-open");
+},{passive:false});
+
 function zoneProgress(el){
   const r=el.getBoundingClientRect();
   const total=el.offsetHeight-innerHeight;
   return clamp(-r.top/Math.max(1,total),0,1);
 }
-function setRailHeight(){
-  const extra=railTrack.scrollWidth-innerWidth;
-  railZone.style.height=(innerHeight+Math.max(0,extra)+innerHeight*0.4)+"px";
+/* ---- a row you scroll sideways -------------------------------------- */
+/* Two sections use this: the feature rail and the pricing packs. The row's
+ * position is a function of page scroll — the pinned zone is made as tall as
+ * the track is wide, and zoneProgress maps one onto the other.
+ *
+ * So a drag does NOT write its own transform. It scrolls the page by the
+ * equivalent amount and lets the frame loop place the cards. That is the whole
+ * trick: anything that moved the track directly would be overwritten on the
+ * next frame, and releasing it would snap the row back to wherever the scroll
+ * happened to be. Going through scroll means there is one source of truth, so
+ * hand and wheel can never disagree.
+ */
+function scrollRail(zone,track,fill,tail){
+  if(!zone||!track)return null;
+  const pin=track.parentElement;
+  if(!pin)return null;
+  /* Below this the row is effectively already on screen, and pinning a screen
+     and a half of scroll to move it forty pixels reads as the page having
+     jammed. Treated as no travel at all. */
+  const MIN_TRAVEL=160;
+  const travel=()=>{const x=track.scrollWidth-innerWidth;return x>MIN_TRAVEL?x:0;};
+
+  function layout(){
+    const extra=travel();
+    /* Nothing overflows — a wide screen fits every card — so there is nothing
+       to scrub. The zone stops being taller than the screen, which leaves the
+       sticky pin no range to hold in, and the row is just a centred row. */
+    zone.classList.toggle("no-travel",!extra);
+    zone.style.height=extra?(innerHeight+extra+innerHeight*(tail||0.4))+"px":"";
+    if(!extra){track.style.transform="";if(fill)fill.style.width="0%";}
+  }
+  function frame(){
+    const extra=travel();
+    if(!extra)return;
+    const p=zoneProgress(zone);
+    track.style.transform=`translateX(${-extra*p}px)`;
+    if(fill)fill.style.width=(p*100)+"%";
+  }
+
+  let startX=0,startY=0,fromScroll=0,ratio=1,axis=null,dragging=false;
+
+  pin.addEventListener("pointerdown",e=>{
+    if(e.pointerType==="mouse"&&e.button!==0)return;
+    const extra=travel();
+    if(!extra)return;                       /* nothing to travel */
+    /* How much page-scroll equals one pixel of sideways travel. Read per drag
+       rather than cached: both terms change with the viewport. */
+    ratio=(zone.offsetHeight-innerHeight)/extra;
+    startX=e.clientX;startY=e.clientY;fromScroll=scrollY;
+    axis=null;dragging=true;
+    track.classList.add("dragging");
+    try{pin.setPointerCapture(e.pointerId);}catch{}
+  });
+
+  pin.addEventListener("pointermove",e=>{
+    if(!dragging)return;
+    const dx=e.clientX-startX, dy=e.clientY-startY;
+
+    /* Axis lock. `touch-action:pan-y` leaves vertical swipes to the browser, so
+       a downward flick scrolls the page natively — and this handler must keep
+       its hands off it, or the page would move twice for one gesture. */
+    if(!axis){
+      if(Math.abs(dx)<6&&Math.abs(dy)<6)return;
+      axis=Math.abs(dx)>Math.abs(dy)?"x":"y";
+    }
+    if(axis!=="x")return;
+
+    e.preventDefault();
+    /* Left drags the row forward, which is the same direction scrolling down
+       takes it — hence the minus. */
+    scrollTo(0,fromScroll-dx*ratio);
+  },{passive:false});
+
+  const end=()=>{
+    if(!dragging)return;
+    dragging=false;axis=null;
+    track.classList.remove("dragging");
+  };
+  pin.addEventListener("pointerup",end);
+  pin.addEventListener("pointercancel",end);
+
+  /* `scrollTo` is exposed so the pricing dots can jump to a card the same way a
+     drag does — by moving the page, never the track. */
+  return {layout,frame,travel,
+    scrollTo(p){
+      const top=zone.getBoundingClientRect().top+scrollY;
+      window.scrollTo({top:top+clamp(p,0,1)*(zone.offsetHeight-innerHeight),
+                       behavior:reduce?"auto":"smooth"});
+    }};
 }
-setRailHeight();addEventListener("resize",setRailHeight);
+
+/* The pricing packs get a shorter tail: four cards, so there is less row to
+   travel and less reason to hold the pin afterwards. */
+const featureRail=scrollRail(railZone,railTrack,railFill,0.4);
+const priceRail=scrollRail(priceZone,priceTrack,priceFill,0.2);
+const RAILS=[featureRail,priceRail].filter(Boolean);
+function layoutRails(){RAILS.forEach(r=>r.layout());}
+layoutRails();addEventListener("resize",layoutRails);
 const fmtIN=n=>n.toLocaleString("en-IN",{maximumFractionDigits:n<100?1:0});
 
 /* ---- the nav gets out of the way ------------------------------------- */
@@ -501,10 +624,7 @@ function tick(){
   barUs.style.height=(220*Math.max(0.06,(25/250)+(1-cp)*0.9))+"px";
   cntX.classList.toggle("on",cp>0.96);
 
-  const rp=zoneProgress(railZone);
-  const extra=railTrack.scrollWidth-innerWidth;
-  railTrack.style.transform=`translateX(${-extra*rp}px)`;
-  railFill.style.width=(rp*100)+"%";
+  RAILS.forEach(r=>r.frame());
 
   cx=lerp(cx,tx,0.22);cy=lerp(cy,ty,0.22);
   cur.style.transform=`translate(${cx-cur.offsetWidth/2}px,${cy-cur.offsetHeight/2}px)`;
@@ -733,8 +853,7 @@ const STRIP_ITEMS=[
   });
 
   /* ---- the loupe ---- */
-  const fno=document.getElementById("fno"),whoNm=document.getElementById("whoNm"),
-        whoSub=document.getElementById("whoSub"),cycleBar=document.getElementById("cycleBar"),
+  const cycleBar=document.getElementById("cycleBar"),
         pauseState=document.getElementById("pauseState");
   const reduceC=matchMedia("(prefers-reduced-motion: reduce)").matches;
   const STEP=reduceC?2200:450;
@@ -742,17 +861,18 @@ const STRIP_ITEMS=[
 
   function show(idx){
     cur=idx;
-    const m=MODELS[Math.floor(idx/M)], col=COLS[idx%M];
     const old=document.getElementById("loupeMedia");
     /* Replaced rather than emptied, so the settle animation restarts each time. */
     const fresh=document.createElement("div");fresh.className="media";fresh.id="loupeMedia";
     fresh.appendChild(comboMedia(idx));
-    old.replaceWith(fresh);
-    fno.textContent=`FRAME ${String(idx+1).padStart(2,"0")} / ${TOTAL}`;
-    whoNm.textContent=m.n;
-    whoSub.textContent=`${m.o} · ${col.b}`;
+    if(old)old.replaceWith(fresh);
+    /* The frame counter, the model's name and the setting line used to be
+       written here. They are gone from the panel — the grid is thirty
+       photographs and the labels were reading them out — so there is nothing
+       left to caption. The progress bar stays: it is the only part that says
+       how far through the set you are. */
     cells.forEach((c,k)=>{c.classList.toggle("on",k===idx);if(k===idx)c.classList.add("seen");});
-    cycleBar.style.width=((idx+1)/TOTAL*100)+"%";
+    if(cycleBar)cycleBar.style.width=((idx+1)/TOTAL*100)+"%";
   }
   function restartTimer(){
     clearInterval(timer);
@@ -1316,15 +1436,15 @@ const STRIP_ITEMS=[
      none, so adding artwork later needs no code change. The deck's geometry is
      entirely N-driven, so the length of this list is free. */
   const CATS=[
-    {slug:"ethnic",     n:"Ethnic wear", pose:"saree",
+    {slug:"ethnic",     n:"Ethnic", pose:"saree",
      p:"Sarees, kurtis and lehengas, drape-true and festive-ready"},
-    {slug:"western",    n:"Western wear", pose:"front",
+    {slug:"western",    n:"Western", pose:"front",
      p:"Dresses, tops and co-ords, shot editorial-clean"},
-    {slug:"streetwear", n:"T-shirts & streetwear", pose:"mfront",
+    {slug:"streetwear", n:"Casual", pose:"mfront",
      p:"Graphic tees and drops with lookbook attitude"},
     {slug:"swimwear",   n:"Swimwear", pose:"hip",
      p:"Resort and swim in sunlit, tasteful frames, marketplace-safe"},
-    {slug:"coord",      n:"Co-ord sets", pose:"walk",
+    {slug:"coord",      n:"Co-ords", pose:"walk",
      p:"Matched top and bottom, shot as one look, print-true across both pieces"},
     {slug:"athleisure", n:"Athleisure", pose:"mwalk",
      p:"Movement-ready poses that show stretch, fit and function"}
@@ -1991,84 +2111,66 @@ const STRIP_ITEMS=[
   addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(()=>{if(opened)layout();},150);});
 })();
 
-/* =============== pricing packs: a slider on the phone =============== */
-/* Below 620px the plans grid becomes a snap rail (see landing.css). This makes
- * it read as a slider rather than as a row that happens to overflow: it moves
- * on its own, and the dots say how many packs there are and which one you are
- * looking at. Everything here is inert above the breakpoint — on the desktop
- * grid there is nothing to scroll and no dots to show. */
-(function planSlider(){
-  const rail=document.querySelector(".plans");
+/* =============== pricing packs: the dots =============== */
+/* The packs now ride the same scroll-scrubbed rail as the feature row, so there
+ * is no autoplay any more: the row moves because the page does, and a carousel
+ * that advanced on its own would have to scroll the page out from under you to
+ * do it. What is left is the readout — which of the four you are looking at —
+ * and a way to jump to one.
+ *
+ * The dots never move the track. They ask the rail to scroll the page to the
+ * position that centres a card, exactly as a drag does, so there is still one
+ * source of truth. Phone only: the desktop has the hairline instead.
+ */
+(function planDots(){
+  const track=document.getElementById("priceTrack");
   const dotBox=document.getElementById("planDots");
-  if(!rail||!dotBox)return;
-  const cards=[...rail.querySelectorAll(".plan")];
+  if(!track||!dotBox||!priceRail)return;
+  const cards=[...track.querySelectorAll(".plan")];
   if(cards.length<2)return;                 /* one pack is not a slider */
 
   const narrow=matchMedia("(max-width:620px)");
-  const STEP=4500;                          /* ms each pack holds */
-  const RESUME=7000;                        /* idle before autoplay resumes */
-  let at=0,timer=null,resume=null,settle=null,selfScroll=0;
+  let at=-1;
+
+  /* Where a card has to sit for its middle to be the middle of the screen,
+     expressed as rail progress. */
+  function progressFor(i){
+    const extra=priceRail.travel();
+    if(!extra)return 0;
+    const c=cards[i];
+    return clamp((c.offsetLeft+c.offsetWidth/2-innerWidth/2)/extra,0,1);
+  }
 
   const dots=cards.map((c,i)=>{
     const b=document.createElement("button");
     b.type="button";b.className="pdot";b.dataset.c="";
     b.setAttribute("aria-label",`Show pack ${i+1} of ${cards.length}`);
-    b.addEventListener("click",()=>{go(i);hold();});
+    b.addEventListener("click",()=>priceRail.scrollTo(progressFor(i)));
     dotBox.appendChild(b);
     return b;
   });
 
+  /* Read off the rail rather than tracked separately — the row can be moved by
+     scroll, by a drag or by a dot, and only its actual position is true. */
   function paint(){
+    if(dotBox.hidden)return;
+    const mid=innerWidth/2, m=new DOMMatrixReadOnly(getComputedStyle(track).transform);
+    let best=0,bd=Infinity;
+    cards.forEach((c,i)=>{
+      const d=Math.abs(c.offsetLeft+c.offsetWidth/2+m.m41-mid);
+      if(d<bd){bd=d;best=i;}
+    });
+    if(best===at)return;
+    at=best;
     dots.forEach((d,i)=>{
       d.classList.toggle("on",i===at);
       d.setAttribute("aria-current",String(i===at));
     });
   }
 
-  function go(i){
-    at=(i+cards.length)%cards.length;
-    const c=cards[at];
-    /* `selfScroll` is what stops our own smooth scroll being read back as the
-       user's and pausing the autoplay we just started. */
-    selfScroll=performance.now()+800;
-    rail.scrollTo({left:Math.max(0,c.offsetLeft-(rail.clientWidth-c.offsetWidth)/2),
-                   behavior:reduce?"auto":"smooth"});
-    paint();
-  }
-
-  function play(){
-    if(reduce||!narrow.matches)return;      /* reduced motion: dots only */
-    clearInterval(timer);
-    timer=setInterval(()=>go(at+1),STEP);
-  }
-  function stop(){clearInterval(timer);}
-  /* A hand on the rail wins. Autoplay stands down and picks up again only
-     after the rail has been left alone — nothing is more annoying than a
-     carousel that pulls away while you are reading it. */
-  function hold(){stop();clearTimeout(resume);resume=setTimeout(play,RESUME);}
-
-  rail.addEventListener("scroll",()=>{
-    if(!narrow.matches||performance.now()<selfScroll)return;
-    hold();
-    clearTimeout(settle);
-    settle=setTimeout(()=>{                 /* settle, then adopt where it landed */
-      const mid=rail.scrollLeft+rail.clientWidth/2;
-      let best=at,bd=Infinity;
-      cards.forEach((c,i)=>{
-        const d=Math.abs(c.offsetLeft+c.offsetWidth/2-mid);
-        if(d<bd){bd=d;best=i;}
-      });
-      at=best;paint();
-    },140);
-  },{passive:true});
-  rail.addEventListener("pointerdown",hold);
-
-  function sync(){
-    dotBox.hidden=!narrow.matches;
-    if(narrow.matches){paint();play();}else{stop();clearTimeout(resume);}
-  }
+  function sync(){dotBox.hidden=!narrow.matches;at=-1;paint();}
   narrow.addEventListener("change",sync);
-  /* Nothing advances behind you. */
-  new IntersectionObserver(es=>{es[0].isIntersecting?play():stop();},{threshold:0}).observe(rail);
+  addEventListener("scroll",paint,{passive:true});
+  addEventListener("resize",paint);
   sync();
 })();

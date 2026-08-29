@@ -10,7 +10,7 @@ import type { Metadata, Viewport } from 'next';
  */
 
 export const metadata: Metadata = {
-  title: 'AImageGen',
+  title: 'Faishon.studio',
   description:
     'AI on-model fashion photography. One garment photo becomes a full photoshoot.',
 };

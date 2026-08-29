@@ -87,7 +87,7 @@ export const MAIL_DRIVER = env(
   process.env.NODE_ENV === 'production' ? 'smtp' : 'console',
 ).toLowerCase();
 
-export const MAIL_FROM = env('MAIL_FROM', 'AImageGen <no-reply@localhost>');
+export const MAIL_FROM = env('MAIL_FROM', 'Faishon.studio <no-reply@localhost>');
 
 export const SMTP_HOST = env('SMTP_HOST', '');
 export const SMTP_PORT = envInt('SMTP_PORT', 587);

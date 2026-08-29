@@ -67,12 +67,12 @@ export default function TopBar({ me, balance }: { me: Me; balance: number }) {
 
   return (
     <header className="relative z-20 flex h-[60px] flex-shrink-0 items-center gap-[14px] border-b border-line bg-surface px-[22px]">
-      <Link href="/generate" aria-label="AImageGen home" className="flex items-center">
+      <Link href="/generate" aria-label="Faishon.studio home" className="flex items-center">
         {/* Two files, swapped by theme in globals.css — the black mark is
             invisible on the dark surface. */}
         {/* eslint-disable @next/next/no-img-element */}
-        <img className="brand-logo brand-logo-light" src="/logo-black.png" alt="AImageGen" />
-        <img className="brand-logo brand-logo-dark" src="/logo-white.png" alt="AImageGen" />
+        <img className="brand-logo brand-logo-light" src="/logo-black.png" alt="Faishon.studio" />
+        <img className="brand-logo brand-logo-dark" src="/logo-white.png" alt="Faishon.studio" />
         {/* eslint-enable @next/next/no-img-element */}
       </Link>
       

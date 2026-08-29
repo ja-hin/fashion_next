@@ -48,6 +48,15 @@
    horizontal overflow is still held by `body{overflow-x:hidden}` below, which
    propagates to the viewport now that the root is visible again. */
 html{scroll-behavior:auto}
+
+/* ── in-page anchors ──────────────────────────────────────────────────
+   The header is fixed at 74px, so an anchor jump lands with the section's
+   heading tucked underneath it. `scroll-margin-top` offsets where the scroll
+   STOPS, which costs the layout nothing.
+
+   By id rather than on every section: these are the ones the nav, the footer
+   and the hero actually link to. */
+#pricing,#features,#demo,#why,#faq,#casting,#ensemble,#reels,#cats,#how{scroll-margin-top:96px}
 body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.55;
   -webkit-font-smoothing:antialiased;overflow-x:hidden;transition:background .5s,color .5s}
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:var(--grain-op);mix-blend-mode:var(--grain-blend);
@@ -265,7 +274,16 @@ footer .logo-img{height:46px}
 .rail-head .sec-p{color:var(--dim);font-size:1.02rem;line-height:1.6;max-width:56ch;margin:18px auto 0}
 
 .rail-pinzone{position:relative}
-.rail-pin{position:sticky;top:0;height:80svh;min-height:480px;display:flex;align-items:center;overflow:hidden}
+/* `pan-y` hands vertical swipes to the browser and keeps horizontal ones for
+   the drag handler in landing.js — without it a sideways swipe on a phone does
+   nothing at all, because the browser has no horizontal scroll to give it. */
+.rail-pin{position:sticky;top:0;height:80svh;min-height:480px;display:flex;align-items:center;
+  overflow:hidden;touch-action:pan-y;cursor:grab}
+.rail-pin:active{cursor:grabbing}
+/* Text selection turns a drag into a highlight the moment the pointer crosses a
+   heading, which is the one thing a drag must never do. */
+.rail-track.dragging{user-select:none}
+.rail-track.dragging *{pointer-events:none}
 .rail-track{display:flex;gap:18px;padding:0 24px;width:max-content;will-change:transform;align-items:stretch}
 
 /* Light, on the page's own surface. The dark version leaned on its border
@@ -497,13 +515,34 @@ footer .logo-img{height:46px}
 .pricing .head{text-align:center;max-width:760px;margin:0 auto 64px}
 .pricing h2{font-size:var(--h2);margin-top:16px}
 .pricing .head p{color:var(--dim);margin-top:20px}
-.plans{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+/* The packs ride the same scroll-scrubbed rail as "Inside the studio": the zone
+   is as tall as the row is wide, the pin holds the row still while you scroll
+   through it, and landing.js maps one onto the other. `pan-y` is what lets a
+   thumb drag sideways — see the note on .rail-pin. */
+.price-pinzone{position:relative}
+.price-pin{position:sticky;top:0;height:86svh;display:flex;align-items:center;
+  overflow:hidden;touch-action:pan-y;cursor:grab}
+.price-pin:active{cursor:grabbing}
+.plans{display:flex;gap:16px;padding:0 24px;width:max-content;will-change:transform;align-items:stretch}
+.plans.dragging{user-select:none}
+.plans.dragging *{pointer-events:none}
+/* Wide enough that every card fits — or so nearly that scrubbing it would mean
+   a screen and a half of pinned scroll for fifty pixels of movement. Either way
+   there is nothing worth scrubbing, so the zone stops being tall, the pin has
+   no range to hold in, and the packs go back to being a plain grid. The class
+   is set by landing.js, which is the only thing that can measure it. */
+.no-travel .rail-pin,.no-travel .price-pin{position:relative;height:auto;min-height:0}
+.no-travel .rail-track{width:auto;justify-content:center;flex-wrap:wrap}
+.no-travel .plans{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  width:min(100%,1180px);margin:0 auto;padding:0 24px}
+.no-travel .plan{flex:none}
+.no-travel .rail-progress{display:none}
 /* The dots exist only where the plans grid becomes a rail. Declared here, not
    after the breakpoint that turns them on — same specificity, so whichever
    came last would win, and that has to be the media query. landing.js also
    sets `hidden`; this is the belt to that pair of braces. */
 .plan-dots{display:none}
-.plan{border:1px solid var(--line-soft);border-radius:8px;padding:32px 26px;background:var(--card);display:flex;flex-direction:column;position:relative;transition:transform .35s cubic-bezier(.2,.7,.2,1),border-color .35s,box-shadow .35s,background .5s}
+.plan{flex:0 0 clamp(320px,27vw,400px);border:1px solid var(--line-soft);border-radius:8px;padding:32px 26px;background:var(--card);display:flex;flex-direction:column;position:relative;transition:transform .35s cubic-bezier(.2,.7,.2,1),border-color .35s,box-shadow .35s,background .5s}
 /* Outranks `.rv`, whose .9s reveal transition would otherwise time the lift
    as well and make it feel like it is dragging. */
 .plan.card-glow{transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .4s,
@@ -564,27 +603,33 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
   /* Stacked, the sheet has the column to itself — the desktop cap would leave
      it stranded left of a full-width block of copy. */
   .sheet{width:100%;max-width:452px;justify-self:center}
-  .plans{grid-template-columns:1fr 1fr}
   .cost-bars{gap:30px}
 }
 @media(max-width:620px){
   /* The clamp's 2.9rem floor never kicks in on a phone — 46px of display type
      ate the fold, so the h1 is pinned flat here instead. */
   .hero h1{font-size:26px !important}
-  .p-cap span{ display: flex !important; justify-content: center !important;}
+  /* Centre the credits block without flattening it.
+     `display:flex` here overrode the inline `display:grid` on that span, and a
+     flex row puts all four children — label, value, label, value — on one line.
+     Only the alignment needed changing; the grid's two columns are what put
+     "Base Credit" and "Bonus Credit" on rows of their own. */
+  .p-cap span{justify-content:center !important}
   /* A snap rail, not four stacked cards. Stacked, comparing the packs means
      scrolling nearly four screens and holding the last price in your head;
      side by side you can swipe them against each other, which is the decision
      this section exists for. Full-bleed with a 8vw gutter so a card sits dead
      centre with its neighbours peeking in — the peek is the affordance, so it
      needs no "swipe me" label. */
-  .plans{display:flex;gap:12px;
-    width:100vw;margin-left:calc(50% - 50vw);
-    overflow-x:auto;scroll-snap-type:x mandatory;
-    padding:4px 8vw 14px;
-    scrollbar-width:none;-ms-overflow-style:none}
-  .plans::-webkit-scrollbar{display:none}
-  .plan{flex:0 0 84vw;scroll-snap-align:center}
+  /* Still pinned — the drag works by scrolling the page, so it needs the zone's
+     height to push into. Just shorter, and the gutter narrows so a card sits
+     centred with its neighbours peeking in. */
+  .price-pin{min-height:0;height:78svh}
+  .plans{gap:12px;padding:0 8vw}
+  .plan{flex:0 0 84vw}
+  /* Dots here, the hairline on the desktop. Two readouts of the same position
+     is one too many, and the dots are the one that reads on a phone. */
+  .price-pin .rail-progress{display:none}
   /* Built by landing.js. The active dot stretches into a bar rather than just
      changing colour — a size change reads at a glance where a shade change on
      a 7px circle does not. */
@@ -671,16 +716,10 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 .loupe .media{position:absolute;inset:0;animation:settle .3s cubic-bezier(.2,.8,.2,1)}
 .loupe .media img,.loupe .media svg{width:100%;height:100%;object-fit:cover;display:block}
 @keyframes settle{from{transform:scale(1.035);opacity:.55}to{transform:none;opacity:1}}
-.loupe .veil{position:absolute;inset:0;background:linear-gradient(transparent 62%,rgba(0,0,0,.55));pointer-events:none}
-.loupe .who{position:absolute;left:16px;bottom:14px;z-index:2}
-.loupe .who .nm{font-family:var(--serif);font-size:1.6rem;color:#fff;line-height:1.1}
-.loupe .who .sub{font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;color:rgba(255,255,255,.85);text-transform:uppercase;margin-top:5px}
-.loupe .idchip{position:absolute;top:12px;left:14px;z-index:2;display:inline-flex;align-items:center;gap:6px;
-  font-family:var(--mono);font-size:.54rem;letter-spacing:.14em;color:#5FD3A3;text-transform:uppercase;
-  background:rgba(0,0,0,.45);border:1px solid rgba(95,211,163,.5);border-radius:100px;padding:4px 10px}
-.loupe .idchip::before{content:"";width:6px;height:6px;border-radius:50%;background:#5FD3A3}
-.loupe .fno{position:absolute;top:12px;right:14px;z-index:2;font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;color:rgba(255,255,255,.85);
-  background:rgba(0,0,0,.45);border-radius:3px;padding:4px 8px}
+/* The overlays that used to sit here — .veil, .who, .idchip, .fno — are gone
+   with the markup they styled. .veil went too: its only job was darkening the
+   bottom of every frame so the caption could be read, and with no caption it
+   was dimming the photograph for nothing. */
 .loupe .bar{position:absolute;left:0;bottom:0;height:3px;background:var(--flame);z-index:3;width:0%}
 
 /* the matrix — rows are models, columns are setups */
@@ -1210,8 +1249,17 @@ body.mnav-open .mnav-sheet{transform:none}
 
 @media(max-width:860px){
   .genie-sec .pin-wrap{height:300svh}
-  .genie-sec .pin{min-height:540px}
+  /* Tall enough for the copy AND the tile to sit one under the other: at 540px
+     they were being asked to share the same 540px. */
+  .genie-sec .pin{min-height:640px;padding-top:clamp(58px,9vh,86px)}
   .genie-copy p{font-size:.96rem}
+
+  /* The tile is centred in the whole pin on desktop, which works because the
+     copy is short there. Wrapped to five lines on a phone the copy reaches the
+     middle, and a centred tile lands on top of it. Anchored to the bottom, the
+     two stack instead: copy at the top, tile below, whatever the copy's height
+     turns out to be. */
+  .genie-stage{align-items:flex-end;padding:0 24px clamp(48px,11vh,96px)}
   .genie-tile{width:186px;padding:18px 14px 16px}
   .gt-orb{width:64px;height:64px}
   .gm-line{font-size:.84rem}

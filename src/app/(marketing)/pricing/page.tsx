@@ -73,8 +73,8 @@ export default async function PricingPage() {
         <div className="wrap nav-in">
           <a className="logo" href="/" aria-label="AImageGen home">
             {/* eslint-disable @next/next/no-img-element */}
-            <img className="logo-img logo-light" src="/logo-black.png" alt="AImageGen" />
-            <img className="logo-img logo-dark" src="/logo-white.png" alt="AImageGen" />
+            <img className="logo-img logo-light" src="/logo-black.png" alt="Faishon.studio" />
+            <img className="logo-img logo-dark" src="/logo-white.png" alt="Faishon.studio" />
             {/* eslint-enable @next/next/no-img-element */}
           </a>
           <nav className="nav-links">
@@ -338,7 +338,7 @@ export default async function PricingPage() {
 
       <footer>
         <div className="wrap fbot">
-          <span>© 2026 3rd i Visuals Pvt Ltd · AImageGen™</span>
+          <span>© 2026 3rd i Visuals Pvt Ltd · Faishon.studio</span>
           <span>
             Prices in ₹ (INR){gstPct > 0 ? ` · incl. ${gstPct}% GST` : ''} · Prepaid credits · Valid
             12 months

@@ -110,7 +110,7 @@ export function resetEmail(opts: {
   const who = opts.name?.trim() ? `Hi ${opts.name.trim()},` : 'Hi,';
   const text =
     `${who}\n\n` +
-    `We received a request to reset the password for your AImageGen account.\n\n` +
+    `We received a request to reset the password for your Faishon.studio account.\n\n` +
     `Reset your password:\n${opts.link}\n\n` +
     `This link works once and expires in ${opts.minutes} minutes.\n\n` +
     `If you didn't ask for this, you can ignore this email — your password stays as it is.\n`;
@@ -118,7 +118,7 @@ export function resetEmail(opts: {
   const html = `
 <div style="font:15px/1.6 system-ui,-apple-system,Segoe UI,sans-serif;color:#141414;max-width:520px;margin:0 auto;padding:28px">
   <p style="margin:0 0 18px">${esc(who)}</p>
-  <p style="margin:0 0 18px">We received a request to reset the password for your AImageGen account.</p>
+  <p style="margin:0 0 18px">We received a request to reset the password for your Faishon.studio account.</p>
   <p style="margin:0 0 26px">
     <a href="${esc(opts.link)}"
        style="display:inline-block;background:#e11d2a;color:#fff;text-decoration:none;font-weight:700;padding:13px 24px;border-radius:10px">

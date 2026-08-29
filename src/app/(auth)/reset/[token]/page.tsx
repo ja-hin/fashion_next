@@ -9,7 +9,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Choose a new password — AImageGen',
+  title: 'Choose a new password — Faishon.studio',
   robots: { index: false, follow: false },
 };
 

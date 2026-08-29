@@ -458,14 +458,10 @@ export default async function LandingPage() {
 
             <div className="lr-main">
               <div className="loupe" id="loupe">
-                <span className="idchip">Same model — locked</span>
-                <span className="fno" id="fno">FRAME 01 / 30</span>
+                {/* Just the photograph and the progress bar. The chip, the frame
+                    counter and the name/setting caption were labels for something
+                    the picture already shows, and they sat on top of it. */}
                 <div className="media" id="loupeMedia" />
-                <div className="veil" />
-                <div className="who">
-                  <div className="nm" id="whoNm">Aisha</div>
-                  <div className="sub" id="whoSub">MUMBAI · STUDIO SEAMLESS</div>
-                </div>
                 <div className="bar" id="cycleBar" />
               </div>
 
@@ -819,76 +815,89 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
               valid 12 months. Come back any time — your models and shoots stay saved.
             </p>
           </div>
-          <div className="plans">
-            {plans.map((p, i) => {
-              const total = packCredits(p);
-              return (
-                <div
-                  className={`plan card-glow rv${p.popular ? ' feat' : ''}`}
-                  key={p.id}
-                  style={{ transitionDelay: `${i * 0.06}s` }}
-                >
-                  {p.popular && <div className="badge">Most popular</div>}
-                  <div className="p-name">{p.name}</div>
-                  <div className="p-price">{rupees(p.paise)}</div>
-                  <div className="p-per">{rupees(Math.round(p.paise / total))} / PHOTO</div>
-                  <div className="p-cap">
-                    <b style={{ color: 'var(--text)', fontSize: '1rem' }}>
-                      {total.toLocaleString('en-IN')} credits
-                    </b>
-                    {p.bonus > 0 && (
-                      <>
-                        {/* Two grid columns so the figures line up down the card. */}
-                        <span
-                          style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'auto auto',
-                            justifyContent: 'start',
-                            columnGap: 8,
-                            rowGap: 2,
-                            marginTop: 6,
-                          }}
-                        >
-                          <span>Base Credit:</span>
-                          <b style={{ color: 'var(--text)' }}>
-                            {p.credits.toLocaleString('en-IN')}
-                          </b>
-                          <span>Bonus Credit:</span>
-                          <b style={{ color: 'var(--mint)' }}>
-                            {p.bonus.toLocaleString('en-IN')}
-                          </b>
-                        </span>
-                        <span
-                          style={{
-                            display: 'block',
-                            color: 'var(--mint)',
-                            fontWeight: 600,
-                            marginTop: 4,
-                          }}
-                        >
-                          ( {bonusPct(p)}% Extra Credits )
-                        </span>
-                      </>
-                    )}
-                  </div>
-                  {/* Keeps the CTA pinned to the bottom so cards align — this
-                      is what `.plan ul { flex: 1 }` used to do. */}
-                  <div style={{ flex: 1 }} />
-                  <a
-                    href="/pricing"
-                    className={`btn ${p.popular ? 'btn-cta' : 'btn-line'}`}
-                    data-c=""
+        </div>
+        {/* Same mechanics as "Inside the studio": the zone is as tall as the
+            row is wide, the pin holds the row still while you scroll through
+            it, and a sideways drag scrolls the page rather than moving the
+            row itself. Full-bleed, so it lives outside .wrap. */}
+        <div className="price-pinzone" id="priceZone">
+          <div className="price-pin">
+            <div className="plans" id="priceTrack">
+              {plans.map((p, i) => {
+                const total = packCredits(p);
+                return (
+                  <div
+                    className={`plan card-glow rv${p.popular ? ' feat' : ''}`}
+                    key={p.id}
+                    style={{ transitionDelay: `${i * 0.06}s` }}
                   >
-                    Load wallet
-                    {p.popular && <span className="arw"> →</span>}
-                  </a>
-                </div>
-              );
-            })}
+                    {p.popular && <div className="badge">Most popular</div>}
+                    <div className="p-name">{p.name}</div>
+                    <div className="p-price">{rupees(p.paise)}</div>
+                    <div className="p-per">{rupees(Math.round(p.paise / total))} / PHOTO</div>
+                    <div className="p-cap">
+                      <b style={{ color: 'var(--text)', fontSize: '1rem' }}>
+                        {total.toLocaleString('en-IN')} credits
+                      </b>
+                      {p.bonus > 0 && (
+                        <>
+                          {/* Two grid columns so the figures line up down the card. */}
+                          <span
+                            style={{
+                              display: 'grid',
+                              gridTemplateColumns: 'auto auto',
+                              justifyContent: 'start',
+                              columnGap: 8,
+                              rowGap: 2,
+                              marginTop: 6,
+                            }}
+                          >
+                            <span>Base Credit:</span>
+                            <b style={{ color: 'var(--text)' }}>
+                              {p.credits.toLocaleString('en-IN')}
+                            </b>
+                            <span>Bonus Credit:</span>
+                            <b style={{ color: 'var(--mint)' }}>
+                              {p.bonus.toLocaleString('en-IN')}
+                            </b>
+                          </span>
+                          <span
+                            style={{
+                              display: 'block',
+                              color: 'var(--mint)',
+                              fontWeight: 600,
+                              marginTop: 4,
+                            }}
+                          >
+                            ( {bonusPct(p)}% Extra Credits )
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    {/* Keeps the CTA pinned to the bottom so cards align — this
+                        is what `.plan ul { flex: 1 }` used to do. */}
+                    <div style={{ flex: 1 }} />
+                    <a
+                      href="/pricing"
+                      className={`btn ${p.popular ? 'btn-cta' : 'btn-line'}`}
+                      data-c=""
+                    >
+                      Load wallet
+                      {p.popular && <span className="arw"> →</span>}
+                    </a>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="rail-progress">
+              <div className="fill" id="priceFill" />
+            </div>
           </div>
-          {/* Filled by landing.js and shown only where the grid becomes a rail.
-              Empty here rather than four hardcoded dots so the count can never
-              fall out of step with the number of packs. */}
+        </div>
+        <div className="wrap">
+          {/* Filled by landing.js and shown only on the phone, where they stand
+              in for the hairline. Empty here rather than four hardcoded dots so
+              the count can never fall out of step with the packs. */}
           <div className="plan-dots" id="planDots" hidden />
           <div className="pnote rv">
             Enterprise from ₹6/photo · Talk to us for custom volume, dedicated models &amp;
