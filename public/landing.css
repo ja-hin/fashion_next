@@ -63,7 +63,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:9998;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 a{color:inherit;text-decoration:none}
 img{display:block}
-h1,h2,h3{margin:0;font-family:var(--serif);font-weight:500;letter-spacing:-.014em;line-height:1.08}
+h1,h2,h3{margin:0;font-family:var(--serif);font-weight:500;letter-spacing:-.014em;line-height:1.28}
 /* Section headings. The per-section rules below all point at the same token,
    so the size is set in exactly one place. */
 .sec-h2{font-size:var(--h2);margin:6px 0; font-weight: bold;}
@@ -124,6 +124,15 @@ header.nav.nav-away{transform:translateY(-100%)}
    and the hairline goes light with it, since a dark-on-light rule is invisible
    against this. */
 header.nav.solid{background:var(--nav-bg);backdrop-filter:blur(12px);
+  border-color:rgba(237,231,218,.12)}
+/* Solid from the first pixel, for pages with no dark hero under the bar.
+   `.solid` only arrives once landing.js sees 40px of scroll, which is right on
+   the home page — the bar is transparent over a dark hero until then. On a page
+   that opens on the cream background it meant light-on-dark contents floating on
+   cream: a white logo and pale links on pale paper. A separate class rather than
+   presetting `.solid`, because the frame loop owns that one and would clear it
+   the moment you scrolled back to the top. */
+header.nav.nav-onlight{background:var(--nav-bg);backdrop-filter:blur(12px);
   border-color:rgba(237,231,218,.12)}
 .nav-in{display:flex;align-items:center;justify-content:space-between;height:74px;gap:18px}
 .logo{display:inline-flex;align-items:center}
@@ -199,7 +208,14 @@ footer .logo-img{height:46px}
 /* the collage — three overlapping frames, each easing up in turn */
 .collage{position:relative;height:min(76svh,680px)}
 .pl{position:absolute;border-radius:6px;overflow:hidden;box-shadow:var(--shadow);opacity:0;animation:plin 1s cubic-bezier(.16,.84,.24,1) forwards}
-.pl img,.pl svg{width:100%;height:100%;object-fit:cover}
+/* Top-anchored, not centred.
+   `cover` on a portrait photograph in a plate that is wider than it is tall
+   scales to the width and overflows vertically — and the default `50% 50%`
+   spends that overflow equally at both ends, which takes the crown off every
+   model. `0%` keeps the top of the source, so whatever headroom the photograph
+   was framed with is the headroom the plate shows; the trim all comes off the
+   hem, where there is nothing to lose. */
+.pl img,.pl svg{width:100%;height:100%;object-fit:cover;object-position:50% 0%}
 /* --r keeps each frame's tilt through the animation; without it the rotation
    would be reset to 0 by the transform on the final keyframe. */
 @keyframes plin{from{opacity:0;transform:translateY(26px) rotate(var(--r,0deg))}to{opacity:1;transform:rotate(var(--r,0deg))}}
@@ -218,7 +234,7 @@ footer .logo-img{height:46px}
    stay put while the photograph underneath cross-fades. */
 .pl .pl-media{position:absolute;inset:0;z-index:1;transition:opacity .45s,transform .45s}
 .pl .pl-media.out{opacity:0;transform:scale(1.03)}
-.pl .pl-media img,.pl .pl-media svg{width:100%;height:100%;object-fit:cover;display:block}
+.pl .pl-media img,.pl .pl-media svg{width:100%;height:100%;object-fit:cover;object-position:50% 0%;display:block}
 /* A camera flash on the lead frame — it is what makes the swap read as a shot
    being taken rather than a slideshow advancing. */
 .shutter{position:absolute;inset:0;background:#fff;opacity:0;z-index:2;pointer-events:none}
@@ -277,7 +293,14 @@ footer .logo-img{height:46px}
 /* `pan-y` hands vertical swipes to the browser and keeps horizontal ones for
    the drag handler in landing.js — without it a sideways swipe on a phone does
    nothing at all, because the browser has no horizontal scroll to give it. */
-.rail-pin{position:sticky;top:0;height:80svh;min-height:480px;display:flex;align-items:center;
+/* Capped, not proportional. At `80svh` the pin grew with the window while the
+   cards stayed ~405px tall, so a 1150px screen centred them inside 920px and
+   left 258px of empty band above AND below. The clamp keeps the band at ~68px
+   on any tall screen.
+   The 480px floor is not a taste decision: `.rail-progress` sits at bottom:34px
+   inside this box, so anything under ~473px puts that hairline through the
+   bottom of a centred card. */
+.rail-pin{position:sticky;top:0;height:clamp(480px,64svh,540px);display:flex;align-items:center;
   overflow:hidden;touch-action:pan-y;cursor:grab}
 .rail-pin:active{cursor:grabbing}
 /* Text selection turns a drag into a highlight the moment the pointer crosses a
@@ -425,7 +448,7 @@ footer .logo-img{height:46px}
 }
 
 /* ---------- contact sheet demo (dark in both themes — it's a light table) ---------- */
-.demo{padding:clamp(34px,4vw,56px) 0}
+.demo{padding:0 0 30px 0}
 /* `auto` on the sheet track, not a fraction: sized as a fraction the sheet
    grew with the viewport, and its frames are 3:4 — so every extra pixel of
    width cost a third again in height. The sheet now sets its own width and the
@@ -520,7 +543,7 @@ footer .logo-img{height:46px}
    through it, and landing.js maps one onto the other. `pan-y` is what lets a
    thumb drag sideways — see the note on .rail-pin. */
 .price-pinzone{position:relative}
-.price-pin{position:sticky;top:0;height:86svh;display:flex;align-items:center;
+.price-pin{position:sticky;top:0;height:70svh;display:flex;align-items:center;
   overflow:hidden;touch-action:pan-y;cursor:grab}
 .price-pin:active{cursor:grabbing}
 .plans{display:flex;gap:16px;padding:0 24px;width:max-content;will-change:transform;align-items:stretch}
@@ -704,25 +727,6 @@ footer .logo-img{height:46px}
 .lg-body strong{color:var(--text);font-weight:600}
 .lg-body a{color:var(--flame);text-decoration:underline;text-underline-offset:2px}
 
-.lg-faq{border-top:1px solid var(--line-soft);background:var(--bg2);padding:70px 0 84px;transition:background .5s}
-.lg-faq h2{font-size:clamp(1.7rem,3.4vw,2.3rem);margin:14px 0 0}
-.lg-faqsub{color:var(--dim);max-width:56ch;margin:14px 0 0;line-height:1.6}
-.lg-faqlist{margin-top:30px;display:grid;gap:10px;max-width:78ch}
-.lg-faqlist details{border:1px solid var(--line-soft);border-radius:8px;background:var(--card);overflow:hidden}
-.lg-faqlist summary{display:flex;align-items:center;justify-content:space-between;gap:18px;
-  padding:16px 18px;cursor:pointer;font-weight:600;font-size:.95rem;line-height:1.45;list-style:none}
-.lg-faqlist summary::-webkit-details-marker{display:none}
-/* Drawn from two rules rather than a "+" glyph: the horizontal one is removed
-   on open, which turns the plus into a minus with no text swap and no script. */
-.lg-faqlist .tick{position:relative;flex:0 0 auto;width:13px;height:13px}
-.lg-faqlist .tick::before,.lg-faqlist .tick::after{content:"";position:absolute;background:var(--flame);
-  transition:opacity .2s,transform .2s}
-.lg-faqlist .tick::before{left:0;top:6px;width:13px;height:1.5px}
-.lg-faqlist .tick::after{left:6px;top:0;width:1.5px;height:13px}
-.lg-faqlist details[open] .tick::after{opacity:0;transform:rotate(90deg)}
-.lg-ans{padding:0 18px 18px}
-.lg-ans p{color:var(--dim);line-height:1.7;margin:0}
-
 @media(max-width:900px){
   .lg-shell{grid-template-columns:1fr;gap:26px;padding:30px 0 56px}
   .lg-toc{position:static}
@@ -735,8 +739,6 @@ footer .logo-img{height:46px}
 }
 @media(max-width:620px){
   .lg-body h2{gap:9px}
-  .lg-faqlist summary{padding:14px;gap:12px}
-  .lg-ans{padding:0 14px 14px}
 }
 
 footer{border-top:1px solid var(--line-soft);padding:56px 0 40px;color:var(--dim)}
@@ -856,7 +858,7 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 /* A 5×6 matrix — five models, six setups — flipping past at shutter speed.
    The claim being made is range WITH identity held, so the minimap matters as
    much as the loupe: every frame in a row is visibly the same face. */
-.castworld{padding:50px 0 0}
+.castworld{padding:20px 0 0}
 /* The head centres as one block on a shared measure — the same `-head` pattern
    the reels, create and cats sections use. */
 .castworld-head{text-align:center;max-width:760px;margin:0 auto}
@@ -1017,6 +1019,7 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 .hiw-view .media img,.hiw-view .media svg{width:100%;height:100%;object-fit:cover;display:block}
 .hiw-cap{position:absolute;left:14px;bottom:14px;z-index:2;background:rgba(23,21,15,.72);color:#fff;
   border-radius:100px;padding:8px 15px;font-size:.82rem;backdrop-filter:blur(6px)}
+.hiw-center{display: flex; flex-direction: column; align-items: center; text-align: center;}  
 
 @media(max-width:860px){
 
@@ -1452,7 +1455,7 @@ body.mnav-open .mnav-sheet{transform:none}
 [data-theme="dark"]{--reel-frame:#EDE7DA}
 
 .reel-arc{position:relative;margin-top:clamp(40px,6vw,45px);
-  height:clamp(340px,34vw,520px)}
+  height:470px !important}
 
 /* Outer box carries the card's place in the arc, inner box carries the hover.
    Two boxes because one transform cannot be written by two owners — the arc
@@ -1527,7 +1530,7 @@ body.mnav-open .mnav-sheet{transform:none}
   .reels{padding:0px 0 0px}
   .reel-arc{display:flex;gap:12px;height:auto;position:static;overflow-x:auto;
     padding:4px 24px 10px;scroll-snap-type:x mandatory;
-    scrollbar-width:none;-ms-overflow-style:none}
+    scrollbar-width:none;-ms-overflow-style:none; height: 339px !important;}
   .reel-arc::-webkit-scrollbar{display:none}
   .reel{position:static;flex:0 0 min(58vw,240px);opacity:1;transform:none;scroll-snap-align:center}
   .reel:hover .reel-in,.reel:focus-within .reel-in{transform:none}
@@ -1632,6 +1635,9 @@ body.mnav-open .mnav-sheet{transform:none}
 .ens-head{text-align:center;max-width:720px;margin:0 auto}
 .ens-head h2{font-size:var(--h2);margin-top:16px}
 .ens-head h2 em{font-style:italic;color:var(--flame)}
+.hiw-head h2 em{font-style:italic;color:var(--flame)}
+.demo-copy h2 em{font-style:italic;color:var(--flame)}
+.castworld-head h2 em{font-style:italic;color:var(--flame)}
 .ens-head .sec-p{color:var(--dim);font-size:1.02rem;line-height:1.6;max-width:56ch;margin:18px auto 0}
 
 /* Sized to its contents and centred, not stretched across the text column.

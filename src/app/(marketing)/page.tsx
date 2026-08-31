@@ -184,7 +184,7 @@ export default async function LandingPage() {
             <a href="#why" data-c="">Why</a>
             <a href="#features" data-c="">Features</a>
             <a href="#demo" data-c="">See it run</a>
-            <a href="/pricing" data-c="">Pricing</a>
+            <a href="#pricing" data-c="">Pricing</a>
           </nav>
           <div className="nav-right">
             <a href="/login" className="btn btn-line nav-cta" style={{ padding: '.6em 1.2em' }} data-c="">
@@ -223,7 +223,7 @@ export default async function LandingPage() {
             <a href="#why" data-c="">Why</a>
             <a href="#features" data-c="">Features</a>
             <a href="#demo" data-c="">See it run</a>
-            <a href="/pricing" data-c="">Pricing</a>
+            <a href="#pricing" data-c="">Pricing</a>
           </nav>
           <div className="mnav-cta">
             <a href="/login" className="btn btn-line" data-c="">Log in</a>
@@ -340,7 +340,7 @@ export default async function LandingPage() {
         <div className="wrap-1">
           <div className="hiw-head rv">
             <span className="eyebrow">How it works</span>
-            <h2 className="sec-h2">From garment to finished photo</h2>
+            <h2 className="sec-h2">From garment to <br></br> <em>finished photo</em></h2>
             <p className="sec-p">
               Upload a garment, pick a model, backdrop and pose. Generate studio-grade, on-model photo. Flip through the options below to see how a shot comes together.
             </p>
@@ -422,7 +422,7 @@ export default async function LandingPage() {
         <div className="wrap ens-head rv">
           <span className="eyebrow">Ensemble · style the whole look</span>
           <h2 className="sec-h2">
-            Not one garment. The <em>whole outfit.</em>
+            Not one garment.<br></br> <em>The whole outfit.</em>
           </h2>
           <p className="sec-p">
             Upload the pieces — the dress, the heels, the eyewear, the hat, the bag, the necklace.
@@ -449,7 +449,7 @@ export default async function LandingPage() {
               already use. */}
           <div className="castworld-head rv">
             <span className="eyebrow">CAST ANY MODEL IN ANY BACKDROP</span>
-            <h2 className="sec-h2">Cast the world. Shoot it your way.</h2>
+            <h2 className="sec-h2">Cast the world.<br></br><em> Shoot it your way.</em></h2>
             <p className="sec-p">
               Cast any model you can imagine. Any skin tone, body type and look, against any backdrop, from studio seamless to a sunlit street. Delhi, Dubai or Dallas.
             </p>
@@ -514,7 +514,7 @@ export default async function LandingPage() {
         <div className="wrap-1 demo-grid">
           <div className="demo-copy rv">
             <span className="eyebrow">AI fashion shoot studio</span>
-            <h2 className="sec-h2">One garment photo IN. A full catalogue OUT.</h2>
+            <h2 className="sec-h2">One garment photo IN.<br></br><em> A full catalogue OUT.</em></h2>
             <p className="sec-p desktop">
               Every angle a listing needs: front, back, three-quarter and close-up, all from a single garment photo, all worn by the same model. Shoot by shoot, your catalogue builds itself. <br></br><br></br>
 
@@ -1064,7 +1064,7 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
             <span className="k-label">Product</span>
             <a href="#features" data-c="">Features</a>
             <a href="#demo" data-c="">See it run</a>
-            <a href="/pricing" data-c="">Pricing</a>
+            <a href="#pricing" data-c="">Pricing</a>
           </div>
           <div>
             <span className="k-label">Use cases</span>
@@ -1077,6 +1077,7 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
             <a href="#contact" data-c="">Contact</a>
             <a href="/terms" data-c="">Terms of Use</a>
             <a href="/privacy" data-c="">Privacy Policy</a>
+            <a href="/acceptable-use" data-c="">Acceptable Use</a>
           </div>
         </div>
         <div className="wrap fbot">

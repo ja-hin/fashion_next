@@ -4,21 +4,21 @@ import { legalDoc } from '@/lib/legal';
 
 export const runtime = 'nodejs';
 
-const doc = legalDoc('terms');
+const doc = legalDoc('acceptable-use');
 
 export const metadata: Metadata = {
-  title: 'Terms of Use | Faishon Studio',
+  title: 'Acceptable Use Policy | Faishon Studio',
   description: doc.tagline,
-  alternates: { canonical: '/terms' },
+  alternates: { canonical: '/acceptable-use' },
 };
 
 /**
- * Terms of Use.
+ * Acceptable Use Policy.
  *
- * The wording is lifted verbatim from public/terms.html, which is the
+ * The wording is lifted verbatim from public/acceptable-use.html, which is the
  * reviewed document; see lib/legal.ts for why it is read rather than retyped.
  */
-export default function TermsPage() {
+export default function AcceptableUsePage() {
   return (
     <LegalShell doc={doc} />
   );

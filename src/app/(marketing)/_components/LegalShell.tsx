@@ -2,18 +2,22 @@ import Script from 'next/script';
 import type { LegalDoc } from '@/lib/legal';
 
 /**
- * The frame around a legal document: site nav, page head, contents, body, FAQ,
+ * The frame around a legal document: site nav, page head, contents, body,
  * footer.
  *
- * Shared by /privacy and /terms because the only difference between them is the
- * document — and two copies of this would drift the moment the nav changed.
+ * Shared by /privacy, /terms and /acceptable-use: the only difference between
+ * them is the document, and three copies of this would drift the moment the
+ * nav changed.
  * The body comes through as sanitised HTML from lib/legal.ts, which is what
  * keeps the signed-off wording verbatim.
  */
 export default function LegalShell({ doc }: { doc: LegalDoc }) {
   return (
     <>
-      <header className="nav" id="nav">
+      {/* `nav-onlight`: these pages open on the cream background rather than the
+          home page's dark hero, so the bar carries its own dark ground from the
+          start instead of waiting for the scroll that solidifies it. */}
+      <header className="nav nav-onlight" id="nav">
         <div className="wrap nav-in">
           <a className="logo" href="/" aria-label="Faishon.studio home">
             {/* eslint-disable @next/next/no-img-element */}
@@ -57,7 +61,7 @@ export default function LegalShell({ doc }: { doc: LegalDoc }) {
 
         <div className="wrap lg-shell">
           {/* A <details> rather than a heading with a click handler: on a phone
-              this list is eighteen items long and has to collapse, and the
+              this list runs to eighteen items and has to collapse, and the
               element that already does that needs no JavaScript to work. */}
           <aside className="lg-toc">
             <details open>
@@ -76,26 +80,6 @@ export default function LegalShell({ doc }: { doc: LegalDoc }) {
           <article className="lg-body" dangerouslySetInnerHTML={{ __html: doc.body }} />
         </div>
 
-        {doc.faq.length > 0 && (
-          <section className="lg-faq" id="faq">
-            <div className="wrap">
-              <span className="eyebrow">Frequently asked questions</span>
-              <h2>{doc.faqTitle}</h2>
-              {doc.faqSub && <p className="lg-faqsub">{doc.faqSub}</p>}
-              <div className="lg-faqlist">
-                {doc.faq.map((f) => (
-                  <details key={f.q}>
-                    <summary>
-                      <span>{f.q}</span>
-                      <span className="tick" aria-hidden="true" />
-                    </summary>
-                    <div className="lg-ans" dangerouslySetInnerHTML={{ __html: f.a }} />
-                  </details>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
       </main>
 
       <footer>
@@ -119,13 +103,14 @@ export default function LegalShell({ doc }: { doc: LegalDoc }) {
             <a href="/#pricing">Pricing</a>
           </div>
           <div>
+            {/* Contact sits in this column, matching the landing page's footer —
+                it is the address on a legal document, so it belongs with them
+                rather than in a column of its own. */}
             <span className="k-label">Legal</span>
+            <a href="/#contact">Contact</a>
             <a href="/terms">Terms of Use</a>
             <a href="/privacy">Privacy Policy</a>
-          </div>
-          <div>
-            <span className="k-label">Company</span>
-            <a href="/#contact">Contact</a>
+            <a href="/acceptable-use">Acceptable Use</a>
           </div>
         </div>
         <div className="wrap fbot">

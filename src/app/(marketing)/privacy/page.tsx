@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
-import Script from 'next/script';
 import LegalShell from '../_components/LegalShell';
-import { legalDoc, faqLd } from '@/lib/legal';
+import { legalDoc } from '@/lib/legal';
 
 export const runtime = 'nodejs';
 
@@ -21,13 +20,6 @@ export const metadata: Metadata = {
  */
 export default function PrivacyPage() {
   return (
-    <>
-      <Script
-        id="privacy-faq-ld"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd(doc)) }}
-      />
-      <LegalShell doc={doc} />
-    </>
+    <LegalShell doc={doc} />
   );
 }

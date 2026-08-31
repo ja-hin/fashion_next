@@ -31,6 +31,7 @@ const nextConfig = {
       // ahead of static file serving, so these win.
       { source: '/privacy.html', destination: '/privacy', permanent: true },
       { source: '/terms.html', destination: '/terms', permanent: true },
+      { source: '/acceptable-use.html', destination: '/acceptable-use', permanent: true },
     ];
   },
 

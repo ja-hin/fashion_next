@@ -69,7 +69,9 @@ export default async function PricingPage() {
 
   return (
     <>
-      <header className="nav" id="nav">
+      {/* `nav-onlight`: no dark hero on this page either, so the bar needs its
+          own ground — see the note by the class in landing.css. */}
+      <header className="nav nav-onlight" id="nav">
         <div className="wrap nav-in">
           <a className="logo" href="/" aria-label="AImageGen home">
             {/* eslint-disable @next/next/no-img-element */}
@@ -81,7 +83,7 @@ export default async function PricingPage() {
             <a href="/#story">Why</a>
             <a href="/#features">Features</a>
             <a href="/#demo">See it run</a>
-            <a href="/pricing">Pricing</a>
+            <a href="/#pricing">Pricing</a>
           </nav>
           <div className="nav-right">
             <a href="/login" className="btn btn-line" style={{ padding: '.6em 1.2em' }}>

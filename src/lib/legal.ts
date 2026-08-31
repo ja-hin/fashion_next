@@ -1,7 +1,7 @@
 /**
  * The legal pages, read from the authored HTML in /public.
  *
- * Those two files are the source of truth and stay that way: legal copy is
+ * Those files are the source of truth and stay that way: legal copy is
  * reviewed and signed off as a document, and re-typing 30 KB of it into JSX is
  * how a clause quietly loses a "not". So the body copy is lifted verbatim and
  * rendered as HTML — only the chrome (nav, page head, footer) is rebuilt in
@@ -14,12 +14,7 @@ import 'server-only';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
-export type LegalSlug = 'privacy' | 'terms';
-
-export interface LegalFaq {
-  q: string;
-  a: string;
-}
+export type LegalSlug = 'privacy' | 'terms' | 'acceptable-use';
 
 export interface LegalDoc {
   slug: LegalSlug;
@@ -32,9 +27,6 @@ export interface LegalDoc {
   toc: Array<{ href: string; label: string }>;
   /** Sanitised article HTML. */
   body: string;
-  faqTitle: string;
-  faqSub: string;
-  faq: LegalFaq[];
 }
 
 /*
@@ -59,6 +51,22 @@ const ALLOWED_ATTRS: Record<string, Set<string>> = {
 /** Only these schemes survive — no `javascript:`, no `data:`. */
 const SAFE_HREF = /^(https?:\/\/|mailto:|\/|#)/i;
 
+/*
+ * The authored files cross-reference each other by absolute URL and by
+ * filename, both of which point outside this app — one to a live domain, the
+ * other to the raw HTML. All three documents are hosted here now, so the
+ * targets are rewritten to the routes that serve them. The wording is not
+ * touched; only where the link goes.
+ */
+const INTERNAL: Record<string, string> = {
+  'https://faishon.studio/legal/privacy': '/privacy',
+  'https://faishon.studio/legal/terms': '/terms',
+  'https://faishon.studio/legal/aup': '/acceptable-use',
+  'privacy.html': '/privacy',
+  'terms.html': '/terms',
+  'acceptable-use.html': '/acceptable-use',
+};
+
 function sanitise(html: string): string {
   // Whole elements whose *content* is also unwanted, removed before the rest.
   let out = html.replace(/<(script|style|iframe|object|embed)\b[\s\S]*?<\/\1>/gi, '');
@@ -77,9 +85,12 @@ function sanitise(html: string): string {
     let a: RegExpExecArray | null;
     while ((a = re.exec(attrs))) {
       const name = a[1].toLowerCase();
-      const value = a[2];
+      let value = a[2];
       if (!allowed.has(name)) continue;
-      if (name === 'href' && !SAFE_HREF.test(value)) continue;
+      if (name === 'href') {
+        value = INTERNAL[value.replace(/\/$/, '')] ?? value;
+        if (!SAFE_HREF.test(value)) continue;
+      }
       kept.push(`${name}="${value}"`);
     }
     // Off-site links open away from the page and cannot reach back into it.
@@ -139,11 +150,6 @@ function parse(slug: LegalSlug): LegalDoc {
 
   const body = sanitise(between(html, '<article>', '</article>'));
 
-  const faqSection = html.match(/<section class="faq"[\s\S]*?<\/section>/)?.[0] ?? '';
-  const faq = [...faqSection.matchAll(/<details><summary><span>([\s\S]*?)<\/span>[\s\S]*?<div class="ans">([\s\S]*?)<\/div><\/details>/g)].map(
-    ([, q, a]) => ({ q: decode(text(q)), a: sanitise(a) }),
-  );
-
   return {
     slug,
     title: decode(text(first(head, /<h1>([\s\S]*?)<\/h1>/))),
@@ -152,9 +158,6 @@ function parse(slug: LegalSlug): LegalDoc {
     updated: dated('updated'),
     toc,
     body,
-    faqTitle: decode(text(first(faqSection, /<h2 class="faqtitle">([\s\S]*?)<\/h2>/))) || 'Frequently asked questions',
-    faqSub: decode(text(first(faqSection, /<p class="faqsub">([\s\S]*?)<\/p>/))),
-    faq,
   };
 }
 
@@ -170,13 +173,3 @@ export function legalDoc(slug: LegalSlug): LegalDoc {
   return doc;
 }
 
-/** Plain-text FAQ pairs, for the FAQPage JSON-LD. */
-export const faqLd = (doc: LegalDoc) => ({
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: doc.faq.map((f) => ({
-    '@type': 'Question',
-    name: f.q,
-    acceptedAnswer: { '@type': 'Answer', text: text(f.a) },
-  })),
-});

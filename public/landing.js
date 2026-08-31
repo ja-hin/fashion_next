@@ -94,6 +94,17 @@ async function probeChain(base){
   for(const e of EXTS){const hit=await probe(base+"."+e);if(hit)return hit;}
   return null;
 }
+/* The same idea for a clip. `loadedmetadata` rather than `canplay`: it fires as
+   soon as the header is in, so a missing file is ruled out in a round trip
+   instead of a download — which matters when the file is megabytes. */
+function probeVideo(url){
+  return new Promise(done=>{
+    const v=document.createElement("video");
+    v.preload="metadata";v.muted=true;
+    v.onloadedmetadata=()=>done(url);v.onerror=()=>done(null);
+    v.src=url;
+  });
+}
 
 (async function heroShow(){
   const collage=document.getElementById("collage");
@@ -1318,8 +1329,13 @@ const STRIP_ITEMS=[
      h:"Photography", p:"Turn one garment photo into a full on-model catalogue-ready shoot.", href:"/register"},
     {slot:"models",     fb:"hip",    pose:"hip",  name:"Models",
      h:"Models", p:"Cast models from across the world, every skin tone, body type and look and save them forever.", href:"/register"},
+    /* `clips` is what makes this panel move. Tried in order, so a purpose-made
+       file dropped beside the other create slots wins over the render that
+       ships in public/ — and if neither is there the panel falls back to a
+       still like the other two, with nothing to notice. */
     {slot:"video",      fb:"walk",   pose:"walk", name:"Video",
-     h:"Video", p:"Turn any photoshoot into reel-ready video for PDPs, Instagram and ads.", href:"/register"},
+     h:"Video", p:"Turn any photoshoot into reel-ready video for PDPs, Instagram and ads.", href:"/register",
+     clips:[ASSET_DIR+"create/video.mp4",ASSET_DIR+"create/video.webm","/video.mp4"]},
   ];
 
   const panels=PANELS.map((it,i)=>{
@@ -1340,6 +1356,28 @@ const STRIP_ITEMS=[
       let u=await probeChain(ASSET_DIR+"create/"+it.slot);
       if(!u)u=await probeChain(ASSET_DIR+it.fb);
       if(!u&&IMG[it.fb])u=await probe(U(IMG[it.fb],900));
+
+      /* A panel with clips becomes a <video> POSTERED by that still, rather
+         than a video instead of it. Closed, the panel still reads as a
+         photograph and nothing has been downloaded past the header; the motion
+         only exists once the panel is opened. */
+      if(it.clips){
+        let src=null;
+        for(const c of it.clips){src=await probeVideo(c);if(src)break;}
+        if(src){
+          const v=document.createElement("video");
+          v.src=src;v.loop=true;v.muted=true;v.playsInline=true;v.preload="metadata";
+          if(u)v.poster=u;
+          v.setAttribute("aria-hidden","true");
+          a.prepend(v);
+          /* The file can land after a hover has already happened — probing is a
+             round trip and a pointer is faster. Without this the panel would sit
+             open on a frozen poster until you left and came back. */
+          if(a.classList.contains("on"))playPanel(a);
+          return;
+        }
+      }
+
       if(u){
         const im=document.createElement("img");
         im.src=u;im.alt=it.h;im.loading=i>1?"lazy":"eager";
@@ -1357,9 +1395,30 @@ const STRIP_ITEMS=[
   });
 
   let idx=-1;
+
+  /* Muted, looping and started only on open — the three things a browser needs
+     before it will play anything without a click. Reduced motion opts out: the
+     poster is a real frame from the clip, so that state still shows the work. */
+  const playPanel=p=>{
+    const v=p.querySelector("video");
+    if(!v||reduce)return;
+    v.play().catch(()=>{});                 /* interrupted by a fast re-hover */
+  };
+  /* Rewound, not just paused: coming back to a panel should start the clip
+     again rather than resume it three seconds in. */
+  const stopPanel=p=>{
+    const v=p.querySelector("video");
+    if(!v)return;
+    v.pause();v.currentTime=0;
+  };
+
   function open(el){
     idx=el?panels.indexOf(el):-1;
-    panels.forEach(p=>p.classList.toggle("on",p===el));
+    panels.forEach(p=>{
+      const on=p===el;
+      p.classList.toggle("on",on);
+      if(on)playPanel(p);else stopPanel(p);
+    });
     row.classList.toggle("has-on",!!el);
   }
 
@@ -1740,12 +1799,6 @@ const STRIP_ITEMS=[
      no file there it holds a still instead, the same way every other slot on
      this page degrades. */
   let vid=null,playing=false;
-  const probeVid=url=>new Promise(done=>{
-    const v=document.createElement("video");
-    v.preload="metadata";v.muted=true;
-    v.onloadedmetadata=()=>done(url);v.onerror=()=>done(null);
-    v.src=url;
-  });
 
   /* Tried in order. A purpose-made genie-demo in webassets wins if one is ever
      dropped there; failing that the omni render that ships in public/ plays.
@@ -1759,7 +1812,7 @@ const STRIP_ITEMS=[
 
   (async function fillMedia(){
     for(const url of SOURCES){
-      const hit=await probeVid(url);
+      const hit=await probeVideo(url);
       if(!hit)continue;
       vid=document.createElement("video");
       vid.src=hit;vid.loop=true;vid.muted=true;vid.playsInline=true;vid.preload="metadata";
