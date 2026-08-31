@@ -3,6 +3,7 @@ import Script from 'next/script';
 import { ensureBootstrapped } from '@/lib/bootstrap';
 import { getBilling } from '@/lib/settings';
 import { activePacks, packCredits, rupees, bonusPct, type Pack } from '@/lib/pricing';
+import { LEAD_VOLUMES } from '@/lib/leads';
 
 /**
  * The public marketing homepage.
@@ -22,9 +23,9 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'AI Fashion Photography India — ₹25/Photo On-Model Shoots | AImageGen',
+  title: 'AI Fashion Photo & Video in minutes | Faishon Studio',
   description:
-    'Turn one garment photo into a full on-model AI photoshoot. Consistent AI models, marketplace-ready images for Amazon, Flipkart & Myntra. From ₹25/photo, no minimum SKUs.',
+    'Create full on-model AI photoshoots and videos from one garment photo. Consistent AI models, marketplace-ready for Amazon, Flipkart and Myntra. No subscription. No lock in. Start free.',
   alternates: { canonical: 'https://aimagegen.com/' },
 };
 
@@ -489,6 +490,26 @@ export default async function LandingPage() {
           viewport and the paragraph above it was read and forgotten before the
           frames arrived; side by side they are read together, and the sheet
           lands at a size that fits on screen. */}
+           <section className="reels" id="reels">
+        <div className="wrap reels-head rv">
+          <span className="eyebrow">Fashion video</span>
+          <h2>
+            Turn a photoshoot into <em>scroll-stopping video</em>.
+          </h2>
+          <p className="sec-p desktop">
+            Turn every shoot into reel-ready video: the same model, the same garment, brought to life for Instagram, product pages and ads. Start from ready-made presets for ultra-realistic Instagram fashion reels, ads and PDP videos. Customize any preset, or direct your own: set the mood, the movement and the camera, and shoot the editorial look you imagined.
+          </p>
+          <p className="sec-p mobile">
+            Turn every shoot into reel-ready ultra-realistic videos for Instagram, PDPs and ads. Start from ready-made presets, customize them, or direct your own editorial look.
+          </p>
+        </div>
+        {/* Outside .wrap: the arc is wider than the text column by design, and
+            the outer frames are meant to run off the edge of the screen. */}
+        <div className="reel-arc" id="reelArc" />
+        <div className="wrap">
+        </div>
+      </section>
+
       <section className="demo" id="demo">
         <div className="wrap-1 demo-grid">
           <div className="demo-copy rv">
@@ -539,26 +560,7 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
           Cards, imagery and the arc geometry all come from landing.js — the
           angles depend on the rendered card width, so they cannot be static
           CSS. */}
-      <section className="reels" id="reels">
-        <div className="wrap reels-head rv">
-          <span className="eyebrow">Fashion video</span>
-          <h2>
-            Turn a photoshoot into <em>scroll-stopping video</em>.
-          </h2>
-          <p className="sec-p desktop">
-            Turn every shoot into reel-ready video: the same model, the same garment, brought to life for Instagram, product pages and ads. Start from ready-made presets for ultra-realistic Instagram fashion reels, ads and PDP videos. Customize any preset, or direct your own: set the mood, the movement and the camera, and shoot the editorial look you imagined.
-          </p>
-          <p className="sec-p mobile">
-            Turn every shoot into reel-ready ultra-realistic videos for Instagram, PDPs and ads. Start from ready-made presets, customize them, or direct your own editorial look.
-          </p>
-        </div>
-        {/* Outside .wrap: the arc is wider than the text column by design, and
-            the outer frames are meant to run off the edge of the screen. */}
-        <div className="reel-arc" id="reelArc" />
-        <div className="wrap">
-        </div>
-      </section>
-
+     
       {/* ── built for brands at every stage ── */}
       {/* A category deck: pills choose, three cards fan with the chosen one
           upright. Pills, cards and imagery all come from landing.js. */}
@@ -943,6 +945,107 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
         </div>
       </section>
 
+      {/* ── contact / lead capture ── */}
+      {/* Posts to /api/leads, handled by landing.js. A plain <form> so it is
+          still submittable with JavaScript off — the handler only intercepts
+          to avoid the page reload. */}
+      <section className="contact" id="contact">
+        <div className="wrap ct-grid">
+          <div className="ct-say rv">
+            <span className="eyebrow">Talk to us</span>
+            <h2>
+              Tell us what you shoot. <em>We&rsquo;ll show you it back.</em>
+            </h2>
+            <p className="sec-p">
+              Send a garment or two and the sort of catalogue you run. We&rsquo;ll come back with
+              sample frames on your own product, and a straight answer on cost per photo at your
+              volume.
+            </p>
+            <ul className="ct-list">
+              <li>
+                <b>A reply within one working day.</b> From a person, not an autoresponder.
+              </li>
+              <li>
+                <b>Sample frames on your garment.</b> Free, before any wallet is loaded.
+              </li>
+              <li>
+                <b>Volume pricing.</b> Past a few hundred products a month the per-photo rate is
+                negotiable.
+              </li>
+            </ul>
+          </div>
+
+          <form className="ct-form rv" id="leadForm" method="post" action="/api/leads" noValidate>
+            <div className="ct-row">
+              <label className="ct-field">
+                <span>Your name *</span>
+                <input name="name" type="text" autoComplete="name" required maxLength={120} />
+              </label>
+              <label className="ct-field">
+                <span>Brand / company</span>
+                <input name="brand" type="text" autoComplete="organization" maxLength={160} />
+              </label>
+            </div>
+
+            <div className="ct-row">
+              <label className="ct-field">
+                <span>Email *</span>
+                <input name="email" type="email" autoComplete="email" required maxLength={200} />
+              </label>
+              <label className="ct-field">
+                <span>Phone / WhatsApp</span>
+                <input name="phone" type="tel" autoComplete="tel" maxLength={40} />
+              </label>
+            </div>
+
+            <label className="ct-field">
+              <span>Roughly how much do you shoot?</span>
+              <select name="volume" defaultValue="">
+                <option value="">Select one</option>
+                {LEAD_VOLUMES.map((v) => (
+                  <option key={v} value={v}>
+                    {v}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="ct-field">
+              <span>What do you need? *</span>
+              <textarea
+                name="message"
+                rows={4}
+                required
+                maxLength={4000}
+                placeholder="Ethnic wear, about 300 SKUs a month, currently shooting with a studio in Jaipur…"
+              />
+            </label>
+
+            {/* Honeypot. Hidden from people and from screen readers; bots fill
+                every field they find, so anything here means a bot. */}
+            <div className="ct-hp" aria-hidden="true">
+              <label>
+                Company website
+                <input name="company_website" type="text" tabIndex={-1} autoComplete="off" />
+              </label>
+            </div>
+
+            <div className="ct-send">
+              <button type="submit" className="btn btn-cta" id="leadBtn" data-c="">
+                Send enquiry <span className="arw">&rarr;</span>
+              </button>
+              {/* Written to by landing.js; role=status so a screen reader is
+                  told the outcome without the focus moving. */}
+              <p className="ct-msg" id="leadMsg" role="status" aria-live="polite" />
+            </div>
+
+            <p className="ct-fine">
+              We use this to reply to you, and for nothing else. No newsletter, no reselling.
+            </p>
+          </form>
+        </div>
+      </section>
+
       <footer>
         <div className="wrap fin">
           <div>
@@ -970,10 +1073,10 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
             <a href="#" data-c="">Agencies</a>
           </div>
           <div>
-            <span className="k-label">Company</span>
-            <a href="#" data-c="">About</a>
-            <a href="#" data-c="">Contact</a>
-            <a href="#" data-c="">Terms</a>
+            <span className="k-label">Legal</span>
+            <a href="#contact" data-c="">Contact</a>
+            <a href="/terms" data-c="">Terms of Use</a>
+            <a href="/privacy" data-c="">Privacy Policy</a>
           </div>
         </div>
         <div className="wrap fbot">

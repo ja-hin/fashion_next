@@ -262,12 +262,12 @@ const priceFill=document.getElementById("priceFill");
     {t:'<b>100% commercial</b> rights',
      b:'Every image is yours, everywhere, forever. No licensing windows, no renewals, no usage fees.',
      img:"photo-1509631179647-0177331693ae", bg:"#7a5a41", pose:"full"},
-    {t:'Prepaid wallet, <b>GST invoicing</b>',
-     b:'No subscription, no seats, no minimum SKUs. Load a wallet in rupees and shoot when you like.',
-     img:"photo-1539109136881-3be0616acf4b", bg:"#54452f", pose:"full"},
-    {t:'Your designs <b>stay yours</b>',
-     b:"Your uploads power your shoots and nothing else. Never shared, never resold, handled under India's DPDP law.",
-     img:"photo-1583391733956-6c78276477e2", bg:"#40506b", pose:"full"}
+    // {t:'Prepaid wallet, <b>GST invoicing</b>',
+    //  b:'No subscription, no seats, no minimum SKUs. Load a wallet in rupees and shoot when you like.',
+    //  img:"photo-1539109136881-3be0616acf4b", bg:"#54452f", pose:"full"},
+    // {t:'Your designs <b>stay yours</b>',
+    //  b:"Your uploads power your shoots and nothing else. Never shared, never resold, handled under India's DPDP law.",
+    //  img:"photo-1583391733956-6c78276477e2", bg:"#40506b", pose:"full"}
   ];
 
   const skin="#C98F63",hair="#1E1712",gar="#C24418";
@@ -390,9 +390,11 @@ const priceFill=document.getElementById("priceFill");
       `<span class="ep-no">${String(i+1).padStart(2,"0")}</span>`;
     box.appendChild(card);cards.push(card);
 
-    /* The real item, cropped from the same photograph the pins point at — so
-       the card and the pin are demonstrably the same object, not a drawing
-       standing in for one. The drawing above holds the slot until it loads. */
+    /* The supplied packshot of the actual item — the six product photographs
+       that went into the shoot, square-cropped to /webassets/ensemble/pN.jpg.
+       Packshots rather than crops of the finished frame: this section's claim
+       is "these six went in, this one came out", and a crop of the output can
+       only ever show the output. The drawing holds the slot until it loads. */
     probeChain(ASSET_DIR+"ensemble/p"+(i+1)).then(u=>{
       if(u)card.querySelector(".ep-shot").innerHTML=`<img src="${u}" alt="${p.n}"/>`;
     });
@@ -604,30 +606,51 @@ function navChrome(y){
   if(Math.abs(dy)>6){nav.classList.toggle("nav-away",dy>0);navLastY=y;}
 }
 
+/* The frame loop.
+ *
+ * Every block is guarded on its own elements rather than the function bailing
+ * out at the top, because this file is loaded by pages that are not the landing
+ * page — /pricing, /privacy, /terms — for the theme toggle and the header, and
+ * those carry none of the scrubbed sections.
+ *
+ * Guarded individually, and not for tidiness: an unguarded deref here throws
+ * INSIDE the frame, so the `requestAnimationFrame(tick)` on the last line never
+ * runs and the loop stops for good after one frame. On those pages that froze
+ * the progress bar and the nav's scroll behaviour, with one console error to
+ * show for it. */
 function tick(){
   scrollY_s=reduce?window.scrollY:lerp(scrollY_s,window.scrollY,0.12);
-  const doc=document.documentElement;
-  progress.style.width=(window.scrollY/(doc.scrollHeight-innerHeight)*100)+"%";
-  nav.classList.toggle("solid",window.scrollY>40);
+
+  if(progress){
+    const doc=document.documentElement;
+    progress.style.width=(window.scrollY/(doc.scrollHeight-innerHeight)*100)+"%";
+  }
+  if(nav)nav.classList.toggle("solid",window.scrollY>40);
   navChrome(window.scrollY);
 
-  const np=zoneProgress(narrWrap);
-  const p1=clamp(1-(np-0.28)/0.22,0,1);
-  const p2=clamp((np-0.42)/0.22,0,1);
-  sc1.style.opacity=p1;sc1.style.transform=`scale(${0.94+0.06*p1}) translateY(${(1-p1)*-30}px)`;
-  sc2.style.opacity=p2;sc2.style.transform=`scale(${0.94+0.06*p2}) translateY(${(1-p2)*30}px)`;
+  if(narrWrap&&sc1&&sc2){
+    const np=zoneProgress(narrWrap);
+    const p1=clamp(1-(np-0.28)/0.22,0,1);
+    const p2=clamp((np-0.42)/0.22,0,1);
+    sc1.style.opacity=p1;sc1.style.transform=`scale(${0.94+0.06*p1}) translateY(${(1-p1)*-30}px)`;
+    sc2.style.opacity=p2;sc2.style.transform=`scale(${0.94+0.06*p2}) translateY(${(1-p2)*30}px)`;
+  }
 
-  const cp=ease(clamp(zoneProgress(cntWrap)/0.85,0,1));
-  const val=250-(250-25)*cp;
-  bigNum.textContent=fmtIN(val);
-  barStudio.style.height="220px";
-  barUs.style.height=(220*Math.max(0.06,(25/250)+(1-cp)*0.9))+"px";
-  cntX.classList.toggle("on",cp>0.96);
+  if(cntWrap&&bigNum&&barStudio&&barUs&&cntX){
+    const cp=ease(clamp(zoneProgress(cntWrap)/0.85,0,1));
+    const val=250-(250-25)*cp;
+    bigNum.textContent=fmtIN(val);
+    barStudio.style.height="220px";
+    barUs.style.height=(220*Math.max(0.06,(25/250)+(1-cp)*0.9))+"px";
+    cntX.classList.toggle("on",cp>0.96);
+  }
 
   RAILS.forEach(r=>r.frame());
 
-  cx=lerp(cx,tx,0.22);cy=lerp(cy,ty,0.22);
-  cur.style.transform=`translate(${cx-cur.offsetWidth/2}px,${cy-cur.offsetHeight/2}px)`;
+  if(cur){
+    cx=lerp(cx,tx,0.22);cy=lerp(cy,ty,0.22);
+    cur.style.transform=`translate(${cx-cur.offsetWidth/2}px,${cy-cur.offsetHeight/2}px)`;
+  }
   requestAnimationFrame(tick);
 }
 requestAnimationFrame(tick);
@@ -2173,4 +2196,70 @@ const STRIP_ITEMS=[
   addEventListener("scroll",paint,{passive:true});
   addEventListener("resize",paint);
   sync();
+})();
+
+/* =============== contact form =============== */
+/* Progressive enhancement, not a replacement: the markup is a real <form> with
+ * a real action, so with this file blocked it still posts and still works. All
+ * this does is keep the visitor on the page.
+ *
+ * The success state replaces the form outright rather than clearing the fields.
+ * A form that empties itself looks the same as a form that lost your message,
+ * and someone who is not sure it sent will send it again.
+ */
+(function leadForm(){
+  const form=document.getElementById("leadForm");
+  const btn=document.getElementById("leadBtn");
+  const msg=document.getElementById("leadMsg");
+  if(!form||!btn||!msg)return;
+
+  const say=(t,cls)=>{msg.textContent=t;msg.className="ct-msg"+(cls?" "+cls:"");};
+
+  form.addEventListener("submit",async e=>{
+    e.preventDefault();
+    if(form.classList.contains("sending"))return;
+
+    const fd=new FormData(form);
+    const body={};
+    fd.forEach((v,k)=>{body[k]=typeof v==="string"?v:"";});
+    body.source="landing";
+
+    /* Checked here as well as on the server, only so the answer is instant.
+       The server is still the one that decides — see lib/leads.ts. */
+    if(!String(body.name||"").trim()){say("Please tell us your name","err");return;}
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(body.email||"").trim())){
+      say("That email address does not look right","err");return;
+    }
+    if(String(body.message||"").trim().length<5){say("Please tell us what you need","err");return;}
+
+    form.classList.add("sending");
+    btn.disabled=true;
+    say("Sending…");
+
+    try{
+      const r=await fetch("/api/leads",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(body),
+      });
+      const j=await r.json().catch(()=>({}));
+      if(!r.ok)throw new Error(j.detail||j.error||"Something went wrong. Please try again.");
+
+      const name=String(j.name||"").split(" ")[0];
+      form.innerHTML=
+        '<div class="ct-done">'+
+          '<div class="ct-tick">✓</div>'+
+          "<h3>Thanks"+(name?", "+name.replace(/[<>&]/g,""):"")+".</h3>"+
+          "<p>Your enquiry is with us. We reply within one working day — "+
+          "check your spam folder if you don't hear back, and it will be from our studio address.</p>"+
+        "</div>";
+      form.classList.remove("sending");
+    }catch(err){
+      form.classList.remove("sending");
+      btn.disabled=false;
+      /* The typed message stays in the fields: the one thing worse than a
+         failed send is a failed send that also ate what you wrote. */
+      say(err&&err.message?err.message:"Something went wrong. Please try again.","err");
+    }
+  });
 })();

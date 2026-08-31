@@ -8,15 +8,16 @@ import 'server-only';
 import { MongoClient, type Db, type Collection } from 'mongodb';
 import { MONGODB_URI, MONGODB_DB } from './config';
 import type {
-  UserDoc,
-  SessionDoc,
-  ShootDoc,
-  ModelDoc,
   GarmentDoc,
+  LeadDoc,
   LogDoc,
-  SettingsDoc,
+  ModelDoc,
   OrderDoc,
   ResetDoc,
+  SessionDoc,
+  SettingsDoc,
+  ShootDoc,
+  UserDoc,
 } from './types';
 
 declare global {
@@ -70,13 +71,16 @@ export async function orders(): Promise<Collection<OrderDoc>> {
 export async function passwordResets(): Promise<Collection<ResetDoc>> {
   return (await getDb()).collection<ResetDoc>('password_resets');
 }
+export async function leads(): Promise<Collection<LeadDoc>> {
+  return (await getDb()).collection<LeadDoc>('leads');
+}
 
 /**
  * Create every index the app relies on. Idempotent — safe to call on each boot.
  * Called once from ensureBootstrapped() in bootstrap.ts.
  */
 export async function ensureIndexes(): Promise<void> {
-  const [u, s, sh, m, l, o, pr] = await Promise.all([
+  const [u, s, sh, m, l, o, pr, ld] = await Promise.all([
     users(),
     sessions(),
     shoots(),
@@ -84,6 +88,7 @@ export async function ensureIndexes(): Promise<void> {
     logs(),
     orders(),
     passwordResets(),
+    leads(),
   ]);
 
   await Promise.all([
@@ -120,5 +125,13 @@ export async function ensureIndexes(): Promise<void> {
     pr.createIndex({ expires: 1 }, { expireAfterSeconds: 0 }),
     pr.createIndex({ user_id: 1, created: -1 }),
     pr.createIndex({ email: 1, created: -1 }),
+
+    // The admin list is "newest first", optionally filtered to the ones nobody
+    // has answered yet — which is exactly these two.
+    ld.createIndex({ created: -1 }),
+    ld.createIndex({ status: 1, created: -1 }),
+    // Not unique: the same brand may well write in twice, and rejecting the
+    // second enquiry would lose the one they cared enough to send again.
+    ld.createIndex({ email: 1, created: -1 }),
   ]);
 }

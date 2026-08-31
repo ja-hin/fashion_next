@@ -56,7 +56,7 @@ html{scroll-behavior:auto}
 
    By id rather than on every section: these are the ones the nav, the footer
    and the hero actually link to. */
-#pricing,#features,#demo,#why,#faq,#casting,#ensemble,#reels,#cats,#how{scroll-margin-top:96px}
+#pricing,#features,#demo,#why,#faq,#casting,#ensemble,#reels,#cats,#how,#contact{scroll-margin-top:96px}
 body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.55;
   -webkit-font-smoothing:antialiased;overflow-x:hidden;transition:background .5s,color .5s}
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:var(--grain-op);mix-blend-mode:var(--grain-blend);
@@ -579,6 +579,165 @@ footer .logo-img{height:46px}
 .final .in{position:relative;z-index:2;padding:0 24px}
 .final .sub{color:var(--dim);margin:26px auto 36px;max-width:44ch}
 .final .glow{position:absolute;width:70vw;height:70vw;border-radius:50%;background:var(--glow);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+
+/* ── contact / lead capture ───────────────────────────────────────────
+   Sits between the closing CTA and the footer. Two columns: the case for
+   writing in on the left, the form on the right — so the form is what the eye
+   lands on, and the reasons are there for the people who need them. */
+.contact{border-top:1px solid var(--line-soft);background:var(--bg2);padding:96px 0 100px;transition:background .5s}
+.ct-grid{display:grid;grid-template-columns:1fr 1.05fr;gap:64px;align-items:start}
+.ct-say h2{font-size:clamp(1.9rem,3.4vw,2.9rem);margin-top:16px;max-width:14ch;line-height:1.12}
+.ct-say h2 em{font-style:italic;color:var(--flame)}
+.ct-say .sec-p{color:var(--dim);font-size:1rem;line-height:1.65;max-width:46ch;margin:20px 0 0}
+.ct-list{list-style:none;padding:0;margin:30px 0 0;display:grid;gap:16px}
+.ct-list li{position:relative;padding-left:26px;font-size:.92rem;line-height:1.55;color:var(--dim)}
+.ct-list li b{color:var(--text);font-weight:600}
+/* A rule rather than a bullet glyph — it sits on the first line's baseline at
+   any font size, which a character never quite does. */
+.ct-list li::before{content:"";position:absolute;left:0;top:.62em;width:14px;height:1px;background:var(--flame)}
+
+.ct-form{background:var(--card);border:1px solid var(--line-soft);border-radius:10px;
+  padding:32px;box-shadow:var(--shadow);display:grid;gap:16px}
+.ct-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ct-field{display:grid;gap:7px}
+.ct-field>span{font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.ct-field input,.ct-field select,.ct-field textarea{
+  font:inherit;font-size:.94rem;color:var(--text);background:var(--bg);
+  border:1px solid var(--line);border-radius:6px;padding:11px 13px;width:100%;
+  transition:border-color .2s,box-shadow .2s}
+.ct-field textarea{resize:vertical;min-height:104px;line-height:1.55}
+/* The ring is the focus indicator, so it must not be removed with the outline —
+   keyboard users have nothing else to go on. */
+.ct-field :focus-visible{outline:none;border-color:var(--flame);box-shadow:0 0 0 3px rgba(228,87,46,.16)}
+.ct-field select{appearance:none;cursor:pointer;
+  background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);
+  background-position:calc(100% - 18px) 52%,calc(100% - 13px) 52%;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:38px}
+.ct-form.sending{opacity:.6;pointer-events:none}
+
+/* Off-screen rather than display:none — a bot that skips hidden inputs would
+   walk straight past a honeypot it cannot see. */
+.ct-hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+
+.ct-send{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:4px}
+.ct-msg{font-size:.88rem;line-height:1.4;margin:0;color:var(--dim)}
+.ct-msg.err{color:var(--flame)}
+.ct-msg.ok{color:var(--mint)}
+.ct-fine{font-size:.78rem;color:var(--muted);margin:0;line-height:1.5}
+
+/* Replaces the form on success. Same box, so the page does not jump. */
+.ct-done{text-align:center;padding:26px 6px}
+.ct-tick{width:46px;height:46px;margin:0 auto 18px;border-radius:50%;
+  display:grid;place-items:center;font-size:1.3rem;color:#fff;background:var(--mint)}
+.ct-done h3{font-family:var(--serif);font-size:1.5rem;margin:0 0 10px}
+.ct-done p{color:var(--dim);font-size:.92rem;line-height:1.6;margin:0 auto;max-width:38ch}
+
+@media(max-width:900px){
+  .contact{padding:72px 0 78px}
+  .ct-grid{grid-template-columns:1fr;gap:38px}
+  .ct-say h2{max-width:none}
+  /* The global `.rv.in{text-align:center}` further down catches everything that
+     reveals, this form included. A label has to stay left of its field and a
+     rule marker left of its line, so both opt back out — the form by
+     out-specifying it, the list by being targeted directly, which beats an
+     inherited value whatever its specificity. */
+  .ct-form.rv.in{text-align:left}
+  .ct-list{text-align:left}
+}
+@media(max-width:620px){
+  .ct-form{padding:22px;border-radius:8px}
+  /* Two 50% columns on a phone leave each field too narrow to read its own
+     label, so they stack. */
+  .ct-row{grid-template-columns:1fr}
+  .ct-send{gap:12px}
+  .ct-send .btn{width:100%;justify-content:center}
+}
+
+/* ── legal pages (/privacy, /terms) ───────────────────────────────────
+   The authored documents ship their own stylesheet; this is deliberately NOT
+   that one. Those files use their own variable names over a different palette,
+   and loading two systems that both define --bg would corrupt whichever landed
+   second — the same reason the marketing layout links landing.css rather than
+   importing it. So the body copy comes across and the styling is rebuilt on
+   this page's tokens. */
+.legal{padding-top:74px}          /* clears the fixed header */
+
+.lg-head{padding:56px 0 40px;border-bottom:1px solid var(--line-soft);text-align:center}
+.lg-head h1{font-size:clamp(2.1rem,5vw,3.4rem);margin:14px 0 0;line-height:1.1}
+.lg-tag{color:var(--dim);font-size:1.02rem;line-height:1.6;max-width:60ch;margin:18px auto 0}
+.lg-dates{display:flex;justify-content:center;gap:38px;flex-wrap:wrap;margin-top:26px}
+.lg-dates div{display:grid;gap:4px}
+.lg-dates span{font-family:var(--mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.lg-dates b{font-size:.92rem;color:var(--text);font-weight:600}
+
+.lg-shell{display:grid;grid-template-columns:250px 1fr;gap:56px;align-items:start;padding:46px 0 70px}
+
+/* Sticky at desktop width, a real <details> below it — see the note in
+   LegalShell for why the collapse is markup and not script. */
+.lg-toc{position:sticky;top:96px}
+.lg-toc details{border:1px solid var(--line-soft);border-radius:8px;background:var(--card);padding:14px 16px}
+.lg-toc summary{font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);cursor:pointer;list-style:none}
+.lg-toc summary::-webkit-details-marker{display:none}
+.lg-toc ol{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:9px;counter-reset:none}
+.lg-toc a{font-size:.85rem;line-height:1.4;color:var(--dim);transition:color .2s}
+.lg-toc a:hover{color:var(--flame)}
+
+.lg-body{min-width:0;max-width:74ch}
+.lg-body h2{font-size:clamp(1.3rem,2.2vw,1.7rem);line-height:1.25;margin:46px 0 14px;
+  display:flex;align-items:baseline;gap:12px;scroll-margin-top:96px}
+.lg-body h2:first-child{margin-top:0}
+/* The numeral is decoration — the heading text already reads "1. Who We Are" in
+   the contents — so it is sized down and set in mono rather than competing with
+   the heading it sits beside. */
+.lg-body .secnum{flex:0 0 auto;font-family:var(--mono);font-size:.72rem;color:var(--flame);
+  border:1px solid var(--line);border-radius:5px;padding:3px 7px;line-height:1}
+.lg-body h3{font-size:1.02rem;margin:28px 0 10px;scroll-margin-top:96px}
+.lg-body p{color:var(--dim);line-height:1.75;margin:0 0 15px}
+.lg-body ul,.lg-body ol{color:var(--dim);line-height:1.75;margin:0 0 15px;padding-left:0;list-style:none;display:grid;gap:9px}
+.lg-body li{position:relative;padding-left:22px}
+.lg-body ul li::before{content:"";position:absolute;left:0;top:.72em;width:11px;height:1px;background:var(--flame)}
+.lg-body ol{counter-reset:lgo}
+.lg-body ol li{counter-increment:lgo}
+.lg-body ol li::before{content:counter(lgo) ".";position:absolute;left:0;top:0;
+  font-family:var(--mono);font-size:.76rem;color:var(--flame)}
+.lg-body strong{color:var(--text);font-weight:600}
+.lg-body a{color:var(--flame);text-decoration:underline;text-underline-offset:2px}
+
+.lg-faq{border-top:1px solid var(--line-soft);background:var(--bg2);padding:70px 0 84px;transition:background .5s}
+.lg-faq h2{font-size:clamp(1.7rem,3.4vw,2.3rem);margin:14px 0 0}
+.lg-faqsub{color:var(--dim);max-width:56ch;margin:14px 0 0;line-height:1.6}
+.lg-faqlist{margin-top:30px;display:grid;gap:10px;max-width:78ch}
+.lg-faqlist details{border:1px solid var(--line-soft);border-radius:8px;background:var(--card);overflow:hidden}
+.lg-faqlist summary{display:flex;align-items:center;justify-content:space-between;gap:18px;
+  padding:16px 18px;cursor:pointer;font-weight:600;font-size:.95rem;line-height:1.45;list-style:none}
+.lg-faqlist summary::-webkit-details-marker{display:none}
+/* Drawn from two rules rather than a "+" glyph: the horizontal one is removed
+   on open, which turns the plus into a minus with no text swap and no script. */
+.lg-faqlist .tick{position:relative;flex:0 0 auto;width:13px;height:13px}
+.lg-faqlist .tick::before,.lg-faqlist .tick::after{content:"";position:absolute;background:var(--flame);
+  transition:opacity .2s,transform .2s}
+.lg-faqlist .tick::before{left:0;top:6px;width:13px;height:1.5px}
+.lg-faqlist .tick::after{left:6px;top:0;width:1.5px;height:13px}
+.lg-faqlist details[open] .tick::after{opacity:0;transform:rotate(90deg)}
+.lg-ans{padding:0 18px 18px}
+.lg-ans p{color:var(--dim);line-height:1.7;margin:0}
+
+@media(max-width:900px){
+  .lg-shell{grid-template-columns:1fr;gap:26px;padding:30px 0 56px}
+  .lg-toc{position:static}
+  .lg-head{padding:40px 0 32px}
+  .lg-dates{gap:26px}
+  /* The global `.rv.in{text-align:center}` does not reach here — nothing on
+     these pages carries .rv — but the head is centred by design and the body
+     must not follow it. */
+  .lg-body{text-align:left}
+}
+@media(max-width:620px){
+  .lg-body h2{gap:9px}
+  .lg-faqlist summary{padding:14px;gap:12px}
+  .lg-ans{padding:0 14px 14px}
+}
 
 footer{border-top:1px solid var(--line-soft);padding:56px 0 40px;color:var(--dim)}
 footer .fin{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap;align-items:flex-start}

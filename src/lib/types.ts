@@ -388,3 +388,28 @@ export interface Job {
   shoot?: string;
   createdAt: number;
 }
+// ── contact form leads ──────────────────────────────────────────────
+/**
+ * An enquiry from the marketing page's contact section.
+ *
+ * Deliberately not a `UserDoc`: someone asking a question has not signed up,
+ * and creating an account they never asked for would be both a surprise and a
+ * consent problem. A lead is its own record with its own lifecycle.
+ */
+export type LeadStatus = 'new' | 'contacted' | 'closed';
+
+export interface LeadDoc {
+  _id: string; // hex id
+  name: string;
+  email: string;
+  phone: string; // optional in the form, '' when not given
+  brand: string; // company / label, '' when not given
+  volume: string; // rough monthly catalogue size, one of LEAD_VOLUMES
+  message: string;
+  status: LeadStatus;
+  /** Which page sent it — there is one form today, there may be more. */
+  source: string;
+  created: string; // ISO, seconds precision
+  /** When the status last moved off `new`. */
+  handled?: string;
+}

@@ -23,6 +23,14 @@ const nextConfig = {
       { source: '/app', destination: '/generate', permanent: false },
       { source: '/home', destination: '/', permanent: false },
       { source: '/signup', destination: '/register', permanent: false },
+
+      // The legal copy is authored as standalone files in /public, which the
+      // app also serves verbatim at these URLs. Two live URLs for one document
+      // is duplicate content to a crawler and two different-looking pages to a
+      // reader, so the file paths point at the real pages. `redirects()` runs
+      // ahead of static file serving, so these win.
+      { source: '/privacy.html', destination: '/privacy', permanent: true },
+      { source: '/terms.html', destination: '/terms', permanent: true },
     ];
   },
 

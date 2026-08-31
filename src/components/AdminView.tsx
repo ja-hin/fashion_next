@@ -14,6 +14,7 @@ import {
 } from './icons';
 import { useDialog } from './Dialog';
 import AdminPacks from './AdminPacks';
+import AdminLeads from './AdminLeads';
 import type { AdminUser, Me } from '@/lib/client/types';
 
 const MODES = ['imagine', 'saved'] as const;
@@ -258,6 +259,8 @@ export default function AdminView({
           </table>
         </TableWrap>
       </div>
+
+      <AdminLeads />
 
       <AdminPacks />
 
