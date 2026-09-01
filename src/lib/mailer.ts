@@ -27,6 +27,12 @@ export interface Mail {
   subject: string;
   html: string;
   text: string;
+  /**
+   * Optional. Where a reply should go when that is not the From address — a
+   * contact-form notification is addressed to us but should reply to the
+   * visitor, so hitting Reply in the inbox does the obvious thing.
+   */
+  replyTo?: string;
 }
 
 /** True when the configured driver actually has credentials to send with. */
@@ -61,6 +67,7 @@ async function sendResend(m: Mail): Promise<void> {
       subject: m.subject,
       html: m.html,
       text: m.text,
+      ...(m.replyTo ? { reply_to: m.replyTo } : {}),
     }),
   });
   if (!r.ok) {
@@ -83,7 +90,9 @@ export async function sendMail(m: Mail): Promise<boolean> {
       // development affordance — MAIL_DRIVER defaults to smtp in production.
       console.log(
         `\n─── EMAIL (console driver) ${'─'.repeat(42)}\n` +
-          `to      ${m.to}\nsubject ${m.subject}\n\n${m.text}\n` +
+          `to      ${m.to}\n` +
+            (m.replyTo ? `reply-to ${m.replyTo}\n` : '') +
+            `subject ${m.subject}\n\n${m.text}\n` +
           '─'.repeat(68) +
           '\n',
       );
