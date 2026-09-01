@@ -1004,6 +1004,9 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 
 .hiw-group{margin-top:24px}
 .hiw-group:first-child{margin-top:0}
+.hiw-group:nth-child(2) {
+  margin-top: 0;
+}
 .hiw-group .k-label{display:block;margin-bottom:10px}
 .hiw-opts{display:flex;gap:10px;flex-wrap:wrap}
 .opt{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:100px;
@@ -1019,13 +1022,18 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 /* the resulting frame */
 .hiw-view{position:relative;border-radius:16px;overflow:hidden;background:#1b1915;aspect-ratio:1/1}
 .hiw-view .media{position:absolute;inset:0;animation:settle .32s cubic-bezier(.2,.8,.2,1)}
+/* The desktop box is square while the photography is 4:5, so `cover` overflows
+   vertically and a centred crop takes ~10% off the top — the head, on a panel
+   whose entire job is showing a model. Top-anchored for the photograph only;
+   the drawn croquis is authored to fit the box and must not be shifted. */
 .hiw-view .media img,.hiw-view .media svg{width:100%;height:100%;object-fit:cover;display:block}
+.hiw-view .media img{object-position:50% 0%}
 .hiw-cap{position:absolute;left:14px;bottom:14px;z-index:2;background:rgba(23,21,15,.72);color:#fff;
   border-radius:100px;padding:8px 15px;font-size:.82rem;backdrop-filter:blur(6px)}
 .hiw-center{display: flex; flex-direction: column; align-items: center; text-align: center;}  
 
 @media(max-width:860px){
-
+.hiw-flex{ display: flex; flex-direction: row; gap: 25px;}
   /* Stacked, the whole widget has to fit one phone screen. It is a thing you
      drive, and a control whose result is 400px below it is a control you
      cannot tell is working — so every part is trimmed to keep the frame in
@@ -1049,7 +1057,7 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
   /* Height is the set dimension here and the ratio derives the width, so the
      frame scales with the phone instead of taking the full column width and
      pushing itself off the bottom of the screen. */
-  .hiw-view{width:auto;height:min(30svh,270px);aspect-ratio:3/4;justify-self:center}
+  .hiw-view{width:auto;height:50vh;aspect-ratio:3/4;justify-self:center}
   /* Anchored both sides and truncated: the frame is ~200px wide here and the
      caption is a four-part line, so left-anchored it would run off the edge. */
   .hiw-cap{left:8px;right:8px;bottom:8px;padding:6px 10px;font-size:.66rem;text-align:center;
@@ -1506,22 +1514,29 @@ body.mnav-open .mnav-sheet{transform:none}
   padding:26px 12px 11px;text-align:center;pointer-events:none;
   /* Reaching well above the text so it fades into the picture rather than
      ending on a visible edge. */
-  background:linear-gradient(transparent,rgba(10,9,8,.55) 38%,rgba(10,9,8,.92));
-  opacity:0;transform:translateY(8px);
-  transition:opacity .32s cubic-bezier(.2,.8,.2,1),transform .32s cubic-bezier(.2,.8,.2,1)}
+  background:linear-gradient(transparent,rgba(10,9,8,.42) 38%,rgba(10,9,8,.86));
+  /* Legible at rest, not only on hover: every card in the arc names itself, so
+     the row reads as a set of titled clips rather than eleven anonymous
+     thumbnails you have to point at one at a time. */
+  opacity:1;transform:none;
+  transition:opacity .32s cubic-bezier(.2,.8,.2,1),
+             transform .32s cubic-bezier(.2,.8,.2,1),
+             background .32s cubic-bezier(.2,.8,.2,1)}
 .reel-cap-in b{display:block;font-family:var(--serif);font-weight:500;
   font-size:1.02rem;line-height:1.2;color:#fff}
 .reel-cap-in i{display:block;margin-top:4px;font-style:normal;font-family:var(--mono);
   font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.72);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-/* Shown on the card the row has raised — hover, keyboard focus, or the frame
-   the tour is playing. Exactly the three states that already straighten a card
-   out of the arc, so the caption arrives with the card rather than on its own
-   separate rule. */
+/* Strengthened — not revealed — on the card the row has raised: hover, keyboard
+   focus, or the frame the tour is playing. Exactly the three states that already
+   straighten a card out of the arc. The caption is on every card at rest now, so
+   what these do is deepen the scrim under the one you are looking at, which is
+   the card whose title you are actually trying to read. */
 .reel:hover .reel-cap-in,
 .reel:focus-within .reel-cap-in,
-.reel.playing .reel-cap-in{opacity:1;transform:none}
+.reel.playing .reel-cap-in{
+  background:linear-gradient(transparent,rgba(10,9,8,.6) 38%,rgba(10,9,8,.95))}
 
 .reel-hint{margin-top:clamp(26px,4vw,44px);text-align:center;font-family:var(--mono);
   font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}

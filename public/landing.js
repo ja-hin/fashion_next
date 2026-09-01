@@ -1552,7 +1552,7 @@ const STRIP_ITEMS=[
     a.setAttribute("aria-label",c.n);
     a.insertAdjacentHTML("beforeend",
       `<span class="ccard-in">
-        
+        <h3>${c.n}</h3>
        </span>`);
         // <h3>${c.n}</h3>
         //  <p>${c.p}</p>
@@ -1998,7 +1998,13 @@ const STRIP_ITEMS=[
     cap.className="reel-cap-in";
     cap.innerHTML=`<b></b><i></i>`;
     cap.querySelector("b").textContent=clip.t;
-    cap.querySelector("i").textContent=`Clip ${String(i+1).padStart(2,"0")} · ${clip.s}`;
+    /* The description only. The "Clip 08 ·" counter came from when the caption
+       sat under the arc and had to say which of eleven cards it meant; now that
+       every card carries its own, it was numbering a set nobody counts through.
+       The count survives where it still helps — the button's aria-label above
+       still says "clip 8 of 11", which is a screen reader's only sense of
+       position in the row. */
+    cap.querySelector("i").textContent=clip.s;
     box.appendChild(cap);
 
     card.appendChild(box);

@@ -351,18 +351,19 @@ export default async function LandingPage() {
               {/* Womenswear / Menswear. Each carries its own garments, cast and
                   poses, so everything below is rebuilt when this changes —
                   which is why it sits above the rest of the controls. */}
-              <div className="hiw-group">
-                <span className="k-label">Category</span>
-                <div className="hiw-tabs" id="hiwCats" role="tablist" aria-label="Category" />
-              </div>
+              <div className='hiw-flex'>
+                <div className="hiw-group">
+                  <span className="k-label">Category</span>
+                  <div className="hiw-tabs" id="hiwCats" role="tablist" aria-label="Category" />
+                </div>
 
-              <div className="hiw-group">
-                <span className="k-label">Garment</span>
-                <div className="hiw-garments" id="hiwGarments" role="group" aria-label="Garment" />
+                <div className="hiw-group">
+                  <span className="k-label" >Garment</span>
+                  <div className="hiw-garments" id="hiwGarments" role="group" aria-label="Garment" />
+                </div>
               </div>
-
               <div className="hiw-group">
-                <span className="k-label">Model</span>
+                <span className="k-label" style={{paddingTop:'13px'}}>Model</span>
                 <div className="hiw-opts" id="hiwModels" role="group" aria-label="Model" />
               </div>
               <div className="hiw-group">
@@ -901,10 +902,6 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
               in for the hairline. Empty here rather than four hardcoded dots so
               the count can never fall out of step with the packs. */}
           <div className="plan-dots" id="planDots" hidden />
-          <div className="pnote rv">
-            Enterprise from ₹6/photo · Talk to us for custom volume, dedicated models &amp;
-            onboarding
-          </div>
         </div>
       </section>
 
