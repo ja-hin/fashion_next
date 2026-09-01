@@ -930,7 +930,7 @@ const STRIP_ITEMS=[
   show(0);restartTimer();
 })();
 
-/* =============== contact sheet: five shoots, one sheet =============== */
+/* =============== contact sheet: four shoots, one sheet =============== */
 /* Replaces the old single-set sheet. Scoped in an IIFE like the other panels —
    it needs its own `cur`, `paused` and `reduce`, all taken at the top level.
    Sets live in /webassets/shoot as sN-in (the upload) plus sN-1..sN-5 (what it
@@ -941,8 +941,18 @@ const STRIP_ITEMS=[
   if(!sheet||!framesBox)return;              /* only the marketing page has one */
 
   const SHOOT_DIR=ASSET_DIR+"shoot/";
-  const MAX_SETS=5;
+  const MAX_SETS=4;
   const POSE_LABELS=["FRONT · FULL","WALKING","THREE-QUARTER","BACK","CLOSE-UP"];
+  /* Per-set labels, because the four shoots do not contain the same five poses —
+     only S2 has a true back view, so a fixed list would caption three front
+     shots "BACK". A set with no entry here falls back to POSE_LABELS, so
+     dropping a new folder into shoot/ still needs no code change. */
+  const SET_LABELS={
+    1:["FRONT · FULL","WALKING","THREE-QUARTER","EDITORIAL","CLOSE-UP"],
+    2:["FRONT · FULL","WALKING","THREE-QUARTER","BACK","RECLINING"],
+    3:["FRONT · FULL","WALKING","THREE-QUARTER","SEATED","ON LOCATION"],
+    4:["FRONT · FULL","WALKING","THREE-QUARTER","ON LOCATION","DETAIL"]
+  };
   const FALLBACK_POSES=["front","walk","hip","back","close"];
   const AUTO_MS=3000;          /* dwell per set */
   const MANUAL_SUSPEND=8000;   /* hands off after a press, so it stops fighting */
@@ -957,7 +967,7 @@ const STRIP_ITEMS=[
       const input=await probeChain(`${SHOOT_DIR}s${n}-in`);
       const outs=[];
       for(let k=1;k<=5;k++)outs.push(await probeChain(`${SHOOT_DIR}s${n}-${k}`));
-      if(input&&outs.filter(Boolean).length>=3)sets.push({name:"S"+n,input,outs});
+      if(input&&outs.filter(Boolean).length>=3)sets.push({name:"S"+n,input,outs,labels:SET_LABELS[n]});
     }
     /* Nothing in shoot/ yet. The m-grid is already five models photographed in
        six setups each, which is exactly what this panel is for — so it falls
@@ -1018,7 +1028,7 @@ const STRIP_ITEMS=[
       cur=i;
       const st=sets[i];
       thumbs.forEach((t,k)=>{t.classList.toggle("on",k===i);t.style.setProperty("--p",0);});
-      topLbl.textContent=`CONTACT SHEET · SET ${String(i+1).padStart(2,"0")} / ${String(sets.length).padStart(2,"0")}`;
+      topLbl.textContent=`CONTACT SHEET`;
 
       framesBox.innerHTML="";
       /* frame 00 is the upload — the thing everything else came from */
@@ -1035,7 +1045,7 @@ const STRIP_ITEMS=[
         if(!reduceD&&u!=null)d.style.animationDelay=(0.1+k*0.13)+"s";
         d.appendChild(media(u??{},FALLBACK_POSES[k],BACKDROPS[k%BACKDROPS.length]));
         d.insertAdjacentHTML("beforeend",
-          `<span class="fnum">${String(k+1).padStart(2,"0")}</span>${u!=null?'<span class="idc"></span>':''}<span class="fpose">${POSE_LABELS[k]}</span>`);
+          `<span class="fnum">${String(k+1).padStart(2,"0")}</span>${u!=null?'<span class="idc"></span>':''}<span class="fpose">${(st.labels??POSE_LABELS)[k]}</span>`);
         framesBox.appendChild(d);
       });
 
@@ -1542,9 +1552,10 @@ const STRIP_ITEMS=[
     a.setAttribute("aria-label",c.n);
     a.insertAdjacentHTML("beforeend",
       `<span class="ccard-in">
-         <h3>${c.n}</h3>
-         <p>${c.p}</p>
+        
        </span>`);
+        // <h3>${c.n}</h3>
+        //  <p>${c.p}</p>
     /* A side card's first job is to come forward, not to navigate. */
     a.addEventListener("click",e=>{
       if(i!==active){e.preventDefault();go(i);}

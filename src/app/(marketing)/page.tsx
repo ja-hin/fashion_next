@@ -531,7 +531,7 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
 
           <div className="sheet" id="sheetBox">
             <div className="sheet-top">
-              <span className="lbl" id="topLbl">CONTACT SHEET · SET 01 / 05</span>
+              <span className="lbl" id="topLbl">CONTACT SHEET</span>
             </div>
             <div className="scan" id="scan" />
             <div className="frames" id="frames" />
@@ -613,7 +613,7 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
         <div className="wrap rail-head rv">
           <span className="eyebrow">Inside the studio</span>
           <h2>
-            Everything a studio does, <em>and more.</em>
+            Everything a studio does,<br></br> <em>and more.</em>
           </h2>
           <p className="sec-p">
             Every feature below comes with every shoot. The whole studio, yours from your first
@@ -928,51 +928,30 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
         </div>
       </section>
 
-      {/* ── final CTA ── */}
-      <section className="final">
-        <div className="glow" />
-        <div className="in rv">
-          <h2>
-            Your catalogue is <em>closer</em> than you think.
-          </h2>
-          <p className="sub">
-            Load a wallet, upload a garment, and watch a full on-model shoot come back before the
-            kettle boils.
-          </p>
-          <a href="/register" className="btn btn-cta" data-c="">
-            Start with free trial <span className="arw">→</span>
-          </a>
-        </div>
-      </section>
-
       {/* ── contact / lead capture ── */}
       {/* Posts to /api/leads, handled by landing.js. A plain <form> so it is
           still submittable with JavaScript off — the handler only intercepts
           to avoid the page reload. */}
       <section className="contact" id="contact">
         <div className="wrap ct-grid">
+          {/* The page's closing pitch, which used to be a full-height band of
+              its own directly above this. Beside the form it does the same job
+              in a third of the height, and the two calls to action — start on
+              your own, or ask us — now sit together instead of following one
+              another down the page. */}
           <div className="ct-say rv">
             <span className="eyebrow">Talk to us</span>
             <h2>
-              Tell us what you shoot. <em>We&rsquo;ll show you it back.</em>
+              Your catalogue is <em>closer</em> than you think.
             </h2>
             <p className="sec-p">
-              Send a garment or two and the sort of catalogue you run. We&rsquo;ll come back with
-              sample frames on your own product, and a straight answer on cost per photo at your
-              volume.
+              Load a wallet, upload a garment, and watch a full on-model shoot come back before the
+              kettle boils. Or tell us what you shoot, and we&rsquo;ll come back with sample frames
+              on your own product.
             </p>
-            <ul className="ct-list">
-              <li>
-                <b>A reply within one working day.</b> From a person, not an autoresponder.
-              </li>
-              <li>
-                <b>Sample frames on your garment.</b> Free, before any wallet is loaded.
-              </li>
-              <li>
-                <b>Volume pricing.</b> Past a few hundred products a month the per-photo rate is
-                negotiable.
-              </li>
-            </ul>
+            <a href="/register" className="btn btn-cta ct-start" data-c="">
+              Start with free trial <span className="arw">→</span>
+            </a>
           </div>
 
           <form className="ct-form rv" id="leadForm" method="post" action="/api/leads" noValidate>
