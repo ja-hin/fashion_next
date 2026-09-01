@@ -91,8 +91,15 @@ function probe(url){
   return new Promise(done=>{const im=new Image();im.onload=()=>done(url);im.onerror=()=>done(null);im.src=url;});
 }
 async function probeChain(base){
-  for(const e of EXTS){const hit=await probe(base+"."+e);if(hit)return hit;}
-  return null;
+  /* The first extension on its own, then the rest together.
+     Tried strictly one after another, an empty slot cost three round trips —
+     jpg 404, png 404, webp 404 — and the hero has twenty slots to check. This
+     is one trip for the usual case (the file is a .jpg) and two for a miss,
+     while still preferring EXTS order when more than one format exists. */
+  const first=await probe(base+"."+EXTS[0]);
+  if(first)return first;
+  const rest=await Promise.all(EXTS.slice(1).map(e=>probe(base+"."+e)));
+  return rest.find(Boolean)??null;
 }
 /* The same idea for a clip. `loadedmetadata` rather than `canplay`: it fires as
    soon as the header is in, so a missing file is ruled out in a round trip
@@ -119,14 +126,33 @@ function probeVideo(url){
   const shutter=document.getElementById("shutter"),rec=document.getElementById("rec");
   const reduceH=matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  /* Loading, and why it is shaped like this.
+     This used to be two nested loops of `await`: five sets x four frames, every
+     probe waiting on the one before it, and nothing painted until all twenty
+     had answered. On loopback that is invisible; over a real connection it is
+     twenty-six serial round trips before the first photograph appears — three
+     to five seconds of empty frames.
+     So: one set at a time, its four frames probed together, and the collage
+     starts as soon as the FIRST set is in. The other four load behind it and
+     join the rotation as they land — by then the section is already running. */
   const sets=[];
-  for(let n=1;n<=HERO_MAX_SETS;n++){
-    const urls=[];
-    for(let k=1;k<=HERO_MAX_FRAMES;k++){
-      const hit=await probeChain(`${HERO_DIR}s${n}-${k}`);
-      if(hit)urls.push(hit);
-    }
-    if(urls.length>=3)sets.push({name:"S"+n,urls});
+  const loadSet=async n=>{
+    const urls=(await Promise.all(
+      Array.from({length:HERO_MAX_FRAMES},(_,j)=>probeChain(`${HERO_DIR}s${n}-${j+1}`))
+    )).filter(Boolean);
+    return urls.length>=3?{name:"S"+n,urls}:null;
+  };
+  const others=()=>Array.from({length:HERO_MAX_SETS-1},(_,i)=>loadSet(i+2));
+
+  const first=await loadSet(1);
+  if(first){
+    sets.push(first);
+    /* Deliberately not awaited — the show starts on set 1. */
+    Promise.all(others()).then(rest=>rest.forEach(st=>{if(st)sets.push(st);}));
+  } else {
+    /* No set 1, so there is nothing to start on: the rest have to be resolved
+       before the fallback below can know whether it is needed. Still parallel. */
+    (await Promise.all(others())).forEach(st=>{if(st)sets.push(st);});
   }
 
   /* fallback: the base slots, then the placeholder, then a drawn figure */
@@ -1239,22 +1265,28 @@ const STRIP_ITEMS=[
   }
 
   /* ---- the garment picker --------------------------------------------- */
-  /* A card rather than a pill: the garment is the thing being photographed,
-     and it is the one choice the visitor should be able to see. */
+  /* The category control, with garments in it. Same track, same buttons, same
+     selected-pill treatment — the only difference is what sits inside each
+     button: a 20px chip of the garment instead of a drawn silhouette.
+     Icon-only for the same reason the categories are: the label is carried by
+     `title` and `aria-label`, so nothing is lost to a screen reader or to a
+     tooltip, and the row costs a third of the width a labelled tile did. */
   function garments(){
     const host=document.getElementById("hiwGarments");
-    host.textContent="";
-    cCat().garments.forEach((g,i)=>{
+    host.textContent="";                    /* rebuilt when the category changes */
+    const btns=cCat().garments.map((g,i)=>{
       const b=document.createElement("button");
-      b.type="button";b.className="gcard"+(i===gi?" on":"");b.dataset.c="";
+      b.type="button";b.className="hiw-tab gtab"+(i===gi?" on":"");b.dataset.c="";
       b.setAttribute("aria-pressed",String(i===gi));
-      /* The tile has no room for the flow line, so it becomes the tooltip
-         rather than being dropped from the page altogether. */
+      /* Name and flow line both live here, since the button shows neither. */
       b.title=`${g.n} — ${g.s}`;
-      b.innerHTML=`<span class="gt"></span><span class="gm"><span class="gn">${g.n}</span><span class="gs">${g.s}</span></span>`;
+      b.setAttribute("aria-label",g.n);
+      b.innerHTML=`<span class="gt"></span>`;
 
       /* The chip is the flat-lay the visitor would upload, so it draws the
-         garment on its own — the model comes later, in the frame. */
+         garment on its own — the model comes later, in the frame. A real
+         photograph at /webassets/hiw/g-<id> replaces the drawing when one
+         exists. */
       const thumb=b.querySelector(".gt");
       thumb.innerHTML=croquis({p:"garment"},"#221f19",cCat().models[0],g);
       probeChain(HIW_DIR+"g-"+g.id).then(u=>{
@@ -1265,14 +1297,14 @@ const STRIP_ITEMS=[
 
       b.addEventListener("click",()=>{
         gi=i;
-        host.querySelectorAll(".gcard").forEach((x,k)=>{
-          x.classList.toggle("on",k===i);x.setAttribute("aria-pressed",String(k===i));
-        });
+        btns.forEach((x,k)=>{x.classList.toggle("on",k===i);x.setAttribute("aria-pressed",String(k===i));});
         render();
       });
       host.appendChild(b);
+      return b;
     });
   }
+
 
   /* ---- the category tabs ---------------------------------------------- */
   /* Switching the category swaps the garments, the cast and the pose list, so

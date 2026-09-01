@@ -630,12 +630,49 @@ footer .logo-img{height:46px}
 .ct-form{background:var(--card);border:1px solid var(--line-soft);border-radius:10px;
   padding:32px;box-shadow:var(--shadow);display:grid;gap:16px}
 .ct-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.ct-field{display:grid;gap:7px}
-.ct-field>span{font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+/* Floating labels.
+   The label starts inside the field, where a placeholder would be, and rises
+   onto the border when the field is focused or has something in it. One piece
+   of text doing both jobs: nothing is asked twice, and the question stays
+   readable while you answer it — which a placeholder does not, because it
+   disappears the moment you type. */
+.ct-field{position:relative;display:block}
+.ct-field>span{
+  position:absolute;left:8px;top:13px;z-index:1;pointer-events:none;
+  font-family:var(--sans);font-size:.94rem;font-weight:400;letter-spacing:0;
+  text-transform:none;color:var(--muted);
+  /* The pad + background is what notches the outline: floated, the label sits
+     ON the border line and masks the part it covers. So this has to match the
+     card behind it, which is why the fields are transparent below. */
+  padding:0 5px;background:var(--card);
+  transform-origin:left center;
+  transition:transform .18s cubic-bezier(.2,.8,.2,1),color .18s}
 .ct-field input,.ct-field select,.ct-field textarea{
-  font:inherit;font-size:.94rem;color:var(--text);background:var(--bg);
+  font:inherit;font-size:.94rem;color:var(--text);background:transparent;
   border:1px solid var(--line);border-radius:6px;padding:11px 13px;width:100%;
   transition:border-color .2s,box-shadow .2s}
+/* Up onto the border. `:has()` because the label is written before the field it
+   belongs to, so no sibling combinator can reach it from the input. */
+.ct-field:has(input:focus)>span,
+.ct-field:has(textarea:focus)>span,
+.ct-field:has(input:not(:placeholder-shown))>span,
+.ct-field:has(textarea:not(:placeholder-shown))>span,
+/* A select always displays something, so its label has nowhere to rest. */
+.ct-field:has(select)>span{transform:translateY(-21px) scale(.84)}
+.ct-field:has(:focus)>span{color:var(--flame)}
+/* The example text belongs to the field you are filling in, not to the one you
+   are looking at — shown once the label has moved out of its way. */
+.ct-field textarea::placeholder{opacity:0;transition:opacity .18s}
+.ct-field textarea:focus::placeholder{opacity:.7}
+/* Without `:has()` the label has no way to know whether its field is filled, so
+   a floating label would sit on top of whatever you typed. In that case it goes
+   back to the stacked micro-label it was before — plainer, but never wrong. */
+@supports not selector(:has(*)){
+  .ct-field{display:grid;gap:7px}
+  .ct-field>span{position:static;transform:none;background:none;padding:0;
+    font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase}
+  .ct-field textarea::placeholder{opacity:.7}
+}
 .ct-field textarea{resize:vertical;min-height:104px;line-height:1.55}
 /* The ring is the focus indicator, so it must not be removed with the outline —
    keyboard users have nothing else to go on. */
@@ -936,8 +973,7 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 /* Womenswear / Menswear — a segmented control rather than another pill row,
    because it does not set one property of the shot, it swaps the whole panel
    underneath it. */
-.hiw-tabs{display:flex;justify-content:center;gap:6px;margin:30px auto 0;width:max-content;max-width:100%;
-  background:var(--bg2);border:1px solid var(--line-soft);border-radius:100px;padding:5px}
+.hiw-tabs{margin:30px auto 0}
 /* Icon buttons, not a labelled tab strip. Two words of chrome at the head of
    a card whose other four groups are already labelled read as a heavier
    control than the choice deserves; a silhouette says the same thing in a
@@ -950,7 +986,7 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 .hiw-tab.on{background:var(--card);color:var(--text);box-shadow:0 2px 10px -4px rgba(23,21,15,.45)}
 /* Inside the card the pill track is one control among the others rather than a
    centred header, so it drops the auto margins and aligns with the labels. */
-.hiw-card .hiw-tabs{margin:0;justify-content:flex-start}
+.hiw-card .hiw-tabs,.hiw-card .hiw-garments{margin:0;justify-content:flex-start}
 
 .hiw-card{margin-top:26px;background:#2a2a2a;border:1px solid var(--line-soft);border-radius:20px;
   box-shadow:var(--shadow);padding:30px;display:grid;grid-template-columns:1fr .82fr;gap:34px;align-items:center;
@@ -986,21 +1022,19 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
    between two items look heavier than the model, backdrop and pose rows under
    it. Now every group in the card is a row of small controls that start at the
    same left edge. */
-.hiw-garments{display:flex;flex-wrap:wrap;gap:8px}
-.gcard{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;cursor:pointer;
-  width:88px;background:transparent;border:1px solid white;border-radius:12px;padding:8px;
-  color:white;font-family:inherit;transition:border-color .25s,background .25s,transform .2s}
-.gcard:hover{border-color:var(--text);transform:translateY(-1px)}
-.gcard.on{background:transparent; color: white;}
-.gcard .gt{width:38px;height:38px;border-radius:8px;overflow:hidden;flex:0 0 auto;background:var(--card)}
-.gcard .gt img,.gcard .gt svg{width:100%;height:100%;object-fit:cover;display:block}
-.gcard .gm{min-width:0;max-width:100%}
-.gcard .gn{display:block;font-weight:600;font-size:.7rem;line-height:1.25;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* The flow line ("Flat-lay → draped on-model") has nowhere to sit on a tile
-   this size, and the section's own copy already makes the same point. It stays
-   in the markup and moves to the button's tooltip rather than being deleted. */
-.gcard .gs{display:none}
+/* The same track as `.hiw-tabs` — grey capsule, hairline, 5px of padding — so
+   the two rows read as one kind of control. Listed alongside it rather than
+   duplicated, so a change to the track reaches both. */
+.hiw-tabs,.hiw-garments{display:flex;justify-content:center;gap:6px;width:max-content;max-width:100%;
+  background:var(--bg2);border:1px solid var(--line-soft);border-radius:100px;padding:5px}
+.hiw-garments{flex-wrap:wrap}
+/* A garment button IS a `.hiw-tab`; `.gtab` only swaps the drawn silhouette for
+   a chip of the garment, at the same 21px the category icons use. */
+.hiw-tab.gtab .gt{width:21px;height:21px;border-radius:5px;overflow:hidden;display:block;
+  /* A hairline, so a pale flat-lay still reads as a chip against the track and
+     against the white pill it sits on when selected. */
+  box-shadow:inset 0 0 0 1px rgba(23,21,15,.2)}
+.hiw-tab.gtab .gt img,.hiw-tab.gtab .gt svg{width:100%;height:100%;object-fit:cover;display:block}
 
 .hiw-group{margin-top:24px}
 .hiw-group:first-child{margin-top:0}
@@ -1031,6 +1065,7 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 .hiw-cap{position:absolute;left:14px;bottom:14px;z-index:2;background:rgba(23,21,15,.72);color:#fff;
   border-radius:100px;padding:8px 15px;font-size:.82rem;backdrop-filter:blur(6px)}
 .hiw-center{display: flex; flex-direction: column; align-items: center; text-align: center;}  
+.hiw-flex{ display: flex; flex-direction: column; gap: 25px; align-items: center;}
 
 @media(max-width:860px){
 .hiw-flex{ display: flex; flex-direction: row; gap: 25px;}
@@ -1049,9 +1084,8 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
   .hiw-tab{width:34px;height:31px}
   .hiw-tab svg{width:19px;height:19px}
   .hiw-garments{gap:7px}
-  .gcard{width:76px;padding:6px;gap:5px}
-  .gcard .gt{width:32px;height:32px;border-radius:7px}
-  .gcard .gn{font-size:.64rem}
+  /* Shrinks with `.hiw-tab` above; only the chip needs saying. */
+  .hiw-tab.gtab .gt{width:19px;height:19px;border-radius:4px}
   .hiw-cta{margin-top:14px}
   .hiw-cta .btn{width:100%;justify-content:center;padding:.7em 1.2em;font-size:.9rem}
   /* Height is the set dimension here and the ratio derives the width, so the

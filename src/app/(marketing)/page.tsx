@@ -161,6 +161,15 @@ export default async function LandingPage() {
 
   return (
     <>
+      {/* The hero collage's first four frames, fetched while the HTML is still
+          parsing. landing.js runs `afterInteractive`, so without these nothing
+          is even requested until hydration finishes — and the collage is the
+          first thing on the page. React hoists these into <head>.
+          They are the only filenames this page hardcodes; if s1-1…s1-4 are ever
+          renamed these 404 harmlessly and the collage simply loads as before. */}
+      {[1, 2, 3, 4].map((k) => (
+        <link key={k} rel="preload" as="image" href={`/webassets/hero/s1-${k}.jpg`} />
+      ))}
       {[ORG_LD, appLd(plans), FAQ_LD].map((ld, i) => (
         <script
           key={i}
@@ -423,7 +432,7 @@ export default async function LandingPage() {
         <div className="wrap ens-head rv">
           <span className="eyebrow">Ensemble · style the whole look</span>
           <h2 className="sec-h2">
-            Not one garment.<br></br> <em>The whole outfit.</em>
+            Not just one garment.<br></br> <em>Style the whole outfit.</em>
           </h2>
           <p className="sec-p">
             Upload the pieces — the dress, the heels, the eyewear, the hat, the bag, the necklace.
@@ -955,22 +964,22 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
             <div className="ct-row">
               <label className="ct-field">
                 <span>Your name *</span>
-                <input name="name" type="text" autoComplete="name" required maxLength={120} />
+                <input name="name" type="text" autoComplete="name" required maxLength={120} placeholder=" " />
               </label>
               <label className="ct-field">
                 <span>Brand / company</span>
-                <input name="brand" type="text" autoComplete="organization" maxLength={160} />
+                <input name="brand" type="text" autoComplete="organization" maxLength={160} placeholder=" " />
               </label>
             </div>
 
             <div className="ct-row">
               <label className="ct-field">
                 <span>Email *</span>
-                <input name="email" type="email" autoComplete="email" required maxLength={200} />
+                <input name="email" type="email" autoComplete="email" required maxLength={200} placeholder=" " />
               </label>
               <label className="ct-field">
                 <span>Phone / WhatsApp</span>
-                <input name="phone" type="tel" autoComplete="tel" maxLength={40} />
+                <input name="phone" type="tel" autoComplete="tel" maxLength={40} placeholder=" " />
               </label>
             </div>
 
