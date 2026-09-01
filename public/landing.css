@@ -1047,10 +1047,14 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
   padding:.62em 1.15em;font-size:.92rem;font-weight:500;cursor:pointer;
   transition:background .25s,border-color .25s,color .25s,transform .2s}
 .opt:hover{border-color:var(--text);transform:translateY(-1px)}
-.opt.on{background:var(--text);border-color:var(--text);color:var(--bg)}
-/* The model is the one choice that changes WHO is in the photo, so it is the
-   one that gets the gradient — everything else is a setting. */
-.opt.model.on{background:linear-gradient(90deg,var(--flame),#7c5cff);border-color:transparent;color:#fff}
+/* The gradient marks every made choice — model, backdrop and pose alike. It was
+   on the model pill alone, on the reasoning that the model is the only choice
+   that changes WHO is in the photo; in practice that made two of the three rows
+   look like settings rather than choices. One rule now, not one per row, so
+   `.opt` cannot drift between them.
+   `background-image` has no interpolation, so the fill lands at once while the
+   border and text still ease — the model pill has always behaved this way. */
+.opt.on{background:linear-gradient(90deg,var(--flame),#7c5cff);border-color:transparent;color:#fff}
 .hiw-cta{margin-top:30px}
 
 /* the resulting frame */
