@@ -956,7 +956,7 @@ const STRIP_ITEMS=[
   show(0);restartTimer();
 })();
 
-/* =============== contact sheet: four shoots, one sheet =============== */
+/* =============== contact sheet: three shoots, one sheet =============== */
 /* Replaces the old single-set sheet. Scoped in an IIFE like the other panels ,
    it needs its own `cur`, `paused` and `reduce`, all taken at the top level.
    Sets live in /webassets/shoot as sN-in (the upload) plus sN-1..sN-5 (what it
@@ -967,17 +967,18 @@ const STRIP_ITEMS=[
   if(!sheet||!framesBox)return;              /* only the marketing page has one */
 
   const SHOOT_DIR=ASSET_DIR+"shoot/";
-  const MAX_SETS=4;
+  const MAX_SETS=3;
   const POSE_LABELS=["FRONT · FULL","WALKING","THREE-QUARTER","BACK","CLOSE-UP"];
-  /* Per-set labels, because the four shoots do not contain the same five poses ,
-     only S2 has a true back view, so a fixed list would caption three front
-     shots "BACK". A set with no entry here falls back to POSE_LABELS, so
-     dropping a new folder into shoot/ still needs no code change. */
+  /* Per-set labels, because the three shoots do not contain the same five poses.
+     The one set that had a true back view was the lingerie shoot, and it has
+     been removed , so none of the remaining three does, and the fixed list
+     above would caption a front shot "BACK" in all of them. A set with no entry
+     here still falls back to POSE_LABELS, so dropping a new folder into shoot/
+     needs no code change. */
   const SET_LABELS={
     1:["FRONT · FULL","WALKING","THREE-QUARTER","EDITORIAL","CLOSE-UP"],
-    2:["FRONT · FULL","WALKING","THREE-QUARTER","BACK","RECLINING"],
-    3:["FRONT · FULL","WALKING","THREE-QUARTER","SEATED","ON LOCATION"],
-    4:["FRONT · FULL","WALKING","THREE-QUARTER","ON LOCATION","DETAIL"]
+    2:["FRONT · FULL","WALKING","THREE-QUARTER","SEATED","ON LOCATION"],
+    3:["FRONT · FULL","WALKING","THREE-QUARTER","ON LOCATION","DETAIL"]
   };
   const FALLBACK_POSES=["front","walk","hip","back","close"];
   const AUTO_MS=3000;          /* dwell per set */
