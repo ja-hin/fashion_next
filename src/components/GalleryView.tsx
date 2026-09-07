@@ -109,12 +109,12 @@ export default function GalleryView({
         />
       </div>
 
-      {/* Admin only — a regular user never has a filter to be told about. */}
+      {/* Admin only , a regular user never has a filter to be told about. */}
       {isAdmin && userFilter && (
         <div className="mb-[18px] flex flex-wrap items-center gap-2.5 rounded-card border border-accent-soft bg-accent-soft px-3.5 py-2.5 text-[12.5px]">
           {viewing ? (
             <>
-              <span className="font-bold text-accent">{viewing.uid || '—'}</span>
+              <span className="font-bold text-accent">{viewing.uid || ','}</span>
               <span className="text-muted">{viewing.email}</span>
             </>
           ) : (
@@ -150,7 +150,7 @@ export default function GalleryView({
             {g.items.map((it) => (
               <div
                 key={it.pid}
-                className="w-[230px] overflow-hidden rounded-card border border-line bg-surface shadow-card transition hover:-translate-y-[3px] hover:shadow-pop"
+                className="w-[calc(50%-9px)] sm:w-[230px] overflow-hidden rounded-card border border-line bg-surface shadow-card transition hover:-translate-y-[3px] hover:shadow-pop"
               >
                 <div
                   className="relative aspect-[4/3] cursor-pointer bg-surface2"
@@ -170,7 +170,7 @@ export default function GalleryView({
                         {it.count} image{it.count === 1 ? '' : 's'}
                       </span>
                     )}
-                    {/* Its own chip rather than folded into the count — a shoot
+                    {/* Its own chip rather than folded into the count , a shoot
                         with clips is a different thing to open than one without. */}
                     {!!it.videos && (
                       <span className="rounded-md bg-accent/90 px-2 py-[3px] text-[10px] font-bold text-white">
@@ -215,7 +215,7 @@ export default function GalleryView({
                       ✎
                     </button>
                   </div>
-                  {/* Skip the shoot number when it's already the title — an
+                  {/* Skip the shoot number when it's already the title , an
                       unnamed shoot would otherwise read "S0292 / S0292 · …". */}
                   <div className="mt-0.5 text-[11px] capitalize text-muted">
                     {[it.title === it.shoot ? null : it.shoot, it.category, it.model]

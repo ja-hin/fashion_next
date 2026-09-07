@@ -1,5 +1,5 @@
 /**
- * Saved garments — a reusable product, tagged once.
+ * Saved garments , a reusable product, tagged once.
  *
  * Photographing a garment properly means several frames: front, back, a side, a
  * detail, the label. Tagging those is what stops the back being invented (see
@@ -55,7 +55,7 @@ export async function requireOwnedGarment(
 
 /**
  * The card image. Prefers the front, because a rack of garments identified by
- * their label frames is unusable — falls back to whatever is first.
+ * their label frames is unusable , falls back to whatever is first.
  */
 export function coverFile(rec: GarmentDoc): string | null {
   const refs = rec.refs ?? [];

@@ -87,7 +87,7 @@ export default function RechargeView({
 }) {
   const dialog = useDialog();
   const [cfg, setCfg] = useState<Config | null>(null);
-  // Set once the config loads — packs are admin-managed, so no id can be
+  // Set once the config loads , packs are admin-managed, so no id can be
   // assumed to exist.
   const [selected, setSelected] = useState<string>('');
   const [custom, setCustom] = useState('');
@@ -104,7 +104,7 @@ export default function RechargeView({
         setSelected(first ? first.id : c.custom_enabled ? 'custom' : '');
       })
       .catch(() => setCfg(null));
-    // Runs once — onBalance is stable enough and re-running would loop.
+    // Runs once , onBalance is stable enough and re-running would loop.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -133,7 +133,7 @@ export default function RechargeView({
       await loadCheckout();
       if (!window.Razorpay) throw new Error('Checkout unavailable');
 
-      // The server prices this — we send what was chosen, never an amount.
+      // The server prices this , we send what was chosen, never an amount.
       const order = await postForm<OrderResp>(
         '/api/recharge/order',
         usingCustom ? { credits: customN } : { pack: selected },
@@ -149,7 +149,7 @@ export default function RechargeView({
         prefill: { name: order.name, email: order.email },
         theme: { color: '#e11d2a' },
         modal: {
-          // Closing the sheet is not a failure — the order simply stays unpaid.
+          // Closing the sheet is not a failure , the order simply stays unpaid.
           ondismiss: () => setBusy(false),
         },
         handler: async (r: CheckoutResult) => {
@@ -164,13 +164,13 @@ export default function RechargeView({
             );
             onBalance(j.balance);
             setFlash(
-              `Payment successful — ${j.credits} credits added. ` +
+              `Payment successful , ${j.credits} credits added. ` +
                 'Removing the watermark from your images…',
             );
             // A first payment lifts the watermark from every image the account
             // has ever generated, but the ones already on screen were fetched
             // watermarked. Reload so `me` refreshes and each <img> revalidates
-            // and comes back clean — the moment the customer is paying for.
+            // and comes back clean , the moment the customer is paying for.
             setTimeout(() => window.location.reload(), 1600);
           } catch (e) {
             // The money may well have gone through; the webhook is the backstop.
@@ -204,7 +204,7 @@ export default function RechargeView({
       <div className="rounded-card border border-line bg-surface p-[22px] shadow-card">
         <h3 className="mb-[5px] text-[15px] font-bold">Recharge credits</h3>
         <p className="mb-4 text-[12.5px] leading-[1.5] text-muted">
-          Add image credits to your balance. Payments are handled by Razorpay — we never see your
+          Add image credits to your balance. Payments are handled by Razorpay , we never see your
           card details.
         </p>
 
@@ -310,7 +310,7 @@ export default function RechargeView({
                   You pay
                 </div>
                 <div className="text-[22px] font-bold leading-tight">
-                  {payPaise > 0 ? rupees(payPaise) : '—'}
+                  {payPaise > 0 ? rupees(payPaise) : ','}
                 </div>
                 {gst && (
                   <div className="text-[10.5px] text-muted">

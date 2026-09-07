@@ -18,14 +18,14 @@ const MIME: Record<string, string> = {
 /**
  * Serve a generated shoot image.
  *
- * The old app mounted this folder as public static files — anyone with a URL
+ * The old app mounted this folder as public static files , anyone with a URL
  * could read anyone's images. Here it goes through the same ownership check as
  * the rest of the shoot API, so customers' shoots aren't world-readable.
  *
  * The URL shape (/outputs/<pid>/<file>) is unchanged, so every image URL stored
  * in a migrated log row still resolves.
  *
- * Free-tier accounts get the watermark stamped on here, on the way out — the
+ * Free-tier accounts get the watermark stamped on here, on the way out , the
  * bytes on disk are always clean. See lib/watermark.ts.
  *
  * `?v=thumb` / `?v=web` serve the small WebP derivatives the UI renders; without
@@ -43,7 +43,7 @@ export const GET = handler(
     // A generated clip lives in the same shoot folder and behind the same
     // ownership check, but none of what follows applies to it: there are no
     // WebP derivatives of an mp4, and sharp cannot watermark one. It also has
-    // to answer Range requests — Safari will not play a video at all from a
+    // to answer Range requests , Safari will not play a video at all from a
     // plain 200, and seeking anywhere needs it.
     if (name.toLowerCase().endsWith('.mp4')) {
       const bytes = await storage.get(shootKey(pid, name));
@@ -88,7 +88,7 @@ export const GET = handler(
     // can't collide in the browser cache under one ETag.
     const { etag, cacheControl } = imageCacheHeaders(`${pid}/${name}/${variant ?? 'orig'}`, wm);
 
-    // Revalidation hit — the watermark state is baked into the ETag, so a user
+    // Revalidation hit , the watermark state is baked into the ETag, so a user
     // who has paid since their last visit misses here and gets clean bytes.
     if (req.headers.get('if-none-match') === etag) {
       return new Response(null, {
@@ -119,7 +119,7 @@ export const GET = handler(
         'Content-Type': type,
         'Content-Length': String(bytes.length),
         ETag: etag,
-        // Private because the response is per-user authorised — and, for a
+        // Private because the response is per-user authorised , and, for a
         // watermarked image, revalidated because a purchase can make it clean.
         'Cache-Control': cacheControl,
       },

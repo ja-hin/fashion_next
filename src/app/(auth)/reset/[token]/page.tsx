@@ -9,14 +9,14 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Choose a new password — Faishon.studio',
+  title: 'Choose a new password , Faishon.studio',
   robots: { index: false, follow: false },
 };
 
 /**
  * The page a reset link opens.
  *
- * Validity is checked on the server before rendering — `peekReset` looks the
+ * Validity is checked on the server before rendering , `peekReset` looks the
  * token up WITHOUT spending it, so merely opening the link (or an email client
  * prefetching it) can't burn the one use. It's consumed on submit.
  *

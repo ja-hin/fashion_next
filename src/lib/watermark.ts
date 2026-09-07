@@ -8,7 +8,7 @@
  * no re-processing and no second copy on disk.
  *
  * The mark is the brand logo repeated diagonally across the whole frame at low
- * opacity — deliberately not croppable, because a free-tier image is a preview
+ * opacity , deliberately not croppable, because a free-tier image is a preview
  * of what the paid product looks like, not a deliverable.
  */
 import 'server-only';
@@ -36,7 +36,7 @@ const clamp = (n: number, lo: number, hi: number) => Math.min(Math.max(n, lo), h
 
 /**
  * Building a tile costs a resize, an alpha multiply and a rotate. The result
- * depends only on the logo width, so bucket it to the nearest 20px and cache —
+ * depends only on the logo width, so bucket it to the nearest 20px and cache ,
  * a gallery of 30 images then builds one tile instead of thirty.
  */
 const tileCache = new Map<number, Promise<Buffer>>();
@@ -89,7 +89,7 @@ function tileFor(logoW: number): Promise<Buffer> {
   let t = tileCache.get(bucket);
   if (!t) {
     t = buildTile(bucket).catch((e) => {
-      tileCache.delete(bucket); // don't cache a failure — the next request retries
+      tileCache.delete(bucket); // don't cache a failure , the next request retries
       throw e;
     });
     tileCache.set(bucket, t);
@@ -106,7 +106,7 @@ function tileFor(logoW: number): Promise<Buffer> {
  * hand the browser back a full-size JPEG and undo the whole saving.
  *
  * Because the mark is applied to the derivative rather than the original, a
- * free-tier gallery now composites 400px thumbnails instead of 2048px masters —
+ * free-tier gallery now composites 400px thumbnails instead of 2048px masters ,
  * the same picture for the user, a fraction of the CPU.
  *
  * On any failure the ORIGINAL bytes are returned rather than an error: a
@@ -127,7 +127,7 @@ export async function applyWatermark(
 
     return await (format === 'webp' ? marked.webp(WEBP) : marked.jpeg(JPEG)).toBuffer();
   } catch (e) {
-    console.error('[watermark] FAILED — serving the image unmarked', e);
+    console.error('[watermark] FAILED , serving the image unmarked', e);
     return buf;
   }
 }

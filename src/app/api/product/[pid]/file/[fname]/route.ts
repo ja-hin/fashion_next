@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
  * Download one image with a friendly, human-readable filename
  * (e.g. `summer_dress_arms_crossed.jpg` rather than `pose_a4f19c.jpg`).
  *
- * Watermarked for free-tier accounts, exactly as the on-screen image is — a
+ * Watermarked for free-tier accounts, exactly as the on-screen image is , a
  * download that came out clean would make the mark pointless.
  */
 export const GET = handler(

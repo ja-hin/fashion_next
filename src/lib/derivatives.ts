@@ -1,20 +1,20 @@
 /**
- * Display derivatives — the WebP copies the browser actually renders.
+ * Display derivatives , the WebP copies the browser actually renders.
  *
  * The original bytes a generation produced are NEVER modified and never served
  * to a gallery. They sit in storage untouched and come back out only through the
  * download routes, so "what the customer downloads" stays exactly what the model
  * produced. Everything on screen is a WebP derivative instead:
  *
- *    outputs/<pid>/pose_x.jpg              the original — downloads only
- *    outputs/<pid>/pose_x.jpg.web.webp     1400px — result grid, lightbox
- *    outputs/<pid>/pose_x.jpg.thumb.webp   400px  — gallery cards, pickers
+ *    outputs/<pid>/pose_x.jpg              the original , downloads only
+ *    outputs/<pid>/pose_x.jpg.web.webp     1400px , result grid, lightbox
+ *    outputs/<pid>/pose_x.jpg.thumb.webp   400px  , gallery cards, pickers
  *
  * A gallery card is 230px wide and used to pull a 2–3 MB full-resolution JPEG;
  * it now pulls ~20 KB. That single ratio is the whole point of this module.
  *
  * Derivative keys are the original key plus a suffix, which keeps them in the
- * same folder — so `removePrefix` on a shoot still takes everything with it.
+ * same folder , so `removePrefix` on a shoot still takes everything with it.
  */
 import 'server-only';
 import sharp from 'sharp';
@@ -57,7 +57,7 @@ function encode(src: Buffer, v: ImageVariant): Promise<Buffer> {
  * Build and store both derivatives for an image that has just been written.
  *
  * Never throws. By the time this runs the original is already saved and the
- * user's wallet has already been charged — losing that over a failed thumbnail
+ * user's wallet has already been charged , losing that over a failed thumbnail
  * would be absurd, and `readVariant` falls back to the original anyway.
  */
 export async function writeDerivatives(key: string, src: Buffer): Promise<void> {
@@ -66,7 +66,7 @@ export async function writeDerivatives(key: string, src: Buffer): Promise<void> 
       try {
         await storage.put(variantKey(key, v), await encode(src, v));
       } catch (e) {
-        console.error(`[derivatives] ${v} failed for ${key} — display falls back to the original`, e);
+        console.error(`[derivatives] ${v} failed for ${key} , display falls back to the original`, e);
       }
     }),
   );
@@ -78,7 +78,7 @@ export async function removeDerivatives(key: string): Promise<void> {
 }
 
 /**
- * Two things can ask for the same missing derivative at once — a gallery of 20
+ * Two things can ask for the same missing derivative at once , a gallery of 20
  * cards, or React rendering the same card twice. Share the encode rather than
  * running it twice and racing on the write.
  */
@@ -94,7 +94,7 @@ function backfill(key: string, v: ImageVariant, orig: Buffer): Promise<Buffer | 
         return out;
       })
       .catch((e) => {
-        console.error(`[derivatives] backfill of ${vk} failed — serving the original`, e);
+        console.error(`[derivatives] backfill of ${vk} failed , serving the original`, e);
         return null;
       })
       .finally(() => inFlight.delete(vk));
@@ -113,7 +113,7 @@ export interface VariantRead {
  * Bytes to serve for a requested variant.
  *
  * Missing derivatives are generated on first request and kept, so every image
- * created before this module existed becomes fast after one view — there is no
+ * created before this module existed becomes fast after one view , there is no
  * migration to run. Null means the original itself is gone (a genuine 404).
  */
 export async function readVariant(key: string, v: ImageVariant): Promise<VariantRead | null> {

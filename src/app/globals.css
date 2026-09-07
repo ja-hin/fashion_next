@@ -84,7 +84,7 @@
    Tailwind v4 emits utilities into `@layer utilities`, and unlayered CSS beats
    layered CSS in the cascade regardless of specificity. Written outside a
    layer, a bare `button { background: none }` silently kills every `bg-*`
-   class in the app — buttons render unstyled and it looks like Tailwind is
+   class in the app , buttons render unstyled and it looks like Tailwind is
    broken. Keep element resets layered so utilities can always override them.
    ─────────────────────────────────────────────────────────────────── */
 
@@ -186,7 +186,7 @@
   }
 
   /* Top-bar logo. Two files swapped by theme rather than one recoloured with
-     a filter — the black mark is invisible on the dark surface. Mirrors the
+     a filter , the black mark is invisible on the dark surface. Mirrors the
      .logo-light / .logo-dark pair in public/landing.css. */
   .brand-logo {
     height: 45px;
@@ -241,7 +241,7 @@
 /*
  * The floating "Ask Genie" tile in the results grid. Written here rather than
  * as utilities because it needs a masked gradient border and two infinite
- * keyframes — both awkward to express inline, and both shared by the card's
+ * keyframes , both awkward to express inline, and both shared by the card's
  * resting and hover states.
  */
 
@@ -268,7 +268,7 @@
 }
 
 /* The purple→gold ring. A masked pseudo-element is the only way to get a
-   gradient *border* — background-clip can't stroke one. */
+   gradient *border* , background-clip can't stroke one. */
 .genie-card::after {
   content: '';
   position: absolute;
@@ -318,7 +318,7 @@
 }
 
 /*
- * Summon — the card poofs into smoke when clicked and re-forms when the drawer
+ * Summon , the card poofs into smoke when clicked and re-forms when the drawer
  * closes. See lib/client/smoke.ts for the particles.
  */
 

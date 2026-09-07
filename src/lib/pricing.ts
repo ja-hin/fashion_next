@@ -2,16 +2,16 @@
  * Credit pricing.
  *
  * Packs and rates live in the settings document and are edited from the admin
- * page — the values here are only the fallback used before an admin has ever
+ * page , the values here are only the fallback used before an admin has ever
  * saved, and the shape everything else is typed against.
  *
  * Deliberately NOT 'server-only': the Recharge view, the admin editor and the
  * public pricing page all import it to render. That does not make it
  * client-trusted. The order route loads the config from the database and
- * re-derives the amount with `quote()`, ignoring anything the browser sends —
+ * re-derives the amount with `quote()`, ignoring anything the browser sends ,
  * so a tampered client can only ever ask for a price the admin has sanctioned.
  *
- * All money is in paise (Razorpay's unit) to keep it integer — never floats.
+ * All money is in paise (Razorpay's unit) to keep it integer , never floats.
  */
 
 export interface Pack {
@@ -19,7 +19,7 @@ export interface Pack {
   name: string;
   /** Credits paid for. */
   credits: number;
-  /** Extra credits granted free — the bulk incentive. */
+  /** Extra credits granted free , the bulk incentive. */
   bonus: number;
   /**
    * What the customer is charged, in paise. Set independently of credits so an
@@ -96,7 +96,7 @@ export const DEFAULT_BILLING: BillingConfig = {
 
 // ── display helpers ─────────────────────────────────────────────────
 
-/** "₹1,250" — drops the decimals when the amount is whole rupees. */
+/** "₹1,250" , drops the decimals when the amount is whole rupees. */
 export function rupees(paise: number): string {
   const r = paise / 100;
   return (
@@ -119,7 +119,7 @@ export function gstBreakdown(paise: number, gstRate: number): { base: number; gs
 export const packCredits = (p: Pack): number => p.credits + p.bonus;
 
 /**
- * Bonus as a percentage of the paid credits — 250 base + 25 bonus = 10%.
+ * Bonus as a percentage of the paid credits , 250 base + 25 bonus = 10%.
  * Measured against the base, not the total, so "10% extra" means what a buyer
  * expects: ten percent more than they paid for.
  */
@@ -161,7 +161,7 @@ export function packById(cfg: BillingConfig, id: string): Pack | null {
   return cfg.packs.find((p) => p.id === id) ?? null;
 }
 
-/** Quote a pack. Inactive packs are refused — an admin hid it for a reason. */
+/** Quote a pack. Inactive packs are refused , an admin hid it for a reason. */
 export function quoteForPack(cfg: BillingConfig, id: string): Quote | null {
   const p = packById(cfg, id);
   if (!p || !p.active) return null;
@@ -170,13 +170,13 @@ export function quoteForPack(cfg: BillingConfig, id: string): Quote | null {
     credits: packCredits(p),
     paise: Math.round(p.paise),
     packId: p.id,
-    label: `${p.name} pack — ${packCredits(p)} credits`,
+    label: `${p.name} pack , ${packCredits(p)} credits`,
   };
 }
 
 /**
  * Quote a custom credit count. Returns null when custom top-ups are switched
- * off, or the input is not a whole number inside the configured range — so
+ * off, or the input is not a whole number inside the configured range , so
  * callers reject rather than charge something surprising.
  */
 export function quoteForCustom(cfg: BillingConfig, credits: number): Quote | null {
@@ -230,7 +230,7 @@ const slug = (s: string): string =>
  * Coerce admin-submitted packs into a safe list.
  *
  * Runs on the server before anything is stored, because these values become
- * real charges. Anything unparseable is dropped rather than defaulted to zero —
+ * real charges. Anything unparseable is dropped rather than defaulted to zero ,
  * a pack priced at ₹0 would hand out free credits.
  */
 export function sanitisePacks(raw: unknown): Pack[] {
@@ -245,7 +245,7 @@ export function sanitisePacks(raw: unknown): Pack[] {
     const name = String(r.name ?? '').trim().slice(0, 40);
     if (!name) continue;
 
-    // Rejected outright, never clamped — a pack priced at zero would hand out
+    // Rejected outright, never clamped , a pack priced at zero would hand out
     // free credits, and a pack with zero credits would charge for nothing.
     const credits = positiveInt(r.credits, 1_000_000);
     const paise = positiveInt(r.paise, 100_000_000);

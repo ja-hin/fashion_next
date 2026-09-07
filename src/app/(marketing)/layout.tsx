@@ -4,7 +4,7 @@
  * The landing page keeps its own design system (Playfair Display / Geist /
  * Geist Mono, a warm cream palette and a dark hero band) in
  * `public/landing.css`. It's linked here rather
- * than imported so it never enters the studio's CSS bundle — the two share
+ * than imported so it never enters the studio's CSS bundle , the two share
  * variable names (`--bg`, `--muted`, `--line`, `--shadow`) with very different
  * values, and loading both would corrupt whichever came second.
  */

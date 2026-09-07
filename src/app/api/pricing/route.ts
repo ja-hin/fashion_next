@@ -6,7 +6,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 /**
- * Public pricing — powers the marketing pricing page.
+ * Public pricing , powers the marketing pricing page.
  *
  * Deliberately unauthenticated: it's the same information a visitor sees on the
  * page, and nothing here is sensitive. It exposes only what's on sale, never

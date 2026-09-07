@@ -8,7 +8,7 @@
  *   1. The HERO shot decides the model, lighting and background, and locks a seed.
  *   2. Every later pose is generated FROM the hero image, not from the garment,
  *      so the same person and setup carry across the shoot.
- *   3. Charge-on-success — credits come off the wallet only after an image
+ *   3. Charge-on-success , credits come off the wallet only after an image
  *      actually lands on disk.
  */
 import 'server-only';
@@ -56,7 +56,7 @@ const randSeed = () => 1 + Math.floor(Math.random() * 2_000_000_000);
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 const ANCHOR_FAIL_MSG =
-  "Couldn't place this garment on your saved model — try a different garment photo or retry.";
+  "Couldn't place this garment on your saved model , try a different garment photo or retry.";
 
 export interface PerImageSettings {
   backdrop?: string;
@@ -80,7 +80,7 @@ interface GenOneOpts {
 /**
  * Generate exactly one image and, on success, charge for it.
  *
- * Always pushes exactly one job result — either an image or an error — so the
+ * Always pushes exactly one job result , either an image or an error , so the
  * client's progress counter stays truthful.
  */
 export async function genOneImage(o: GenOneOpts): Promise<void> {
@@ -114,7 +114,7 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
     ? await storage.get(shootKey(o.pid, shoot.garment_file))
     : null;
 
-  // Extra poses are generated FROM the hero image — that's the consistency lock.
+  // Extra poses are generated FROM the hero image , that's the consistency lock.
   let heroBytes: Buffer | null = null;
   if (shoot.hero_file && !o.isHero) {
     heroBytes = await storage.get(shootKey(o.pid, shoot.hero_file));
@@ -124,8 +124,8 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
    * Tagged references for whatever angle this pose reveals.
    *
    * The hero is a front shot, so it is authoritative for the front and nothing
-   * more. Any pose that moves the camera — round the back, to a profile, in to
-   * a detail — is asking for information the hero does not contain, and the
+   * more. Any pose that moves the camera , round the back, to a profile, in to
+   * a detail , is asking for information the hero does not contain, and the
    * prompt otherwise has to admit that angle is unknown. If the shoot tagged a
    * photo of it, send that photo instead of leaving it to invention.
    *
@@ -138,7 +138,7 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
   if (!o.isHero && shoot.refs?.length) {
     const view = poseView(o.pose);
     if (view) {
-      // A close-up wants the label too — that is where print and lettering are.
+      // A close-up wants the label too , that is where print and lettering are.
       const wanted = view === 'detail' ? ['detail', 'label'] : [view];
       for (const want of wanted) {
         const ref = shoot.refs.find((r) => r.role === want);
@@ -171,7 +171,7 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
     const fname = `${o.isHero ? 'hero' : 'pose'}_${uniq()}.jpg`;
     const key = shootKey(o.pid, fname);
     await storage.put(key, raw);
-    // Build the display copies now, while the user is still watching the job —
+    // Build the display copies now, while the user is still watching the job ,
     // the ~150ms is invisible next to the generation itself, and the results
     // grid then paints from WebP instead of paying for it on first view.
     await writeDerivatives(key, raw);
@@ -221,7 +221,7 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
    * Saved-model-anchored generation.
    *
    * On a soft content block (IMAGE_OTHER) this reseeds and retries the SAME
-   * reference up to 3 attempts — it never swaps to an imagined model, because
+   * reference up to 3 attempts , it never swaps to an imagined model, because
    * the whole promise of a saved model is that the face doesn't change.
    * Returns null when all three attempts are blocked.
    */
@@ -327,11 +327,11 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
     //
     // Checked BEFORE the saved-model branch below, because that branch's prompt
     // is hardcoded to "Image 1 = garment, Image 2 = model" and only ever
-    // receives one garment — a multi-reference shoot falling into it would
+    // receives one garment , a multi-reference shoot falling into it would
     // silently use the first image and drop the rest.
     //
     // Only the hero differs. Once it lands it is an ordinary hero, and every
-    // later pose is generated from it like any other shoot — which is what
+    // later pose is generated from it like any other shoot , which is what
     // keeps the garment or assembled look locked without re-sending anything.
     if (o.isHero && shoot.refs?.length) {
       // Older shoots stored the mode in input_family; read that as a fallback.
@@ -343,7 +343,7 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
       for (const r of shoot.refs) {
         const b = await storage.get(shootKey(o.pid, r.file));
         // Skip a missing file rather than shifting every later reference up a
-        // slot — the prompt numbers them positionally, so a silent shift would
+        // slot , the prompt numbers them positionally, so a silent shift would
         // put the shoes where the sunglasses should be.
         if (!b) continue;
         refBytes.push(b);
@@ -393,7 +393,7 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
         if (!frontFrame) {
           pushResult(o.jobId, {
             pose: o.pose,
-            error: 'Selected model has no character sheet — generate one first.',
+            error: 'Selected model has no character sheet , generate one first.',
           });
           return;
         }
@@ -431,7 +431,7 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
       if (!frontFrame) {
         pushResult(o.jobId, {
           pose: o.pose,
-          error: 'Selected model has no character sheet — generate one first.',
+          error: 'Selected model has no character sheet , generate one first.',
         });
         return;
       }
@@ -541,7 +541,7 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
       }
 
       // Consistency fallback: regenerate from the garment instead of the hero.
-      // The pose lands, but the model may drift — hence the warning badge.
+      // The pose lands, but the model may drift , hence the warning badge.
       const out = await produce({
         prompt: buildPrompt({
           style: opts.style,
@@ -569,7 +569,7 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
   } catch (e) {
     const msg = String((e as Error)?.message ?? e);
     const nice = msg.includes('blocked')
-      ? "This pose couldn't be generated right now — tap Retry."
+      ? "This pose couldn't be generated right now , tap Retry."
       : msg;
     await logEvent({
       type: 'image',
@@ -600,7 +600,7 @@ export async function runProduct(
   patchJob(jobId, { seed: shoot.seed, no: shoot.no, shoot: shootNoStr(shoot.no) });
 
   if (shoot.opts.input_family === 'extend') {
-    // "Extend" uploads a photo that ALREADY shows the model — it becomes the
+    // "Extend" uploads a photo that ALREADY shows the model , it becomes the
     // hero directly, no generation and no charge for that first image.
     const hname = `hero_${uniq()}.jpg`;
     const hkey = shootKey(pid, hname);

@@ -7,7 +7,7 @@ import { EMPTY_PROFILE, INDIAN_STATES, type Profile } from '@/lib/profile';
 import { useStudio } from '@/lib/client/StudioContext';
 import PasswordInput from './PasswordInput';
 
-/** The read-only half of the payload — account facts, not editable fields. */
+/** The read-only half of the payload , account facts, not editable fields. */
 interface Account {
   uid: string;
   email: string;
@@ -22,7 +22,7 @@ type ProfileResponse = Profile & Account;
  * Account profile: your details, your billing details, your password.
  *
  * Everything is loaded from /api/profile rather than reused from the `me`
- * payload — `me` carries only what the studio chrome needs, and a form seeded
+ * payload , `me` carries only what the studio chrome needs, and a form seeded
  * from a partial copy would silently blank the fields it didn't know about on
  * the first save.
  */
@@ -143,7 +143,7 @@ export default function ProfileView() {
           </div>
 
           {/*
-            Only asked for when the sign-in address is actually being moved —
+            Only asked for when the sign-in address is actually being moved ,
             a password box sitting on a profile page you opened to fix a typo
             in your phone number reads as a security prompt out of nowhere.
           */}
@@ -174,7 +174,7 @@ export default function ProfileView() {
               value={form.gstin}
               onChange={(v) => set('gstin')(v.toUpperCase())}
               placeholder="27AAACS1234A1Z5"
-              hint="Optional — for a GST input credit on your invoices."
+              hint="Optional , for a GST input credit on your invoices."
             />
             <Select
               label="State"
@@ -266,7 +266,7 @@ function Identity({ account, name }: { account: Account; name: string }) {
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11.5px] text-muted">
           <span className="rounded-[5px] bg-surface2 px-1.5 py-0.5 font-mono text-[10px] font-bold text-accent">
-            {account.uid || '—'}
+            {account.uid || ','}
           </span>
           <span className="truncate">{account.email}</span>
           {account.created && <span>· Member since {fmtLogDate(account.created).slice(0, 10)}</span>}
@@ -289,7 +289,7 @@ function Identity({ account, name }: { account: Account; name: string }) {
   );
 }
 
-/** Change your password. Kept out of the profile form — it saves separately. */
+/** Change your password. Kept out of the profile form , it saves separately. */
 function PasswordCard() {
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
@@ -419,7 +419,7 @@ function Input({
       <label className="lbl" htmlFor={id}>
         {label}
       </label>
-      {/* Password fields get the show/hide toggle — same component the sign-in
+      {/* Password fields get the show/hide toggle , same component the sign-in
           and reset screens use, so the eye behaves identically everywhere. */}
       {type === 'password' ? (
         <PasswordInput

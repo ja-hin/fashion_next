@@ -33,7 +33,7 @@ const MAX_FRAMES = 4;
  * would let a caller pass any image at all and bill it to someone else's shoot.
  *
  * Charging is deliberately AFTER a successful generation, unlike Genie. A video
- * is 35 credits and takes a minute — taking that up front and refunding on
+ * is 35 credits and takes a minute , taking that up front and refunding on
  * failure means a customer watches their balance drop and hopes. See the note
  * in lib/gen.ts for the same reasoning on images.
  */
@@ -65,7 +65,7 @@ export const POST = handler(async (req: Request) => {
   if (!custom && !preset) throw new HttpError(400, 'Unknown video preset');
 
   // The brief the client sends has usually been through the Genie, so it is
-  // trusted for its wording — but only as an object of the right shape, and
+  // trusted for its wording , but only as an object of the right shape, and
   // merged onto a base so a missing slot is a default rather than undefined.
   // A custom brief has no preset behind it, so the skeleton is the base and the
   // brief itself is required: there is nothing to fall back to.
@@ -101,7 +101,7 @@ export const POST = handler(async (req: Request) => {
    * Which guarantee the brief carries, decided by what was actually picked.
    * A generated still shows the model wearing the garment, so "keep this
    * person" means something. A flat-lay reference does not, so the lock moves
-   * onto the garment and the model is invented — the same call the direct
+   * onto the garment and the model is invented , the same call the direct
    * upload route makes.
    */
   const lock: 'model' | 'garment' = files.some((f) => stills.has(f)) ? 'model' : 'garment';
@@ -134,7 +134,7 @@ export const POST = handler(async (req: Request) => {
     await storage.put(shootKey(pid, name), out.video);
 
     // Registered on the shoot, not just written to its folder. Storage is where
-    // the bytes live; this list is what makes them appear anywhere — the grid,
+    // the bytes live; this list is what makes them appear anywhere , the grid,
     // the gallery and the zip all read the document, never the directory.
     await pushVideo(pid, {
       file: name,
@@ -144,7 +144,7 @@ export const POST = handler(async (req: Request) => {
       created: new Date().toISOString(),
     });
 
-    // Charged only now, and refused rather than allowed negative — a wallet
+    // Charged only now, and refused rather than allowed negative , a wallet
     // spent elsewhere during the minute this took must not go below zero.
     let balance = await getBalance(user._id);
     if (cost > 0) {

@@ -1,5 +1,5 @@
 /**
- * Billing read model — the shapes the Billing tab and the invoice page render.
+ * Billing read model , the shapes the Billing tab and the invoice page render.
  */
 import 'server-only';
 import { orders } from './mongo';
@@ -25,7 +25,7 @@ export interface Seller {
   email: string;
   state: string;
   sac: string;
-  /** False when the seller isn't GST-registered — the invoice then omits tax lines. */
+  /** False when the seller isn't GST-registered , the invoice then omits tax lines. */
   gstRegistered: boolean;
 }
 
@@ -72,7 +72,7 @@ function toRow(o: OrderDoc): BillingRow {
 /**
  * A user's payment history, newest first.
  *
- * Includes failed and abandoned orders deliberately — "I was charged and got
+ * Includes failed and abandoned orders deliberately , "I was charged and got
  * nothing" is the commonest billing question, and a visible failed row answers
  * it faster than a support ticket.
  */
@@ -96,7 +96,7 @@ export interface InvoiceView {
   credits: number;
   currency: string;
   tax: ReturnType<typeof taxSplit>;
-  /** Total charged — always equals tax.total. */
+  /** Total charged , always equals tax.total. */
   amount: number;
 }
 
@@ -115,7 +115,7 @@ export async function invoiceFor(orderId: string, user: UserDoc): Promise<Invoic
     throw new HttpError(403, 'That invoice belongs to another account.');
   }
   if (o.status !== 'paid') {
-    throw new HttpError(409, 'No invoice — this order was never paid.');
+    throw new HttpError(409, 'No invoice , this order was never paid.');
   }
 
   const s = seller();
@@ -129,14 +129,14 @@ export async function invoiceFor(orderId: string, user: UserDoc): Promise<Invoic
       gstin: o.buyer_gstin ?? null,
       state: o.buyer_state ?? null,
     },
-    invoice_no: o.invoice_no ?? '—',
+    invoice_no: o.invoice_no ?? ',',
     invoice_date: o.invoice_date ?? o.paid_at ?? o.created,
     order_id: o._id,
     payment_id: o.payment_id ?? null,
     description: o.label,
     credits: o.credits,
     currency: o.currency,
-    // The rate stored on the order, not the current one — an invoice issued in
+    // The rate stored on the order, not the current one , an invoice issued in
     // the past must keep showing the tax that was actually charged.
     tax: taxSplit(
       o.amount,

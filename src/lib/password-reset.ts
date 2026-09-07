@@ -2,7 +2,7 @@
  * Password-reset tokens.
  *
  * The token is a 32-byte random value sent only in the email. What we store is
- * its SHA-256 — so a dump of this collection cannot be turned into working
+ * its SHA-256 , so a dump of this collection cannot be turned into working
  * reset links. Verification hashes the presented token and looks that up.
  *
  * A plain hash (not pbkdf2) is right here where it would be wrong for a
@@ -31,7 +31,7 @@ export interface IssuedReset {
 /**
  * Issue a reset token for an email, or null.
  *
- * Null covers "no such account" AND "asked too often" deliberately — the route
+ * Null covers "no such account" AND "asked too often" deliberately , the route
  * responds identically either way, so this can never be used to discover which
  * addresses are registered.
  */
@@ -74,7 +74,7 @@ export async function issueReset(
   return { user, issued: { token, minutes: RESET_TTL_MINUTES } };
 }
 
-/** Look up a token without spending it — used to validate the reset page on load. */
+/** Look up a token without spending it , used to validate the reset page on load. */
 export async function peekReset(token: string): Promise<ResetDoc | null> {
   if (!token) return null;
   const doc = await (await passwordResets()).findOne({ _id: sha256(token) });
@@ -109,7 +109,7 @@ export async function consumeReset(token: string): Promise<ResetDoc | null> {
   return won ?? null;
 }
 
-/** Drop every outstanding link for a user — called once the password changes. */
+/** Drop every outstanding link for a user , called once the password changes. */
 export async function clearResets(userId: string): Promise<void> {
   await (await passwordResets()).deleteMany({ user_id: userId });
 }

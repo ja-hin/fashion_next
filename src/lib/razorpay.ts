@@ -73,7 +73,7 @@ interface RazorpayOrder {
 
 /**
  * Create a Razorpay order and persist our own record of it.
- * The persisted `credits` is what will be granted — decided here, at order
+ * The persisted `credits` is what will be granted , decided here, at order
  * time, so nothing the browser sends later can change it.
  */
 export async function createOrder(
@@ -153,7 +153,7 @@ export function verifyCheckoutSignature(opts: {
 }
 
 /**
- * Verify a webhook. Must be given the RAW request body — re-serialising the
+ * Verify a webhook. Must be given the RAW request body , re-serialising the
  * parsed JSON changes key order and whitespace, and the signature stops
  * matching.
  */
@@ -163,7 +163,7 @@ export function verifyWebhookSignature(rawBody: string, signature: string): bool
   return safeEqual(expected, signature);
 }
 
-/** Webhooks are rejected outright when no secret is configured — never trusted blindly. */
+/** Webhooks are rejected outright when no secret is configured , never trusted blindly. */
 export const WEBHOOK_CONFIGURED = Boolean(RAZORPAY_WEBHOOK_SECRET);
 
 // ── crediting ───────────────────────────────────────────────────────
@@ -179,8 +179,8 @@ export interface CreditResult {
  * Grant an order's credits, exactly once.
  *
  * The `status: 'created'` filter is the whole idempotency story: Mongo applies
- * findOneAndUpdate atomically, so of the Checkout callback and the webhook —
- * which routinely race on a successful payment — precisely one matches and
+ * findOneAndUpdate atomically, so of the Checkout callback and the webhook ,
+ * which routinely race on a successful payment , precisely one matches and
  * flips the row. The loser gets null back and credits nothing.
  */
 export async function creditOrder(
@@ -234,7 +234,7 @@ export async function creditOrder(
 
   const balance = await adjustBalance(won.user_id, won.credits);
   if (balance === null) {
-    // The order is marked paid but the balance did not move — the user row is
+    // The order is marked paid but the balance did not move , the user row is
     // missing or unwritable. Loud, because it needs manual reconciliation.
     console.error(
       `[razorpay] PAID BUT NOT CREDITED order=${orderId} payment=${paymentId} ` +

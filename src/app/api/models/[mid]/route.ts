@@ -21,7 +21,7 @@ export const GET = handler(async (_req: Request, ctx: Ctx) => {
   return json(publicModel(rec));
 });
 
-/** Rename and/or retag. Every field is optional — only what's sent is changed. */
+/** Rename and/or retag. Every field is optional , only what's sent is changed. */
 export const PATCH = handler(async (req: Request, ctx: Ctx) => {
   const { mid } = await ctx.params;
   const { rec } = await requireOwnedModel(mid);

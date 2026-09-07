@@ -6,7 +6,7 @@ import { EyeIcon, EyeOffIcon } from './icons';
 /**
  * A password field with a show/hide toggle.
  *
- * Renders the input only — every screen keeps its own label and hint markup, so
+ * Renders the input only , every screen keeps its own label and hint markup, so
  * this drops into the sign-in card and the profile form without either having to
  * adopt the other's layout.
  *

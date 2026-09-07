@@ -38,12 +38,12 @@ export default function AddCard({
   geniePrice,
   priceFor,
 }: {
-  /** Drives which pose list is offered — menswear and womenswear differ. */
+  /** Drives which pose list is offered , menswear and womenswear differ. */
   category: string;
   /** Genie reads the locked model and garment from the shoot; null hides it. */
   pid: string | null;
   onAddOne: (pose: string, settings: PoseSettings) => void;
-  /** Several poses at once — one image each, all sharing these settings. */
+  /** Several poses at once , one image each, all sharing these settings. */
   onAddMany: (rows: Array<PoseSettings & { pose: string }>) => void;
   onStartBatch: () => void;
   onBalance: (b: number) => void;
@@ -55,7 +55,7 @@ export default function AddCard({
   const [prompt, setPrompt] = useState('');
   const [s, setS] = useState<PoseSettings>({});
   const [genie, setGenie] = useState(false);
-  /** Pose indices, kept in the order they were ticked — that's the render order. */
+  /** Pose indices, kept in the order they were ticked , that's the render order. */
   const [selected, setSelected] = useState<number[]>([]);
 
   const poses = useMemo(() => posesFor(category), [category]);
@@ -78,7 +78,7 @@ export default function AddCard({
     const room = rect ? window.innerWidth - rect.right : 0;
     setPeek({ label, side: room > 200 ? 'right' : 'left' });
   }
-  // Priced off the panel's own resolution override, not the shoot's — picking
+  // Priced off the panel's own resolution override, not the shoot's , picking
   // 4K here and being quoted the 1K rate would understate the bill, and the
   // multi-select multiplies that error by the number of poses ticked.
   const total = count * priceFor(s.resolution ?? '');
@@ -89,7 +89,7 @@ export default function AddCard({
 
     // Landing on exactly one pose fills the editable prompt with its text, the
     // way picking from the old dropdown did. Unticking back to none clears it
-    // again — but only while it is still the untouched library wording, so
+    // again , but only while it is still the untouched library wording, so
     // anything typed or run through the Genie survives.
     if (next.length === 1) setPrompt(poses[next[0]][1]);
     else if (next.length === 0 && selected.length === 1 && prompt === poses[selected[0]][1]) {
@@ -130,7 +130,7 @@ export default function AddCard({
         <div className="flex min-h-[300px] flex-col gap-2.5 px-4 py-5">
           <div className="mb-1 text-sm font-bold">Add more poses</div>
           <div className="mb-2 text-[11.5px] leading-[1.5] text-muted">
-            Same locked model — pick how you want to add.
+            Same locked model , pick how you want to add.
           </div>
           <button
             onClick={() => setMode('one')}
@@ -168,7 +168,7 @@ export default function AddCard({
   return (
     // `relative` anchors the hover preview. It is rendered here rather than
     // inside the scrolling pose list because an overflow-y-auto box clips its
-    // children on BOTH axes — a popover sitting inside it would be cut off.
+    // children on BOTH axes , a popover sitting inside it would be cut off.
     <div
       ref={panelRef}
       className="relative w-[256px] self-start rounded-card border-[1.5px] border-dashed border-line bg-surface"
@@ -226,7 +226,7 @@ export default function AddCard({
                   // Keyboard users get the same peek as the mouse.
                   onFocus={() => showPeek(label)}
                   onBlur={() => setPeek((p) => (p?.label === label ? null : p))}
-                  // The base stylesheet stretches every input to full width —
+                  // The base stylesheet stretches every input to full width ,
                   // a checkbox has to opt back out of it.
                   className="h-[14px] w-[14px] flex-shrink-0 accent-brand p-0"
                 />
@@ -300,7 +300,7 @@ export default function AddCard({
 
         {multi ? (
           <div className="rounded-[9px] border border-line bg-surface2 p-2.5 text-[11px] leading-[1.5] text-muted">
-            <b className="text-ink">{selected.length} poses selected</b> — each becomes its own
+            <b className="text-ink">{selected.length} poses selected</b> , each becomes its own
             image, generated one after another with the options above. Tick a single pose to edit
             its prompt.
             {/* There is no single prompt box to hang the Genie off in this mode,
@@ -333,12 +333,12 @@ export default function AddCard({
                 type="button"
                 onClick={() => setGenie(true)}
                 disabled={!pid}
-                title="Genie — refine this pose, describe a new shot, or match a reference photo"
+                title="Genie , refine this pose, describe a new shot, or match a reference photo"
                 className="group absolute bottom-[7px] right-[7px] flex h-[30px] w-[30px] items-center justify-center rounded-lg transition hover:scale-110 disabled:opacity-40"
               >
                 <GenieIcon className="h-7 w-7" />
                 <span className="pointer-events-none absolute bottom-[38px] right-0 z-[9] w-[184px] rounded-lg bg-ink px-2.5 py-2 text-[11px] leading-[1.45] text-surface opacity-0 transition group-hover:opacity-100">
-                  <b className="text-[#c9a8ff]">✦ Ask Genie</b> —{' '}
+                  <b className="text-[#c9a8ff]">✦ Ask Genie</b> ,{' '}
                   {prompt.trim() ? 'refine this pose' : 'describe the shot'}, or attach a photo to
                   match. {geniePrice > 0 ? `${geniePrice} credit each.` : 'Free.'}
                 </span>
@@ -375,12 +375,12 @@ export default function AddCard({
         onApply={(pose, settings) => {
           setPrompt(pose);
           // Genie leaves a field '' when it means "leave this alone", which is
-          // the card's own "same" value — so this merge is safe to apply whole.
+          // the card's own "same" value , so this merge is safe to apply whole.
           set(settings);
           // A direction is for one shot; ticked library poses would override it.
           setSelected([]);
         }}
-        // A set runs straight through the batch endpoint — it already generates
+        // A set runs straight through the batch endpoint , it already generates
         // one image per row, sequentially, which is what the card does for
         // several ticked poses.
         onGenerate={(rows) => {

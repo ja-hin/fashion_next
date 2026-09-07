@@ -1,6 +1,6 @@
 /* The public site is light-only. The dark/light toggle lives in the studio
    top bar (src/components/TopBar.tsx), which persists the choice to
-   localStorage — the marketing pages never set `data-theme` at all. */
+   localStorage , the marketing pages never set `data-theme` at all. */
 
 /* =============== SVG croquis fallbacks (used if an image fails) =============== */
 const skin="#E7C6A8",skin2="#D8AE8C",garment="#E4572E",garmentB="#B93E1F",hair="#2A231C";
@@ -16,7 +16,7 @@ const POSES={
  garment:c=>`${bg(c)}<path d="M38 34 l12 -6 l12 6 l-4 10 l-2 -3 l0 42 q-12 4 -24 0 l0 -42 l-2 3 z" fill="${garment}"/><path d="M46 30 q4 4 8 0" stroke="${garmentB}" stroke-width="2" fill="none"/>`,
  /* Menswear silhouettes: straight hem and trousers, so a shirt does not come
     back drawn as a dress while the real photography is still being shot.
-    Trousers keep their own colour — only the garment takes the tint. */
+    Trousers keep their own colour , only the garment takes the tint. */
  mfront:c=>`${bg(c)}${head(50,29,9.5)}<path d="M39 39 q11 -5 22 0 l2 30 q-13 4 -26 0 z" fill="${garment}"/><path d="M40 40 l-6 25 M60 40 l6 25" stroke="${garment}" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M34 66 l-1 4 M66 66 l1 4" stroke="${skin}" stroke-width="4" stroke-linecap="round"/><path d="M44 69 l-2 39 M56 69 l2 39" stroke="#3B4252" stroke-width="8" stroke-linecap="round"/>`,
  mwalk:c=>`${bg(c)}${head(52,29,9.5)}<path d="M41 39 q11 -5 22 0 l2 30 q-13 4 -26 0 z" fill="${garment}"/><path d="M42 40 l-8 23 M62 40 l7 20" stroke="${garment}" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M46 69 l-9 38 M58 69 l9 37" stroke="#3B4252" stroke-width="8" stroke-linecap="round"/>`,
  mback:c=>`${bg(c)}${head(50,29,9.5,true)}<path d="M39 39 q11 -5 22 0 l2 30 q-13 4 -26 0 z" fill="${garmentB}"/><path d="M40 40 l-6 25 M60 40 l6 25" stroke="${garmentB}" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M44 69 l-2 39 M56 69 l2 39" stroke="#3B4252" stroke-width="8" stroke-linecap="round"/>`,
@@ -30,18 +30,18 @@ const frameSVG=(p,c)=>`<svg viewBox="0 0 100 133" preserveAspectRatio="xMidYMid 
    1. Create a folder named  Webassets  next to this HTML file.
    2. Drop your photos in with these exact names (.jpg, .png or .webp):
 
-      garment    — the input flat-lay/packshot        (sheet frame 00, hero)
-      front      — model, front full-body             (sheet 01, hero, card 02)
-      walk       — model walking                      (sheet 02, hero, card 02)
-      hip        — model three-quarter                (sheet 03)
-      back       — model from behind                  (sheet 04, hero, card 02)
-      closeup    — model close-up                     (sheet 05, hero, card 02)
-      saree      — ethnic-wear shot                   (hero drift)
-      extra1..5  — any five varied shots              (hero, card 01 grid)
+      garment    , the input flat-lay/packshot        (sheet frame 00, hero)
+      front      , model, front full-body             (sheet 01, hero, card 02)
+      walk       , model walking                      (sheet 02, hero, card 02)
+      hip        , model three-quarter                (sheet 03)
+      back       , model from behind                  (sheet 04, hero, card 02)
+      closeup    , model close-up                     (sheet 05, hero, card 02)
+      saree      , ethnic-wear shot                   (hero drift)
+      extra1..5  , any five varied shots              (hero, card 01 grid)
 
    e.g.  Webassets/front.jpg, Webassets/closeup.png, Webassets/extra3.webp
    Each slot tries your file first, then the Unsplash placeholder,
-   then a drawn figure — the page never shows a broken image.
+   then a drawn figure , the page never shows a broken image.
    ==================================================================== */
 const ASSET_DIR="/webassets/";
 const EXTS=["jpg","png","webp"];
@@ -65,7 +65,7 @@ function mkImg(slot,w,pose,bcolor,alt){
   const queue=EXTS.map(e=>ASSET_DIR+slot+"."+e);
   if(IMG[slot])queue.push(U(IMG[slot],w));
   const img=document.createElement("img");
-  img.alt=alt||("AI-generated on-model fashion photo — "+slot.replace(/\d+$/,"")+" view, AImageGen sample");img.loading="lazy";
+  img.alt=alt||("AI-generated on-model fashion photo , "+slot.replace(/\d+$/,"")+" view, Faishon Studio sample");img.loading="lazy";
   img.addEventListener("error",()=>{
     if(queue.length){img.src=queue.shift();return;}
     const wrap=img.parentElement;if(!wrap)return;
@@ -80,7 +80,7 @@ function mkImg(slot,w,pose,bcolor,alt){
 }
 
 /* =============== hero: a shoot running =============== */
-/* Frames live in /webassets/hero/ as s<set>-<frame>.jpg|png|webp — s1-1 … s5-4.
+/* Frames live in /webassets/hero/ as s<set>-<frame>.jpg|png|webp , s1-1 … s5-4.
    A set joins the rotation once at least 3 of its frames exist, so adding a
    folder of stills is the whole deployment step. With no hero/ files at all a
    default set is built from the base slots, and the section still works. */
@@ -92,8 +92,8 @@ function probe(url){
 }
 async function probeChain(base){
   /* The first extension on its own, then the rest together.
-     Tried strictly one after another, an empty slot cost three round trips —
-     jpg 404, png 404, webp 404 — and the hero has twenty slots to check. This
+     Tried strictly one after another, an empty slot cost three round trips ,
+     jpg 404, png 404, webp 404 , and the hero has twenty slots to check. This
      is one trip for the usual case (the file is a .jpg) and two for a miss,
      while still preferring EXTS order when more than one format exists. */
   const first=await probe(base+"."+EXTS[0]);
@@ -103,7 +103,7 @@ async function probeChain(base){
 }
 /* The same idea for a clip. `loadedmetadata` rather than `canplay`: it fires as
    soon as the header is in, so a missing file is ruled out in a round trip
-   instead of a download — which matters when the file is megabytes. */
+   instead of a download , which matters when the file is megabytes. */
 function probeVideo(url){
   return new Promise(done=>{
     const v=document.createElement("video");
@@ -130,11 +130,11 @@ function probeVideo(url){
      This used to be two nested loops of `await`: five sets x four frames, every
      probe waiting on the one before it, and nothing painted until all twenty
      had answered. On loopback that is invisible; over a real connection it is
-     twenty-six serial round trips before the first photograph appears — three
+     twenty-six serial round trips before the first photograph appears , three
      to five seconds of empty frames.
      So: one set at a time, its four frames probed together, and the collage
      starts as soon as the FIRST set is in. The other four load behind it and
-     join the rotation as they land — by then the section is already running. */
+     join the rotation as they land , by then the section is already running. */
   const sets=[];
   const loadSet=async n=>{
     const urls=(await Promise.all(
@@ -147,7 +147,7 @@ function probeVideo(url){
   const first=await loadSet(1);
   if(first){
     sets.push(first);
-    /* Deliberately not awaited — the show starts on set 1. */
+    /* Deliberately not awaited , the show starts on set 1. */
     Promise.all(others()).then(rest=>rest.forEach(st=>{if(st)sets.push(st);}));
   } else {
     /* No set 1, so there is nothing to start on: the rest have to be resolved
@@ -169,7 +169,7 @@ function probeVideo(url){
   function mediaNode(u){
     if(typeof u==="string"){
       const i=document.createElement("img");
-      i.src=u;i.alt="AI on-model fashion photo — AImageGen sample";
+      i.src=u;i.alt="AI on-model fashion photo , Faishon Studio sample";
       return i;
     }
     const d=document.createElement("div");d.style.cssText="position:absolute;inset:0";
@@ -320,7 +320,7 @@ const priceFill=document.getElementById("priceFill");
     const card=document.createElement("article");
     card.className="rcard";
     /* Appended before the imagery resolves so the eight keep the order they are
-       written in — awaiting first would let whichever image loads fastest land
+       written in , awaiting first would let whichever image loads fastest land
        first, and the numbers would not match the copy. */
     track.appendChild(card);
 
@@ -328,7 +328,7 @@ const priceFill=document.getElementById("priceFill");
     if(!media)media=await probe(U(c.img,640));
     const plain=c.t.replace(/<[^>]+>/g,"");
     const inner=media
-      ? `<img src="${media}" alt="Faishon Studio — ${plain}" loading="${i>1?"lazy":"eager"}"/>`
+      ? `<img src="${media}" alt="Faishon Studio , ${plain}" loading="${i>1?"lazy":"eager"}"/>`
       : fallSVG(c.bg,c.pose);
 
     card.innerHTML=
@@ -340,7 +340,7 @@ const priceFill=document.getElementById("priceFill");
      Wired HERE, after the loop, and not at module scope: the cards are built by
      this function, so an observer set up earlier in the file would query an
      empty track, observe nothing, and leave every card at the opacity:0 that
-     `.reveal` applies — an invisible rail.
+     `.reveal` applies , an invisible rail.
 
      Unobserving makes it one-shot, so scrubbing the rail backwards does not
      replay eight animations. */
@@ -355,7 +355,7 @@ const priceFill=document.getElementById("priceFill");
 /* =============== ensemble: the styling map =============== */
 /* Six pieces beside one figure, each pinned to the spot it is styled onto.
  *
- * The obvious way to show an ensemble is pieces-in, look-out — but that only
+ * The obvious way to show an ensemble is pieces-in, look-out , but that only
  * says "they went in somewhere". Marking WHERE each one lands is the thing the
  * feature actually does, and it is what a stylist would point at.
  *
@@ -369,7 +369,7 @@ const priceFill=document.getElementById("priceFill");
   const flag=document.getElementById("ensFlag");
   if(!box||!pinBox||!figure)return;          /* only the marketing page has one */
 
-  /* x/y are percentages of the frame, measured against the shoot photograph —
+  /* x/y are percentages of the frame, measured against the shoot photograph ,
      each one lands on the piece itself: the brim, the lens, the pendant, the
      check, the clasp, the ankle strap. Percentages rather than pixels so the
      frame can be any size; a replacement render of the same crop keeps them. */
@@ -394,7 +394,7 @@ const priceFill=document.getElementById("priceFill");
   };
   const packshot=k=>`<svg viewBox="0 0 100 100" aria-hidden="true">${DRAWN[k]||paper}</svg>`;
 
-  /* The figure, drawn to the same coordinates the pins use — hat at 12%, eyes
+  /* The figure, drawn to the same coordinates the pins use , hat at 12%, eyes
      at 18%, collarbone at 27%, and so on down to the shoes at 94%. */
   const FIGURE=`<svg viewBox="0 0 100 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <rect width="100" height="150" fill="#EFEBE3"/>
@@ -421,13 +421,13 @@ const priceFill=document.getElementById("priceFill");
   PIECES.forEach((p,i)=>{
     const card=document.createElement("button");
     card.type="button";card.className="ens-piece";card.dataset.c="";
-    card.setAttribute("aria-label",`${p.n} — ${p.r}`);
+    card.setAttribute("aria-label",`${p.n} , ${p.r}`);
     card.innerHTML=`<span class="ep-shot">${packshot(p.k)}</span>`+
       `<span class="ep-meta"><b>${p.n}</b><i>${p.r}</i></span>`+
       `<span class="ep-no">${String(i+1).padStart(2,"0")}</span>`;
     box.appendChild(card);cards.push(card);
 
-    /* The supplied packshot of the actual item — the six product photographs
+    /* The supplied packshot of the actual item , the six product photographs
        that went into the shoot, square-cropped to /webassets/ensemble/pN.jpg.
        Packshots rather than crops of the finished frame: this section's claim
        is "these six went in, this one came out", and a crop of the output can
@@ -449,7 +449,7 @@ const priceFill=document.getElementById("priceFill");
   (async()=>{
     const u=await probeChain(ASSET_DIR+"ensemble/model")
          || await probe("/S0111_standing_front.jpg");
-    if(u)figure.innerHTML=`<img src="${u}" alt="One model wearing every uploaded piece — hat, eyewear, necklace, dress, bag and heels"/>`;
+    if(u)figure.innerHTML=`<img src="${u}" alt="One model wearing every uploaded piece , hat, eyewear, necklace, dress, bag and heels"/>`;
   })();
 
   /* ---- the tour ------------------------------------------------------- */
@@ -461,7 +461,7 @@ const priceFill=document.getElementById("priceFill");
     if(flag){
       const p=PIECES[i];
       /* The name only. It also carried the role, which put a ~180px pill 170px
-         into a 296px frame — it ran off the right edge on every pin. The role
+         into a 296px frame , it ran off the right edge on every pin. The role
          is on the card two inches away; repeating it here bought nothing. */
       flag.textContent=p.n;
       /* Flipped to the left of any pin sitting right of centre, so the bag's
@@ -499,7 +499,7 @@ const priceFill=document.getElementById("priceFill");
  * lets a jump be instant under prefers-reduced-motion.
  *
  * Delegated from the document so it covers the header, the mobile sheet and
- * the footer without three sets of listeners — and so a link added later works
+ * the footer without three sets of listeners , and so a link added later works
  * without wiring.
  */
 addEventListener("click",e=>{
@@ -526,7 +526,7 @@ function zoneProgress(el){
 }
 /* ---- a row you scroll sideways -------------------------------------- */
 /* Two sections use this: the feature rail and the pricing packs. The row's
- * position is a function of page scroll — the pinned zone is made as tall as
+ * position is a function of page scroll , the pinned zone is made as tall as
  * the track is wide, and zoneProgress maps one onto the other.
  *
  * So a drag does NOT write its own transform. It scrolls the page by the
@@ -548,7 +548,7 @@ function scrollRail(zone,track,fill,tail){
 
   function layout(){
     const extra=travel();
-    /* Nothing overflows — a wide screen fits every card — so there is nothing
+    /* Nothing overflows , a wide screen fits every card , so there is nothing
        to scrub. The zone stops being taller than the screen, which leaves the
        sticky pin no range to hold in, and the row is just a centred row. */
     zone.classList.toggle("no-travel",!extra);
@@ -583,7 +583,7 @@ function scrollRail(zone,track,fill,tail){
     const dx=e.clientX-startX, dy=e.clientY-startY;
 
     /* Axis lock. `touch-action:pan-y` leaves vertical swipes to the browser, so
-       a downward flick scrolls the page natively — and this handler must keep
+       a downward flick scrolls the page natively , and this handler must keep
        its hands off it, or the page would move twice for one gesture. */
     if(!axis){
       if(Math.abs(dx)<6&&Math.abs(dy)<6)return;
@@ -593,7 +593,7 @@ function scrollRail(zone,track,fill,tail){
 
     e.preventDefault();
     /* Left drags the row forward, which is the same direction scrolling down
-       takes it — hence the minus. */
+       takes it , hence the minus. */
     scrollTo(0,fromScroll-dx*ratio);
   },{passive:false});
 
@@ -606,7 +606,7 @@ function scrollRail(zone,track,fill,tail){
   pin.addEventListener("pointercancel",end);
 
   /* `scrollTo` is exposed so the pricing dots can jump to a card the same way a
-     drag does — by moving the page, never the track. */
+     drag does , by moving the page, never the track. */
   return {layout,frame,travel,
     scrollTo(p){
       const top=zone.getBoundingClientRect().top+scrollY;
@@ -625,7 +625,7 @@ layoutRails();addEventListener("resize",layoutRails);
 const fmtIN=n=>n.toLocaleString("en-IN",{maximumFractionDigits:n<100?1:0});
 
 /* ---- the nav gets out of the way ------------------------------------- */
-/* Hidden on the way down, back on the way up — but only past the hero. While
+/* Hidden on the way down, back on the way up , but only past the hero. While
    the opening screen is still on show the bar is part of it, and a header that
    vanished inside the first shot would read as a glitch rather than as room
    being made. A few pixels of deadband so a trackpad's jitter cannot flap it,
@@ -647,7 +647,7 @@ function navChrome(y){
  *
  * Every block is guarded on its own elements rather than the function bailing
  * out at the top, because this file is loaded by pages that are not the landing
- * page — /pricing, /privacy, /terms — for the theme toggle and the header, and
+ * page , /pricing, /privacy, /terms , for the theme toggle and the header, and
  * those carry none of the scrubbed sections.
  *
  * Guarded individually, and not for tidiness: an unguarded deref here throws
@@ -714,7 +714,7 @@ document.querySelectorAll("[data-count]").forEach(el=>cio.observe(el));
 /* A reel that develops each frame as it crosses the beam. Reuses ASSET_DIR,
    EXTS, IMG, probe/probeChain, frameSVG and BACKDROPS from above.
    Every slot here is a real file in /webassets, so nothing falls through to a
-   stock placeholder — the panel is showing actual output. */
+   stock placeholder , the panel is showing actual output. */
 const STRIP_ITEMS=[
  ["front","STUDIO","front"],   ["walk","WALKING","walk"],
  ["m1p3","EDITORIAL","front"], ["hip","THREE-QUARTER","hip"],
@@ -736,7 +736,7 @@ const STRIP_ITEMS=[
     resolved.push({u,cap,pose});
   }
 
-  /* Laid down twice so the wrap has an identical second copy to jump to —
+  /* Laid down twice so the wrap has an identical second copy to jump to ,
      the reset is invisible because the two halves are the same. */
   for(let rep=0;rep<2;rep++){
     resolved.forEach((it,i)=>{
@@ -744,7 +744,7 @@ const STRIP_ITEMS=[
       const inner=document.createElement("div");inner.className="inner";
       if(it.u){
         const im=document.createElement("img");
-        im.src=it.u;im.alt="AI on-model fashion photo — "+it.cap.toLowerCase();
+        im.src=it.u;im.alt="AI on-model fashion photo , "+it.cap.toLowerCase();
         inner.appendChild(im);
       } else {
         inner.innerHTML=frameSVG(it.pose,BACKDROPS[i%BACKDROPS.length]);
@@ -866,7 +866,7 @@ const STRIP_ITEMS=[
     const m=MODELS[Math.floor(idx/M)], col=COLS[idx%M];
     if(RES[idx]){
       const img=document.createElement("img");
-      img.src=RES[idx];img.alt=`AI model ${m.n} — ${col.b.toLowerCase()}`;
+      img.src=RES[idx];img.alt=`AI model ${m.n} , ${col.b.toLowerCase()}`;
       return img;
     }
     const d=document.createElement("div");
@@ -886,7 +886,7 @@ const STRIP_ITEMS=[
      frame is playing, which is the only one being looked at.
 
      The header element stays in the markup and is removed HERE rather than
-     deleted from the page. Guarded, this works whether or not it exists — so
+     deleted from the page. Guarded, this works whether or not it exists , so
      the two files cannot fall out of step and take the whole script down with
      them, which is exactly how this section broke once already. */
   if(mmCols)mmCols.remove();
@@ -927,8 +927,8 @@ const STRIP_ITEMS=[
     fresh.appendChild(comboMedia(idx));
     if(old)old.replaceWith(fresh);
     /* The frame counter, the model's name and the setting line used to be
-       written here. They are gone from the panel — the grid is thirty
-       photographs and the labels were reading them out — so there is nothing
+       written here. They are gone from the panel , the grid is thirty
+       photographs and the labels were reading them out , so there is nothing
        left to caption. The progress bar stays: it is the only part that says
        how far through the set you are. */
     cells.forEach((c,k)=>{c.classList.toggle("on",k===idx);if(k===idx)c.classList.add("seen");});
@@ -941,12 +941,12 @@ const STRIP_ITEMS=[
 
   /* Only the thumbnails hold the reel. Pausing on the whole panel meant the
      cycle stopped the moment the pointer crossed the loupe, the caption or the
-     surrounding white — so simply reading the section froze the thing it was
+     surrounding white , so simply reading the section froze the thing it was
      there to demonstrate. The grid is the part you stop on to study, so the
      grid is the part that pauses. */
   function setPaused(on){
     paused=on;
-    if(pauseState)pauseState.textContent=on?"PAUSED — HOVERING":"PLAYING";
+    if(pauseState)pauseState.textContent=on?"PAUSED , HOVERING":"PLAYING";
   }
   cells.forEach(c=>{
     c.addEventListener("mouseenter",()=>setPaused(true));
@@ -957,7 +957,7 @@ const STRIP_ITEMS=[
 })();
 
 /* =============== contact sheet: four shoots, one sheet =============== */
-/* Replaces the old single-set sheet. Scoped in an IIFE like the other panels —
+/* Replaces the old single-set sheet. Scoped in an IIFE like the other panels ,
    it needs its own `cur`, `paused` and `reduce`, all taken at the top level.
    Sets live in /webassets/shoot as sN-in (the upload) plus sN-1..sN-5 (what it
    became); a set joins once the input and at least 3 outputs exist, so adding a
@@ -969,7 +969,7 @@ const STRIP_ITEMS=[
   const SHOOT_DIR=ASSET_DIR+"shoot/";
   const MAX_SETS=4;
   const POSE_LABELS=["FRONT · FULL","WALKING","THREE-QUARTER","BACK","CLOSE-UP"];
-  /* Per-set labels, because the four shoots do not contain the same five poses —
+  /* Per-set labels, because the four shoots do not contain the same five poses ,
      only S2 has a true back view, so a fixed list would caption three front
      shots "BACK". A set with no entry here falls back to POSE_LABELS, so
      dropping a new folder into shoot/ still needs no code change. */
@@ -996,7 +996,7 @@ const STRIP_ITEMS=[
       if(input&&outs.filter(Boolean).length>=3)sets.push({name:"S"+n,input,outs,labels:SET_LABELS[n]});
     }
     /* Nothing in shoot/ yet. The m-grid is already five models photographed in
-       six setups each, which is exactly what this panel is for — so it falls
+       six setups each, which is exactly what this panel is for , so it falls
        back to those rather than to a single set, and the carousel has somewhere
        to go. Replaced the moment real shoot/ sets appear. */
     if(!sets.length){
@@ -1007,7 +1007,7 @@ const STRIP_ITEMS=[
         if(outs.filter(Boolean).length>=3)sets.push({name:"S"+r,input:garmentIn,outs});
       }
     }
-    /* Still nothing usable — one set from the base slots, so the panel shows
+    /* Still nothing usable , one set from the base slots, so the panel shows
        the idea rather than rendering empty. */
     if(!sets.length){
       const grab=async slot=>{
@@ -1025,7 +1025,7 @@ const STRIP_ITEMS=[
     function media(u,pose,bgc){
       if(typeof u==="string"){
         const i=document.createElement("img");
-        i.src=u;i.alt="AI on-model fashion photo — AImageGen";
+        i.src=u;i.alt="AI on-model fashion photo , Faishon Studio";
         return i;
       }
       const d=document.createElement("div");d.style.cssText="position:absolute;inset:0";
@@ -1057,7 +1057,7 @@ const STRIP_ITEMS=[
       topLbl.textContent=`CONTACT SHEET`;
 
       framesBox.innerHTML="";
-      /* frame 00 is the upload — the thing everything else came from */
+      /* frame 00 is the upload , the thing everything else came from */
       const f0=document.createElement("div");
       f0.className="frame garment"+(reduceD?"":" pop");
       f0.appendChild(media(st.input??{},"garment","#221f19"));
@@ -1086,7 +1086,7 @@ const STRIP_ITEMS=[
     sheet.addEventListener("mouseenter",()=>paused=true);
     sheet.addEventListener("mouseleave",()=>paused=false);
 
-    /* Arrow keys only while the sheet is actually on screen — otherwise they
+    /* Arrow keys only while the sheet is actually on screen , otherwise they
        would hijack the page's own scrolling from anywhere. */
     addEventListener("keydown",e=>{
       if(e.key!=="ArrowLeft"&&e.key!=="ArrowRight")return;
@@ -1129,7 +1129,7 @@ const STRIP_ITEMS=[
  *   /webassets/hiw/<garment>-<model>-<bg>-<pose>.jpg|png|webp
  *   e.g. saree-anouk-studio-standing
  * falling back to the older /webassets/hiw/<model>-<bg>-<pose> naming, and
- * then to the shared croquis — drawn for the chosen pose, tinted for the
+ * then to the shared croquis , drawn for the chosen pose, tinted for the
  * chosen model's skin and the chosen garment's colour. That fallback is
  * deliberate: pointing the combinations at unrelated real photos would show a
  * studio frame when the visitor picked "Outdoor", and a panel whose whole job
@@ -1151,13 +1151,18 @@ const STRIP_ITEMS=[
     {id:"outdoor",  n:"Outdoor",      c:"#3c4a41"}
   ];
 
-  /* `sil` overrides the drawn silhouette for full-length poses — a saree is
+  /* `sil` overrides the drawn silhouette for full-length poses , a saree is
      not a dress with a different colour. `c`/`c2` tint the drawn garment, so
      switching garments changes the frame even with no photography in place. */
   const CATS=[
     {id:"womenswear",n:"Womenswear",
+     /* One garment for now. Deliberately the Summer dress rather than the
+        saree: it is the one with photography behind it, so every backdrop and
+        pose below lands on a real frame instead of the drawn croquis. The row
+        still shows , it names what is being shot , there is simply nothing to
+        switch to yet. Add the saree back to this list and it becomes a picker
+        again with no other change. */
      garments:[
-       {id:"saree",n:"Banarasi saree",s:"Flat-lay → draped on-model",sil:"saree",c:"#B0203C",c2:"#7E1329"},
        {id:"dress",n:"Summer dress",  s:"Ghost mannequin → on-model",           c:"#3F7C6A",c2:"#2A5A4C"}
      ],
      models:[
@@ -1171,8 +1176,7 @@ const STRIP_ITEMS=[
      ]},
     {id:"menswear",n:"Menswear",
      garments:[
-       {id:"shirt",n:"Linen shirt",  s:"Packshot → on-model",                 c:"#3C6E9E",c2:"#2A5075"},
-       {id:"kurta",n:"Festive kurta",s:"Flat-lay → on-model",sil:"mkurta",     c:"#C9A227",c2:"#9A7A17"}
+       {id:"shirt",n:"Linen shirt",  s:"Packshot → on-model",                 c:"#3C6E9E",c2:"#2A5075"}
      ],
      models:[
        {id:"luis", n:"Luis Ferrer",s:"#C98F63",s2:"#B57B50",h:"#1E1712"},
@@ -1205,7 +1209,7 @@ const STRIP_ITEMS=[
     if(url){
       const i=document.createElement("img");
       i.src=url;
-      i.alt=`AI on-model photo — ${g.n} on ${m.n}, ${BGS[bi].n}, ${po.n}`;
+      i.alt=`AI on-model photo , ${g.n} on ${m.n}, ${BGS[bi].n}, ${po.n}`;
       return i;
     }
     const d=document.createElement("div");d.style.cssText="position:absolute;inset:0";
@@ -1266,7 +1270,7 @@ const STRIP_ITEMS=[
 
   /* ---- the garment picker --------------------------------------------- */
   /* The category control, with garments in it. Same track, same buttons, same
-     selected-pill treatment — the only difference is what sits inside each
+     selected-pill treatment , the only difference is what sits inside each
      button: a 20px chip of the garment instead of a drawn silhouette.
      Icon-only for the same reason the categories are: the label is carried by
      `title` and `aria-label`, so nothing is lost to a screen reader or to a
@@ -1274,17 +1278,18 @@ const STRIP_ITEMS=[
   function garments(){
     const host=document.getElementById("hiwGarments");
     host.textContent="";                    /* rebuilt when the category changes */
+
     const btns=cCat().garments.map((g,i)=>{
       const b=document.createElement("button");
       b.type="button";b.className="hiw-tab gtab"+(i===gi?" on":"");b.dataset.c="";
       b.setAttribute("aria-pressed",String(i===gi));
       /* Name and flow line both live here, since the button shows neither. */
-      b.title=`${g.n} — ${g.s}`;
+      b.title=`${g.n} , ${g.s}`;
       b.setAttribute("aria-label",g.n);
       b.innerHTML=`<span class="gt"></span>`;
 
       /* The chip is the flat-lay the visitor would upload, so it draws the
-         garment on its own — the model comes later, in the frame. A real
+         garment on its own , the model comes later, in the frame. A real
          photograph at /webassets/hiw/g-<id> replaces the drawing when one
          exists. */
       const thumb=b.querySelector(".gt");
@@ -1309,7 +1314,7 @@ const STRIP_ITEMS=[
   /* ---- the category tabs ---------------------------------------------- */
   /* Switching the category swaps the garments, the cast and the pose list, so
      everything below is rebuilt and reset to that category's first choice.
-     The background survives — it is the one row the categories share. */
+     The background survives , it is the one row the categories share. */
   function build(){
     garments();
     pills("hiwModels",cCat().models,"model",()=>mi,i=>mi=i);
@@ -1318,7 +1323,7 @@ const STRIP_ITEMS=[
   }
 
   /* Two figures on a 24 grid, keyed by category id. Deliberately the restroom
-     pictogram — an A-line body against a straight one — because that pairing is
+     pictogram , an A-line body against a straight one , because that pairing is
      read as "women / men" instantly and at any size, where a dress-versus-shirt
      pair asks the eye to identify two garments first. The words are still there
      as the button's label and tooltip. */
@@ -1360,7 +1365,7 @@ const STRIP_ITEMS=[
 /* =============== "what do you want to create" accordion =============== */
 /* Hover expands a panel; leaving the row collapses everything back to equal.
    Driven from JS rather than a bare CSS :hover so the same open state can be
-   reached by tapping and by tabbing — on a phone there is no hover at all, and
+   reached by tapping and by tabbing , on a phone there is no hover at all, and
    a keyboard user would otherwise never see the copy inside a panel. */
 (function createPicker(){
   const row=document.getElementById("createRow");
@@ -1373,7 +1378,7 @@ const STRIP_ITEMS=[
      h:"Models", p:"Cast models from across the world, every skin tone, body type and look and save them forever.", href:"/register"},
     /* `clips` is what makes this panel move. Tried in order, so a purpose-made
        file dropped beside the other create slots wins over the render that
-       ships in public/ — and if neither is there the panel falls back to a
+       ships in public/ , and if neither is there the panel falls back to a
        still like the other two, with nothing to notice. */
     {slot:"video",      fb:"walk",   pose:"walk", name:"Video",
      h:"Video", p:"Turn any photoshoot into reel-ready video for PDPs, Instagram and ads.", href:"/register",
@@ -1412,7 +1417,7 @@ const STRIP_ITEMS=[
           if(u)v.poster=u;
           v.setAttribute("aria-hidden","true");
           a.prepend(v);
-          /* The file can land after a hover has already happened — probing is a
+          /* The file can land after a hover has already happened , probing is a
              round trip and a pointer is faster. Without this the panel would sit
              open on a frozen poster until you left and came back. */
           if(a.classList.contains("on"))playPanel(a);
@@ -1438,7 +1443,7 @@ const STRIP_ITEMS=[
 
   let idx=-1;
 
-  /* Muted, looping and started only on open — the three things a browser needs
+  /* Muted, looping and started only on open , the three things a browser needs
      before it will play anything without a click. Reduced motion opts out: the
      poster is a real frame from the clip, so that state still shows the work. */
   const playPanel=p=>{
@@ -1465,7 +1470,7 @@ const STRIP_ITEMS=[
   }
 
   /* The round arrow from the reference. Made to actually advance the open panel
-     rather than sit there as decoration — it gives touch and keyboard users a
+     rather than sit there as decoration , it gives touch and keyboard users a
      way through the set that hover alone never offers. */
   const next=document.createElement("button");
   next.type="button";next.className="cnext";next.setAttribute("aria-label","Next");
@@ -1474,11 +1479,11 @@ const STRIP_ITEMS=[
   row.appendChild(next);
 
   panels.forEach(p=>{
-    /* Stacked, the scroll is in charge — a tap that also fires mouseenter
+    /* Stacked, the scroll is in charge , a tap that also fires mouseenter
        would otherwise yank the selection off whatever the scroll had chosen. */
     p.addEventListener("mouseenter",()=>{if(!narrow.matches)open(p);});
     p.addEventListener("focus",()=>open(p));
-    /* First tap opens, second follows the link — otherwise a phone user would
+    /* First tap opens, second follows the link , otherwise a phone user would
        never see the copy before being navigated away. */
     p.addEventListener("click",e=>{
       if(matchMedia("(hover: none)").matches&&!p.classList.contains("on")){
@@ -1497,13 +1502,13 @@ const STRIP_ITEMS=[
      one with, so the section would sit there closed until tapped. Scroll
      position drives it instead: come down the page and each card opens as it
      reaches the reading line, closing the one before it.
-     A tap still works, and now usually goes straight through to the link —
+     A tap still works, and now usually goes straight through to the link ,
      the card under your thumb is already the open one.
 
      The section is PINNED while this happens: the zone below is given extra
      height, the row sticks to the top of it, and that extra height is what the
      scroll spends stepping through the cards. Without it, arriving at speed
-     flies past all four — the whole point of the section is that you see each
+     flies past all four , the whole point of the section is that you see each
      door, and a fast flick should cost you the scroll rather than the content.
 
      The index comes from progress through the zone, not from any panel's live
@@ -1549,7 +1554,7 @@ const STRIP_ITEMS=[
 /* =============== "built for brands at every stage" deck =============== */
 /* Seven categories, three cards on screen. Positions are computed from each
    card's signed distance to the active one so the same formula covers the fan,
-   the wrap-around and the cards parked off-stage — there is no per-slot CSS to
+   the wrap-around and the cards parked off-stage , there is no per-slot CSS to
    keep in sync. */
 (function catsDeck(){
   const stage=document.getElementById("catsStage"),pillBox=document.getElementById("catsPills");
@@ -1576,7 +1581,7 @@ const STRIP_ITEMS=[
   const N=CATS.length;
   let active=0;
 
-  /* Cards. Each is a link — a category is a destination, so it should behave
+  /* Cards. Each is a link , a category is a destination, so it should behave
      like one for the keyboard and for "open in new tab". */
   const cards=CATS.map((c,i)=>{
     const a=document.createElement("a");
@@ -1598,7 +1603,7 @@ const STRIP_ITEMS=[
       const u=await probeChain(ASSET_DIR+"cats/"+c.slug);
       if(u){
         const im=document.createElement("img");
-        im.src=u;im.alt=`${c.n} — AI on-model photography sample`;im.loading=i?"lazy":"eager";
+        im.src=u;im.alt=`${c.n} , AI on-model photography sample`;im.loading=i?"lazy":"eager";
         a.prepend(im);
       } else {
         /* Deliberately the drawn croquis, not a borrowed photo: a studio frame
@@ -1649,7 +1654,7 @@ const STRIP_ITEMS=[
       el.style.opacity=far?"0":String(a>1?1-(a-1)/0.6:1);
       el.style.zIndex=String(10-Math.round(a*10)/10);
       el.classList.toggle("mid",a<0.5);
-      /* Off-stage cards must leave the tab order — otherwise tabbing walks into
+      /* Off-stage cards must leave the tab order , otherwise tabbing walks into
          four invisible links. */
       el.setAttribute("aria-hidden",far?"true":"false");
       if(far)el.setAttribute("tabindex","-1");else el.removeAttribute("tabindex");
@@ -1661,7 +1666,7 @@ const STRIP_ITEMS=[
   }
 
   /* On a phone the pills are one scrolling strip, so the chosen one has to be
-     brought into view — swiping the deck would otherwise leave the active pill
+     brought into view , swiping the deck would otherwise leave the active pill
      off-screen and the row looking unresponsive. Only scrolls the strip itself,
      never the page. */
   function revealPill(){
@@ -1680,7 +1685,7 @@ const STRIP_ITEMS=[
     if(e.button)return;                      /* left button / touch only */
     x0=e.clientX;dx=0;moved=false;
     stage.classList.add("dragging");
-    /* Capture so the drag survives the pointer leaving the stage — releasing
+    /* Capture so the drag survives the pointer leaving the stage , releasing
        over the page beyond it should still finish the gesture, not abandon it. */
     stage.setPointerCapture(e.pointerId);
   });
@@ -1697,7 +1702,7 @@ const STRIP_ITEMS=[
     x0=null;
     stage.classList.remove("dragging");
     const spread=innerWidth>860?Math.min(330,innerWidth*0.23):innerWidth;
-    /* A third of a slot is enough to mean it — past that the next card is
+    /* A third of a slot is enough to mean it , past that the next card is
        already more than half uncovered, so snapping back would feel wrong. */
     if(Math.abs(dx)>spread*0.32)go(active+(dx<0?1:-1));
     else layout();                           /* settle back into place */
@@ -1738,7 +1743,7 @@ const STRIP_ITEMS=[
       /* One frame with the sheet in the tree but still translated off, so the
          transition has a start state to animate FROM. */
       requestAnimationFrame(()=>document.body.classList.add("mnav-open"));
-      /* Hold the page still underneath — a menu that scrolls the article behind
+      /* Hold the page still underneath , a menu that scrolls the article behind
          it feels broken on a phone. */
       document.body.style.overflow="hidden";
     } else {
@@ -1764,7 +1769,7 @@ const STRIP_ITEMS=[
 /* The whole summon is one scrubbed gesture rather than a click: the tile
    rises into the pinned stage, bursts into smoke at the halfway mark, and the
    demo panel forms out of the same burst. Every value is read from the zone's
-   0..1 progress, so scrolling back up runs it backwards — the panel collapses,
+   0..1 progress, so scrolling back up runs it backwards , the panel collapses,
    the smoke gathers, and Genie re-forms. Nothing is on a timer, which is what
    makes it feel attached to the wheel rather than triggered by it. */
 (function genieSummon(){
@@ -1874,7 +1879,7 @@ const STRIP_ITEMS=[
       media.appendChild(snd);
       return;
     }
-    media.appendChild(mkImg("walk",900,"walk",BACKDROPS[0],"Prompt Genie — sample frame from a generated shoot"));
+    media.appendChild(mkImg("walk",900,"walk",BACKDROPS[0],"Prompt Genie , sample frame from a generated shoot"));
   })();
 
   /* ---- the frame ----------------------------------------------------- */
@@ -1890,7 +1895,7 @@ const STRIP_ITEMS=[
     copy.style.opacity=rise*(1-.55*m);
     copy.style.transform=`translateY(${(1-er)*26}px)`;
     // Guarded like the rest: frame() is called synchronously when the loop
-    // starts, so a missing hint here does not fade a caption — it throws out of
+    // starts, so a missing hint here does not fade a caption , it throws out of
     // this IIFE and stops every section further down the file from running.
     if(hint)hint.style.opacity=rise*(1-clamp((t-0.16)/0.16,0,1));
 
@@ -1902,7 +1907,7 @@ const STRIP_ITEMS=[
     tile.style.pointerEvents=k>.5?"none":"auto";
     tile.tabIndex=k>.5?-1:0;
 
-    /* Fired on the crossing, not every frame — and gathering on the way back
+    /* Fired on the crossing, not every frame , and gathering on the way back
        up, so a reversed scroll pulls the smoke in instead of blowing it out
        a second time. */
     const gone=k>.12;
@@ -1945,14 +1950,14 @@ const STRIP_ITEMS=[
 
 /* =============== the output: a fan of frames that play =============== */
 /* Nine frames from one shoot laid out on an arc. Each holds a clip that stays
- * paused on its poster until you hover it — then the card straightens out of
+ * paused on its poster until you hover it , then the card straightens out of
  * the arc and plays. Leaving puts it back on its first frame, so the row is
  * always a sheet of stills until someone asks for motion.
  *
  * Clips live at  /webassets/reels/r1.mp4 … r9.mp4  (.webm also works), with an
  * optional poster at  /webassets/reels/r1.jpg|png|webp.  A slot with no clip
  * of its own falls back to a single shared  /webassets/reels/demo.mp4  and
- * plays its own moment of it — card three starts a third of the way in — so
+ * plays its own moment of it , card three starts a third of the way in , so
  * one file is enough to see the whole row work. A slot with neither still
  * shows its frame; it just has nothing to play, and says so by not offering a
  * play badge.
@@ -1962,7 +1967,7 @@ const STRIP_ITEMS=[
   if(!arc)return;                           /* only the marketing page has one */
 
   /* The clips, in the order they fan. Real files in /VDOs, named for the preset
-     that produced them — `file` is the name on disk and `t` is what the caption
+     that produced them , `file` is the name on disk and `t` is what the caption
      shows, so a rename is one string, not two places to keep in step. */
   const REEL_DIR="/VDOs/";
   const CLIPS=[
@@ -1986,13 +1991,13 @@ const STRIP_ITEMS=[
   const STEP=SPREAD/Math.max(1,N-1);
 
   const wide=matchMedia("(min-width:861px)");
-  /* Wording only — NOT a gate on the listeners. `(hover:hover)` reads false on
+  /* Wording only , NOT a gate on the listeners. `(hover:hover)` reads false on
      a touchscreen laptop and in device-emulation, and gating hover on it left
      those machines with click as the only way in. Both are always wired now,
      and the hint corrects itself on the first real pointer event below. */
   const hint=document.getElementById("reelHint");
   let canHover=matchMedia("(hover:hover)").matches;
-  const say=h=>{if(hint)hint.textContent=h?"Playing on its own — hover any frame to take over"
+  const say=h=>{if(hint)hint.textContent=h?"Playing on its own , hover any frame to take over"
                                           :"Tap a frame to play it";};
   say(canHover);
 
@@ -2004,14 +2009,14 @@ const STRIP_ITEMS=[
 
     const box=document.createElement("button");
     box.type="button";box.className="reel-in";box.dataset.c="";
-    box.setAttribute("aria-label",`Play ${clip.t} — clip ${i+1} of ${N}`);
+    box.setAttribute("aria-label",`Play ${clip.t} , clip ${i+1} of ${N}`);
 
-    /* The clip IS the card, from the first paint — there is no still underneath
+    /* The clip IS the card, from the first paint , there is no still underneath
        to swap out. `#t=0.1` is the poster: it makes the browser seek to a tenth
        of a second and paint THAT frame, so what you see at rest is the video's
        own opening rather than a black box or a separate thumbnail that has to
        be kept in step with the file. `preload="metadata"` is what keeps eleven
-       of these from pulling 30 MB on load — enough to draw the frame, no more. */
+       of these from pulling 30 MB on load , enough to draw the frame, no more. */
     const v=document.createElement("video");
     v.src=encodeURI(REEL_DIR+clip.file)+"#t=0.1";
     v.loop=true;v.muted=true;v.playsInline=true;v.preload="metadata";
@@ -2024,7 +2029,7 @@ const STRIP_ITEMS=[
 
     /* The caption rides on the frame it describes rather than sitting in a
        shared line under the arc. With eleven cards fanned out, a single line
-       below could only ever name one of them — on the card, every frame says
+       below could only ever name one of them , on the card, every frame says
        what it is the moment you reach it. */
     const cap=document.createElement("span");
     cap.className="reel-cap-in";
@@ -2033,7 +2038,7 @@ const STRIP_ITEMS=[
     /* The description only. The "Clip 08 ·" counter came from when the caption
        sat under the arc and had to say which of eleven cards it meant; now that
        every card carries its own, it was numbering a set nobody counts through.
-       The count survives where it still helps — the button's aria-label above
+       The count survives where it still helps , the button's aria-label above
        still says "clip 8 of 11", which is a screen reader's only sense of
        position in the row. */
     cap.querySelector("i").textContent=clip.s;
@@ -2062,12 +2067,12 @@ const STRIP_ITEMS=[
       const deg=(i-mid)*STEP, rad=deg*Math.PI/180;
       const x=R*Math.sin(rad), y=R*(1-Math.cos(rad));
       /* A rotated card's footprint is taller than the card, and the rotation
-         is about its own centre — so this is where its lowest corner lands. */
+         is about its own centre , so this is where its lowest corner lands. */
       low=Math.max(low,y+h/2+(w*Math.abs(Math.sin(rad))+h*Math.abs(Math.cos(rad)))/2);
       card.style.setProperty("--rot",deg+"deg");
       card.style.transform=`translate(calc(-50% + ${x.toFixed(1)}px),${y.toFixed(1)}px) rotate(${deg.toFixed(2)}deg)`;
       /* The middle card is the one in front, and each step out sits behind
-         the one before it — the same order the eye reads the fan in. */
+         the one before it , the same order the eye reads the fan in. */
       card.style.zIndex=String(30-Math.round(Math.abs(i-mid)));
     });
 
@@ -2128,14 +2133,14 @@ const STRIP_ITEMS=[
   /* ---- the tour ------------------------------------------------------- */
   /* The row runs itself: one card at a time straightens, plays and captions
      itself, then hands over to the next. A pointer on the row takes the wheel
-     — the tour stands down while you are driving and picks up from wherever it
+     , the tour stands down while you are driving and picks up from wherever it
      was left when you go. Held to `reduce`, which opts out of both the moving
      row and the autoplaying video in one go. */
   const DWELL=4200;                        /* ms each frame holds the row */
   let tourAt=-1,tourT=null;
 
   /* Only the mobile strip scrolls. On the desktop arc there is nothing to
-     scroll, and scrollIntoView there would drag the page instead of the row —
+     scroll, and scrollIntoView there would drag the page instead of the row ,
      so this moves the container itself rather than asking the card to be seen. */
   let selfScroll=0;                        /* while set, scrolls are our own */
   function centre(c){
@@ -2186,7 +2191,7 @@ const STRIP_ITEMS=[
   arc.addEventListener("focusout",tourPlay);
 
   /* A hand on the strip wins. Without this the tour would yank the row back to
-     its own card on the next tick and a swipe would be unusable — so a manual
+     its own card on the next tick and a swipe would be unusable , so a manual
      scroll re-seats the tour on whatever was scrolled to and carries on from
      there. `selfScroll` is what keeps centre()'s own smooth scroll from being
      read as the user's and re-triggering this in a loop. */
@@ -2240,7 +2245,7 @@ const STRIP_ITEMS=[
 /* The packs now ride the same scroll-scrubbed rail as the feature row, so there
  * is no autoplay any more: the row moves because the page does, and a carousel
  * that advanced on its own would have to scroll the page out from under you to
- * do it. What is left is the readout — which of the four you are looking at —
+ * do it. What is left is the readout , which of the four you are looking at ,
  * and a way to jump to one.
  *
  * The dots never move the track. They ask the rail to scroll the page to the
@@ -2275,7 +2280,7 @@ const STRIP_ITEMS=[
     return b;
   });
 
-  /* Read off the rail rather than tracked separately — the row can be moved by
+  /* Read off the rail rather than tracked separately , the row can be moved by
      scroll, by a drag or by a dot, and only its actual position is true. */
   function paint(){
     if(dotBox.hidden)return;
@@ -2327,7 +2332,7 @@ const STRIP_ITEMS=[
     body.source="landing";
 
     /* Checked here as well as on the server, only so the answer is instant.
-       The server is still the one that decides — see lib/leads.ts. */
+       The server is still the one that decides , see lib/leads.ts. */
     if(!String(body.name||"").trim()){say("Please tell us your name","err");return;}
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(body.email||"").trim())){
       say("That email address does not look right","err");return;
@@ -2352,7 +2357,7 @@ const STRIP_ITEMS=[
         '<div class="ct-done">'+
           '<div class="ct-tick">✓</div>'+
           "<h3>Thanks"+(name?", "+name.replace(/[<>&]/g,""):"")+".</h3>"+
-          "<p>Your enquiry is with us. We reply within one working day — "+
+          "<p>Your enquiry is with us. We reply within one working day , "+
           "check your spam folder if you don't hear back, and it will be from our studio address.</p>"+
         "</div>";
       form.classList.remove("sending");

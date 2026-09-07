@@ -3,7 +3,7 @@
  *
  * These lived in lib/client/constants.ts, which is a `'use client'` module and
  * therefore can't be imported from a route handler. Genie has to be told the
- * EXACT set of values it may choose from — it returns a spec that gets applied
+ * EXACT set of values it may choose from , it returns a spec that gets applied
  * straight to the Add Pose selects, and a free-text backdrop like "sunlit
  * terrace" would land on a <Select> that has no such option and silently show
  * nothing. So the lists live here, and constants.ts re-exports them.
@@ -24,7 +24,7 @@ export const FRAMINGS: Array<[string, string]> = [
 /**
  * [prompt text, display label]. The value is interpolated by the generate route
  * as `"<value> background"`, so it must read naturally with that word appended.
- * The first four values are the original ones and must not change — saved
+ * The first four values are the original ones and must not change , saved
  * shoots store the value, and renaming one would blank its dropdown.
  */
 export const BACKDROPS: Array<[string, string]> = [

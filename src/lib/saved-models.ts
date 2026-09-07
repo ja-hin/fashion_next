@@ -1,5 +1,5 @@
 /**
- * Saved models — a reusable person whose identity anchors future shoots.
+ * Saved models , a reusable person whose identity anchors future shoots.
  *
  * Reference images are COPIED into the model's own storage folder when it's
  * saved, so a model survives deletion of the shoot it came from.
@@ -110,7 +110,7 @@ export function publicModel(rec: ModelDoc): PublicModel {
  * or null when the model has no sheet yet.
  *
  * A single clean front-facing photo is used as the identity anchor (hero_bytes)
- * for new shoots — that feeds the same one-garment-image + one-reference-image
+ * for new shoots , that feeds the same one-garment-image + one-reference-image
  * path that every working recast/extend flow already relies on.
  *
  * "Most recent" means the last grid ref in array order: character-sheet batches

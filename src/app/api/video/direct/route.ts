@@ -31,12 +31,12 @@ const MAX_FRAMES = 4;
  *
  * The shoot-frames route (../route.ts) starts from stills that already show the
  * model wearing the garment, so its guarantee is "keep this person". Here there
- * is no person yet — a flat-lay has none — so the guarantee moves onto the
+ * is no person yet , a flat-lay has none , so the guarantee moves onto the
  * garment and the model is invented once and held for the ten seconds. That is
  * the whole difference, and it lives in `withLock(..., 'garment')`.
  *
- * A shoot record is still created. Everything in this app hangs off one — the
- * gallery, the folder view, the zip, deletion — and a video floating outside
+ * A shoot record is still created. Everything in this app hangs off one , the
+ * gallery, the folder view, the zip, deletion , and a video floating outside
  * that would be reachable by URL and by nothing else.
  */
 export const POST = handler(async (req: Request) => {

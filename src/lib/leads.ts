@@ -5,7 +5,7 @@
  * the route decides *who* may call, this decides *what* is a usable enquiry.
  *
  * The bar is deliberately low. A contact form's job is to not lose the message,
- * so anything with a name, a reachable address and something to say is kept —
+ * so anything with a name, a reachable address and something to say is kept ,
  * a lead rejected for a malformed phone number is a customer turned away at the
  * door. What is refused is only what would be unusable or abusive: no address
  * to reply to, or a body long enough to be an attack rather than a question.
@@ -43,8 +43,8 @@ const clean = (v: unknown, max: number): string =>
     .trim()
     .slice(0, max);
 
-/* The message keeps its line breaks — it is the one field where they mean
-   something — so only the rest of the control range goes. */
+/* The message keeps its line breaks , it is the one field where they mean
+   something , so only the rest of the control range goes. */
 const cleanBody = (v: unknown, max: number): string =>
   String(v ?? '')
     .replace(/\r\n?/g, '\n')
@@ -53,7 +53,7 @@ const cleanBody = (v: unknown, max: number): string =>
     .slice(0, max);
 
 /**
- * Shape check only — deliverability is not knowable here, and a regex strict
+ * Shape check only , deliverability is not knowable here, and a regex strict
  * enough to try would reject valid addresses. `a@b.c` with no spaces is the
  * most that can honestly be asserted.
  */
@@ -98,7 +98,7 @@ export function parseLead(input: LeadInput): Omit<LeadDoc, '_id' | 'status' | 'c
  *
  * Storing first, and the mail failures swallowed: the record is the thing that
  * must not be lost. A visitor told "something went wrong" because SMTP was down
- * would send it again, or not at all — and the first copy is already safe.
+ * would send it again, or not at all , and the first copy is already safe.
  *
  * Two messages, sent together rather than one after the other so a slow
  * provider costs one wait instead of two:
@@ -138,9 +138,9 @@ export function notifyEmail(l: LeadDoc): Mail {
   const rows: Array<[string, string]> = [
     ['Name', l.name],
     ['Email', l.email],
-    ['Phone', l.phone || '—'],
-    ['Brand', l.brand || '—'],
-    ['Volume', l.volume || '—'],
+    ['Phone', l.phone || ','],
+    ['Brand', l.brand || ','],
+    ['Volume', l.volume || ','],
   ];
 
   const text =
@@ -169,7 +169,7 @@ export function notifyEmail(l: LeadDoc): Mail {
     // Hitting Reply in the inbox writes to the person who asked, which is the
     // only thing anyone wants to do with this message.
     replyTo: l.email,
-    subject: `Enquiry — ${l.name}${l.brand ? ` (${l.brand})` : ''}`,
+    subject: `Enquiry , ${l.name}${l.brand ? ` (${l.brand})` : ''}`,
     text,
     html,
   };
@@ -180,7 +180,7 @@ export function notifyEmail(l: LeadDoc): Mail {
  *
  * Their own message is quoted back for one reason: it is the only proof they
  * have that the form worked and that we hold what they actually wrote. Beyond
- * that it says when to expect a person and what to do if nothing arrives —
+ * that it says when to expect a person and what to do if nothing arrives ,
  * nothing else, because there is nothing else they asked for.
  */
 export function ackEmail(l: LeadDoc): Mail {
@@ -188,19 +188,19 @@ export function ackEmail(l: LeadDoc): Mail {
 
   const text =
     `Hi ${first},\n\n` +
-    `Thanks for getting in touch with Faishon Studio — your enquiry is with us.\n\n` +
+    `Thanks for getting in touch with Faishon Studio , your enquiry is with us.\n\n` +
     `A person will reply within one working day. If you would rather not wait, ` +
     `you can start a shoot right now with free trial credits: ${APP_URL}/register\n\n` +
     `Here is what you sent us:\n\n${l.message}\n\n` +
-    `— The Faishon Studio team\n` +
+    `, The Faishon Studio team\n` +
     `3rd i Visuals Pvt. Ltd.\n\n` +
     `You are receiving this because this address was used on the contact form at ` +
-    `${APP_URL}. If that was not you, ignore this email — nothing has been created.\n`;
+    `${APP_URL}. If that was not you, ignore this email , nothing has been created.\n`;
 
   const html =
     '<div style="font:15px/1.65 system-ui,-apple-system,sans-serif;color:#17150F;max-width:520px">' +
     `<p style="margin:0 0 14px">Hi ${esc(first)},</p>` +
-    '<p style="margin:0 0 14px">Thanks for getting in touch with <b>Faishon Studio</b> — ' +
+    '<p style="margin:0 0 14px">Thanks for getting in touch with <b>Faishon Studio</b> , ' +
     'your enquiry is with us.</p>' +
     '<p style="margin:0 0 18px">A person will reply within one working day. If you would ' +
     'rather not wait, you can start a shoot right now with free trial credits:</p>' +
@@ -211,19 +211,19 @@ export function ackEmail(l: LeadDoc): Mail {
     '<blockquote style="margin:0 0 22px;padding:12px 16px;border-left:3px solid #E4572E;' +
     'background:#F5F2EB;white-space:pre-wrap;font-size:14px">' +
     `${esc(l.message)}</blockquote>` +
-    '<p style="margin:0 0 4px">— The Faishon Studio team</p>' +
+    '<p style="margin:0 0 4px">, The Faishon Studio team</p>' +
     '<p style="margin:0;color:#8A8172;font-size:13px">3rd i Visuals Pvt. Ltd.</p>' +
     '<p style="margin:22px 0 0;color:#8A8172;font-size:12px;line-height:1.5">' +
     'You are receiving this because this address was used on the contact form at ' +
     `<a href="${APP_URL}" style="color:#8A8172">${esc(APP_URL)}</a>. ` +
-    'If that was not you, ignore this email — nothing has been created.</p>' +
+    'If that was not you, ignore this email , nothing has been created.</p>' +
     '</div>';
 
   return {
     to: l.email,
     // A reply to a thank-you should reach a human, not a no-reply mailbox.
     replyTo: ADMIN_EMAIL,
-    subject: 'Thanks — we have your enquiry',
+    subject: 'Thanks , we have your enquiry',
     text,
     html,
   };

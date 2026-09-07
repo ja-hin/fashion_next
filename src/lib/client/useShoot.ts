@@ -43,7 +43,7 @@ export interface ShootApi {
   videos: VideoItem[];
   /** Called by the video modal so a new clip lands in the grid at once. */
   addVideo: (v: VideoItem) => void;
-  /** Number of images currently generating — rendered as shimmer placeholders. */
+  /** Number of images currently generating , rendered as shimmer placeholders. */
   pendingCount: number;
   generating: boolean;
   resumedBanner: { title: string; count: number } | null;
@@ -101,7 +101,7 @@ export function useShoot(onError: (msg: string) => void): ShootApi {
           try {
             j = await getJson<JobState>(`/api/job/${jobId}`);
           } catch {
-            // A transient poll failure shouldn't kill the run — try again.
+            // A transient poll failure shouldn't kill the run , try again.
             return;
           }
 
@@ -120,7 +120,7 @@ export function useShoot(onError: (msg: string) => void): ShootApi {
 
           if (j.status === 'done') {
             clearInterval(timer);
-            // Any placeholder still standing had no matching result — clear it
+            // Any placeholder still standing had no matching result , clear it
             // rather than leaving a shimmer on screen forever.
             setPendingCount(0);
             resolve();

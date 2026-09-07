@@ -52,7 +52,7 @@ export default function TopBar({ me, balance }: { me: Me; balance: number }) {
     try {
       localStorage.setItem('aig', next);
     } catch {
-      // Private-mode browsers block localStorage — the theme just won't persist.
+      // Private-mode browsers block localStorage , the theme just won't persist.
     }
     setTheme(next);
   }
@@ -68,7 +68,7 @@ export default function TopBar({ me, balance }: { me: Me; balance: number }) {
   return (
     <header className="relative z-20 flex h-[60px] flex-shrink-0 items-center gap-[14px] border-b border-line bg-surface px-[22px]">
       <Link href="/generate" aria-label="Faishon.studio home" className="flex items-center">
-        {/* Two files, swapped by theme in globals.css — the black mark is
+        {/* Two files, swapped by theme in globals.css , the black mark is
             invisible on the dark surface. */}
         {/* eslint-disable @next/next/no-img-element */}
         <img className="brand-logo brand-logo-light" src="/logo-black.png" alt="Faishon.studio" />
@@ -131,12 +131,12 @@ export default function TopBar({ me, balance }: { me: Me; balance: number }) {
 
         {menuOpen && (
           <div className="absolute right-0 top-[46px] z-[60] flex min-w-[190px] flex-col gap-0.5 rounded-xl border border-line bg-surface p-1.5 shadow-pop">
-            {/* Identity block — the user id is what support asks for. */}
+            {/* Identity block , the user id is what support asks for. */}
             <div className="px-3 pb-1.5 pt-1">
               <div className="truncate text-[12.5px] font-bold">{me.name || me.email}</div>
               <div className="mt-0.5 flex items-center gap-1.5">
                 <span className="rounded-[5px] bg-surface2 px-1.5 py-0.5 font-mono text-[10px] font-bold text-accent">
-                  {me.uid || '—'}
+                  {me.uid || ','}
                 </span>
                 <span className="truncate text-[10.5px] text-muted">{me.email}</span>
               </div>

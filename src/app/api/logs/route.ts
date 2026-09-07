@@ -19,7 +19,7 @@ export const GET = handler(async (req: Request) => {
 
   /*
    * `scope=own` is sent by the Usage tab, which is a personal view for every
-   * account including admins — "my credits, my images". Admin-wide visibility
+   * account including admins , "my credits, my images". Admin-wide visibility
    * belongs to the Logs tab alone.
    *
    * Admin status only ever WIDENS the filter, and only when the caller didn't
@@ -46,7 +46,7 @@ export const GET = handler(async (req: Request) => {
     .toArray()) as WithId<LogDoc>[];
 
   // User ids are attached BEFORE the search runs. The search greps the
-  // serialised row, and uid is resolved rather than stored — attaching it
+  // serialised row, and uid is resolved rather than stored , attaching it
   // afterwards would make searching "U0007" silently match nothing.
   const withIds = await withUserIds(all);
 
@@ -75,7 +75,7 @@ export const GET = handler(async (req: Request) => {
   return json({
     rows: shown,
     models: aiModels,
-    // False whenever the result set is one person's own rows — the User ID
+    // False whenever the result set is one person's own rows , the User ID
     // column would just repeat the same value on every line.
     is_admin: !!me.is_admin && !ownOnly,
     summary: {

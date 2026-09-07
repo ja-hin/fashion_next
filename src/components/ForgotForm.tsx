@@ -35,7 +35,7 @@ export default function ForgotForm() {
       {sent ? (
         <>
           {/*
-            Worded so it says nothing about whether the address is registered —
+            Worded so it says nothing about whether the address is registered ,
             the API responds identically either way, and a message like "no such
             account" here would undo that.
           */}

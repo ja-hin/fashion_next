@@ -5,7 +5,7 @@
 /**
  * Pose library, split by category.
  *
- * [display label, prompt text] — the prompt text is what reaches the model, so
+ * [display label, prompt text] , the prompt text is what reaches the model, so
  * it must stay gender-neutral unless it lives in a gendered list. A phrase like
  * "turned to her left" in a shared list sends a female cue that fights the male
  * cue built by stylePhrase() on menswear.
@@ -14,7 +14,7 @@ type Pose = [string, string];
 
 /**
  * Every seated pose names its seat. Left to itself the model invents a
- * different chair on each generation, which breaks continuity across a shoot —
+ * different chair on each generation, which breaks continuity across a shoot ,
  * a plain cube is repeatable, keeps the eye on the garment, and reads as a
  * studio prop rather than furniture. Contrast is specified against the
  * backdrop so the cube doesn't disappear into a same-tone seamless.
@@ -35,8 +35,8 @@ const POSES_COMMON: Pose[] = [
   ['Over right shoulder', 'looking over the right shoulder'],
   ['Walking toward camera', 'walking toward camera'],
   ['Walking away / back', 'walking away, back view'],
-  ['Side pose — left', 'turned to the left, showing the left side'],
-  ['Side pose — right', 'turned to the right, showing the right side'],
+  ['Side pose , left', 'turned to the left, showing the left side'],
+  ['Side pose , right', 'turned to the right, showing the right side'],
   ['¾ left', 'three-quarter turn to the left, face to camera'],
   ['¾ right', 'three-quarter turn to the right, face to camera'],
   ['Cube · forward lean', `${CUBE}, leaning forward with the forearms on the thighs`],
@@ -45,7 +45,7 @@ const POSES_COMMON: Pose[] = [
 ];
 
 /**
- * Kidswear, footwear and accessory don't inherit POSES_COMMON — an adult
+ * Kidswear, footwear and accessory don't inherit POSES_COMMON , an adult
  * editorial standing pose suits none of them, and a footwear shot is framed on
  * the product, not the model.
  */
@@ -95,8 +95,8 @@ const POSES_BY_CAT: Record<string, Pose[]> = {
     ['Running toward camera', 'running toward the camera'],
     ['Walking toward camera', 'walking toward the camera'],
     ['Back view', 'facing away from the camera, back view'],
-    ['Side view — left', 'turned to the left, showing the left side'],
-    ['Side view — right', 'turned to the right, showing the right side'],
+    ['Side view , left', 'turned to the left, showing the left side'],
+    ['Side view , right', 'turned to the right, showing the right side'],
     ['¾ turn', 'three-quarter turn, face to camera'],
     ['Cube · sitting', `${CUBE}, sitting upright with the hands resting on the knees`],
     ['Sitting cross-legged', 'sitting cross-legged on the floor'],
@@ -108,15 +108,15 @@ const POSES_BY_CAT: Record<string, Pose[]> = {
     ['One foot forward', 'one foot stepped forward, both shoes clearly visible'],
     ['Mid-step / walking', 'mid-step walking, the sole of the rear shoe visible'],
     ['Heel raised', 'weight on the toes with one heel lifted'],
-    ['Side profile — left', 'both shoes seen from the left, full profile of the shoe'],
-    ['Side profile — right', 'both shoes seen from the right, full profile of the shoe'],
+    ['Side profile , left', 'both shoes seen from the left, full profile of the shoe'],
+    ['Side profile , right', 'both shoes seen from the right, full profile of the shoe'],
     ['Crossed ankles', 'standing with the ankles crossed'],
     ['Cube · legs extended', `${CUBE}, the legs extended forward, soles toward the camera`],
     ['Seated on a step', 'seated on a step with both shoes resting on the ground'],
     ['Foot on a ledge', 'one foot raised onto a low ledge, laces and side of the shoe visible'],
     ['Low-angle hero', 'low camera angle from ground level looking up at the shoes'],
     ['Top-down on feet', 'camera looking straight down at the shoes from above'],
-    ['Detail — laces & toe', 'tight crop on the toe box and laces'],
+    ['Detail , laces & toe', 'tight crop on the toe box and laces'],
   ],
 
   accessory: [
@@ -128,10 +128,10 @@ const POSES_BY_CAT: Record<string, Pose[]> = {
     ['On the forearm', 'the accessory hanging from the crook of the forearm'],
     ['Walking, carried', 'walking toward the camera carrying the accessory'],
     ['Cube · on the lap', `${CUBE}, the accessory resting on the lap`],
-    ['Worn — waist up', 'waist-up framing showing the accessory as worn'],
+    ['Worn , waist up', 'waist-up framing showing the accessory as worn'],
     ['Side profile', "side profile showing the accessory's full silhouette"],
-    ['Detail — hardware', 'tight crop on the clasp, buckle and hardware'],
-    ['Detail — texture', 'close crop showing the material grain and stitching'],
+    ['Detail , hardware', 'tight crop on the clasp, buckle and hardware'],
+    ['Detail , texture', 'close crop showing the material grain and stitching'],
   ],
 };
 
@@ -142,9 +142,9 @@ export function posesFor(category: string): Pose[] {
 }
 
 /**
- * File-name form of a pose label — "Cube · forward lean" → "cube-forward-lean".
+ * File-name form of a pose label , "Cube · forward lean" → "cube-forward-lean".
  *
- * The fraction is spelled out rather than stripped: "¾ left" and "Side pose —
+ * The fraction is spelled out rather than stripped: "¾ left" and "Side pose ,
  * left" would otherwise both slug to "left" and share one preview image.
  */
 export const poseSlug = (label: string): string =>
@@ -159,7 +159,7 @@ export const poseSlug = (label: string): string =>
  *
  * Category-specific art wins, so menswear and womenswear can illustrate the
  * same shared pose with their own model; the bare `/poses/<slug>.jpg` is the
- * shared fallback. Nothing here asserts the file exists — the preview hides
+ * shared fallback. Nothing here asserts the file exists , the preview hides
  * itself when every candidate 404s, so poses can be illustrated a few at a time
  * rather than all at once.
  */
@@ -193,7 +193,7 @@ export const ETHNICITIES: Array<[string, string]> = [
   ['diverse', 'Diverse (auto)'],
 ];
 
-// Genie picks from these too, and it runs server-side — so they live in a
+// Genie picks from these too, and it runs server-side , so they live in a
 // module a route handler can import. See lib/scene-vocab.ts.
 export { FRAMINGS, BACKDROPS, MOODS, LIGHTINGS } from '../scene-vocab';
 
@@ -205,7 +205,7 @@ export const RESOLUTIONS: Array<[string, string]> = [
   ['4K', '4K · ultra'],
 ];
 
-/** Mirrors the server-side GENDER_BY_CAT — used to pre-filter the model picker. */
+/** Mirrors the server-side GENDER_BY_CAT , used to pre-filter the model picker. */
 export const GENDER_BY_CAT: Record<string, string> = {
   womenswear: 'female',
   menswear: 'male',

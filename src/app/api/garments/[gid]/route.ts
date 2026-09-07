@@ -22,7 +22,7 @@ export const PATCH = handler(
 /**
  * Delete a garment and its images.
  *
- * Shoots already made from it are untouched — their references were copied into
+ * Shoots already made from it are untouched , their references were copied into
  * the shoot's own folder when it was created, exactly so that deleting the
  * library entry cannot break finished work.
  */
@@ -32,7 +32,7 @@ export const DELETE = handler(
     await requireOwnedGarment(gid);
 
     await deleteGarmentDoc(gid);
-    // removePrefix takes the derivatives with it — they live in the same folder.
+    // removePrefix takes the derivatives with it , they live in the same folder.
     await storage.removePrefix(garmentPrefix(gid));
 
     return json({ ok: true });

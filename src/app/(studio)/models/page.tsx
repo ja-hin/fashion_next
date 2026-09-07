@@ -10,7 +10,7 @@ export default function ModelsPage() {
   const router = useRouter();
 
   /**
-   * "Use this model" — arm the Generate tab with this model and go there, so
+   * "Use this model" , arm the Generate tab with this model and go there, so
    * the next thing the user does is add garments rather than hunt for the
    * picker they have already made their choice in.
    */

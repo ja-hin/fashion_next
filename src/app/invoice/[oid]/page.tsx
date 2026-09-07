@@ -250,7 +250,7 @@ export default async function InvoicePage({
               fontSize: 11.5,
             }}
           >
-            Paid online via Razorpay — this invoice is computer generated and valid without a
+            Paid online via Razorpay , this invoice is computer generated and valid without a
             signature.
             {!s.gstRegistered && (
               <>

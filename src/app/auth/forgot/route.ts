@@ -7,7 +7,7 @@ export const runtime = 'nodejs';
 /**
  * Request a password-reset link.
  *
- * ALWAYS returns the same success response — whether the address is
+ * ALWAYS returns the same success response , whether the address is
  * registered, paused, rate-limited, or the mail send failed. Anything else
  * turns this endpoint into a way to enumerate which emails have accounts.
  * Failures are recorded server-side instead.

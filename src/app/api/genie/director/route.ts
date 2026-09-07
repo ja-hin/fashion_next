@@ -9,15 +9,15 @@ import { logEvent } from '@/lib/logs';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-/** Reference images are art direction, not detail work — 1024px is plenty. */
+/** Reference images are art direction, not detail work , 1024px is plenty. */
 const MAX_REF_PX = 1024;
 
 /**
  * One turn of the Genie art-director conversation for a shoot.
  *
  * Charged per turn, like the one-shot Prompt Genie. Unlike that one there is no
- * useful local fallback — a spec the UI can apply either came from the model or
- * didn't — so a provider failure REFUNDS rather than inventing something.
+ * useful local fallback , a spec the UI can apply either came from the model or
+ * didn't , so a provider failure REFUNDS rather than inventing something.
  *
  * The hero anchor is read from the shoot server-side. It is never accepted from
  * the request: it goes into the system prompt, so a client that could set it
@@ -43,7 +43,7 @@ export const POST = handler(async (req: Request) => {
       // A long chat would blow the prompt out; the recent turns carry the intent.
       .slice(-12);
   } catch {
-    throw new HttpError(400, 'Bad messages — expected a JSON array of {role,text}');
+    throw new HttpError(400, 'Bad messages , expected a JSON array of {role,text}');
   }
 
   // The poses already ticked on the card. Genie rewrites these one-for-one when
@@ -71,7 +71,7 @@ export const POST = handler(async (req: Request) => {
         .jpeg({ quality: 90 })
         .toBuffer();
     } catch {
-      throw new HttpError(400, "Couldn't read that reference image — use a JPG, PNG or WebP.");
+      throw new HttpError(400, "Couldn't read that reference image , use a JPG, PNG or WebP.");
     }
   }
 

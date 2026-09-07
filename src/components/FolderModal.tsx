@@ -126,7 +126,7 @@ export default function FolderModal({
   /*
    * What a new video can lock onto: this shoot's generated stills if it has
    * any, otherwise the garment photos it was built from. A shoot made straight
-   * to video only has the latter, and it is enough — the server swaps to the
+   * to video only has the latter, and it is enough , the server swaps to the
    * garment lock when no still is picked.
    */
   const videoFrames = images.length
@@ -143,7 +143,7 @@ export default function FolderModal({
    * about a second to appear and cannot be styled, which is no help to someone
    * scanning a row of four unlabelled circles.
    *
-   * The buttons carry `aria-label`, NOT `title` — `title` would paint the
+   * The buttons carry `aria-label`, NOT `title` , `title` would paint the
    * browser's own tooltip on top of this one a second later, and the two say
    * different things when an action is unavailable.
    */
@@ -169,7 +169,7 @@ export default function FolderModal({
           <h3 className="text-[18px] font-bold">
             {/* An unnamed shoot's title IS its number, so printing both reads
                 "S0107 · S0107". And a shoot generated straight to video has no
-                images at all — saying "0 images" describes what it is not. */}
+                images at all , saying "0 images" describes what it is not. */}
             {[
               title,
               title === shootNo ? null : shootNo,
@@ -205,7 +205,7 @@ export default function FolderModal({
             <Tip>{images.length ? 'Continue shoot' : 'Needs a generated image'}</Tip>
           </button>
 
-          {/* Enabled on a video-only shoot too — see `videoFrames`. */}
+          {/* Enabled on a video-only shoot too , see `videoFrames`. */}
           <button
             aria-label="Generate video"
             onClick={() => setVideoOpen(true)}
@@ -266,7 +266,7 @@ export default function FolderModal({
               key={v.file}
               className="w-[212px] overflow-hidden rounded-card border border-line bg-surface shadow-card transition hover:-translate-y-[3px] hover:shadow-pop"
             >
-              {/* Matches the still cards beside it — see the note in
+              {/* Matches the still cards beside it , see the note in
                   GenerateView: the clip's own ratio would make the grid ragged. */}
               <div className="relative aspect-[4/5] bg-black">
                 {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
@@ -282,8 +282,8 @@ export default function FolderModal({
                   {v.aspect} · 10s
                 </span>
               </div>
-              {/* Matches the still card's footer exactly — same padding, same
-                  icon slot — so the two card types end at the same height. */}
+              {/* Matches the still card's footer exactly , same padding, same
+                  icon slot , so the two card types end at the same height. */}
               <div className="flex items-center justify-between gap-1.5 px-[11px] py-[9px]">
                 <span className="truncate text-xs font-semibold" title={v.preset}>
                   {v.preset}

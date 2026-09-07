@@ -12,7 +12,7 @@ export const GET = handler(async (req: Request) => {
 
   /*
    * Non-admins are pinned to their own models, always. `user` is honoured ONLY
-   * for admins — reading it for anyone else would turn this into an "any
+   * for admins , reading it for anyone else would turn this into an "any
    * model by owner" endpoint and defeat the isolation.
    */
   const filter: Record<string, unknown> = me.is_admin ? {} : { owner: me._id };
@@ -49,7 +49,7 @@ export const GET = handler(async (req: Request) => {
     models: rows.map((r) => {
       const pub = publicModel(r);
       if (!me.is_admin) return pub;
-      // Attached for admins only — a regular user never receives another
+      // Attached for admins only , a regular user never receives another
       // account's identity, even as a label.
       const o = ownerById.get(r.owner ?? '');
       return { ...pub, owner_uid: o?.uid ?? '', owner_email: o?.email ?? r.owner_email ?? '' };

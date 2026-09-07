@@ -54,7 +54,7 @@ export default function CharsheetResult({
       <div className="min-w-[220px] flex-1">
         <div className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.03em] text-muted">
           Sliced into {frames.length} individual references
-          {onZoom ? ' — click any to zoom' : ''}
+          {onZoom ? ' , click any to zoom' : ''}
         </div>
         <div className="grid grid-cols-3 gap-2">
           {frames.map((r, i) => (

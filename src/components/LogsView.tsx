@@ -7,7 +7,7 @@ import type { LogsPayload, LbItem } from '@/lib/client/types';
 
 /**
  * Logs (admin) and Usage (everyone) render the same data at two levels of
- * detail — Logs adds the AI model, token counts and our USD spend.
+ * detail , Logs adds the AI model, token counts and our USD spend.
  */
 export default function LogsView({
   variant,
@@ -25,7 +25,7 @@ export default function LogsView({
   const detailed = variant === 'logs';
 
   const load = useCallback(async () => {
-    // Usage is a personal view for everyone, admins included — it asks the API
+    // Usage is a personal view for everyone, admins included , it asks the API
     // to scope the result to the caller's own rows.
     const p = new URLSearchParams({
       q,
@@ -48,7 +48,7 @@ export default function LogsView({
   const rows = data?.rows ?? [];
   const summary = data?.summary;
   // The server reports is_admin false whenever the rows are one person's own,
-  // so this is off in Usage even for an admin — the column would repeat the
+  // so this is off in Usage even for an admin , the column would repeat the
   // same id on every line.
   const showUser = !!data?.is_admin;
 
@@ -148,7 +148,7 @@ export default function LogsView({
                 {showUser && (
                   <Td mono>
                     <span className="font-bold" title={r.user ?? ''}>
-                      {r.uid || '—'}
+                      {r.uid || ','}
                     </span>
                   </Td>
                 )}
@@ -162,7 +162,7 @@ export default function LogsView({
                 <Td mono>{r.cost ?? 0}</Td>
                 {detailed && (
                   <>
-                    <Td mono>{r.ai_model ?? '—'}</Td>
+                    <Td mono>{r.ai_model ?? ','}</Td>
                     <Td mono>{r.in_tok ?? ''}</Td>
                     <Td mono>{r.out_tok ?? ''}</Td>
                     <Td mono>{r.tot_tok ?? ''}</Td>

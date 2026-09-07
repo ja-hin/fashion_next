@@ -4,7 +4,7 @@ import LogsClient from './LogsClient';
 
 /**
  * Admin-only. The check runs on the server, so a non-admin never receives the
- * page at all — the old client-side hash guard could be bypassed by editing the
+ * page at all , the old client-side hash guard could be bypassed by editing the
  * URL fragment.
  */
 export default async function LogsPage() {

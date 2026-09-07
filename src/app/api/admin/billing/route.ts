@@ -21,7 +21,7 @@ const int = (v: string, lo: number, hi: number, dflt: number): number => {
  * Save top-up packs and rates.
  *
  * Everything is re-validated here rather than trusted from the form, because
- * these values become real charges — sanitisePacks() drops any pack priced at
+ * these values become real charges , sanitisePacks() drops any pack priced at
  * zero, since that would hand out free credits.
  */
 export const POST = handler(async (req: Request) => {

@@ -13,7 +13,7 @@ import type { Me } from '@/lib/client/types';
  * overlays that any page can open.
  *
  * This is a layout, so it stays mounted while you navigate between /generate,
- * /gallery and the rest — which is what keeps an in-progress shoot alive.
+ * /gallery and the rest , which is what keeps an in-progress shoot alive.
  */
 export default function StudioShell({
   me,
@@ -40,7 +40,7 @@ function Chrome({ children }: { children: React.ReactNode }) {
 
       {s.me.provider === 'mock' && (
         <div className="border-b border-line bg-amber-soft px-4 py-[9px] text-center text-[12.5px] font-bold text-amber">
-          ⚠ DEMO mode — no AI key found. These are placeholder images. Set{' '}
+          ⚠ DEMO mode , no AI key found. These are placeholder images. Set{' '}
           <b>GEMINI_API_KEY</b> in your environment and restart for real generation.
         </div>
       )}

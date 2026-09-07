@@ -19,7 +19,7 @@ import { DEFAULT_SETUP } from '@/components/SetupPanel';
  * Studio-wide state.
  *
  * Each view is now a real route (/generate, /gallery, …) rather than a hash, so
- * anything that must survive navigation lives here in the layout's provider —
+ * anything that must survive navigation lives here in the layout's provider ,
  * most importantly the in-progress shoot, which would otherwise be lost the
  * moment you glanced at the Gallery mid-generation.
  */
@@ -69,7 +69,7 @@ interface StudioValue {
   /**
    * Whether the left nav is collapsed to its icon rail.
    *
-   * Lives here rather than inside SideNav because pages need to close it —
+   * Lives here rather than inside SideNav because pages need to close it ,
    * starting a shoot hands the screen over to the results grid, and the nav is
    * not what you are looking at next.
    */
@@ -79,7 +79,7 @@ interface StudioValue {
   /**
    * Whether the Generate tab's shoot-setup panel is folded away.
    *
-   * Here rather than in the page so it survives a trip to Gallery and back —
+   * Here rather than in the page so it survives a trip to Gallery and back ,
    * a panel that re-opened on every navigation would be worse than no toggle.
    */
   setupCollapsed: boolean;

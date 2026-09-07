@@ -1,5 +1,5 @@
 /**
- * App-wide settings — the replacement for the old data/state.json.
+ * App-wide settings , the replacement for the old data/state.json.
  *
  * Stored as one document (`settings/_id: "app"`) so pricing edits are atomic and
  * the sequential shoot counter can be incremented without a read-modify-write
@@ -40,8 +40,8 @@ const DEFAULTS: SettingsDoc = {
  * The live top-up configuration.
  *
  * Every field is defaulted individually rather than falling back to
- * DEFAULT_BILLING wholesale, so a settings document saved by an older version —
- * or one an admin partially wrote — can't leave a rate undefined and price a
+ * DEFAULT_BILLING wholesale, so a settings document saved by an older version ,
+ * or one an admin partially wrote , can't leave a rate undefined and price a
  * charge at NaN. An empty pack list is left empty on purpose: an admin who
  * deactivated everything meant it, and silently resurrecting the defaults would
  * put packs back on sale.
@@ -98,7 +98,7 @@ export async function nextShootNumber(): Promise<number> {
   const col = await settings();
 
   // Make sure the document exists first. Doing this as a separate call keeps
-  // `shoot_seq` out of $setOnInsert — Mongo rejects an update that touches the
+  // `shoot_seq` out of $setOnInsert , Mongo rejects an update that touches the
   // same path in both $inc and $setOnInsert ("would create a conflict").
   const { shoot_seq: _seq, ...defaultsWithoutSeq } = DEFAULTS;
   await col.updateOne(
@@ -119,7 +119,7 @@ export async function nextShootNumber(): Promise<number> {
  * Claim the next invoice number for the current financial year.
  *
  * Tax invoice numbering must be sequential and gapless within a year, so this
- * is an atomic $inc on a per-year counter — two payments landing in the same
+ * is an atomic $inc on a per-year counter , two payments landing in the same
  * millisecond cannot be handed the same number. Counters restart at 1 each
  * April, which is why they're keyed by year rather than being one global count.
  */
@@ -139,7 +139,7 @@ export async function nextInvoiceNo(prefix: string, now = new Date()): Promise<s
   return `${prefix}/${fy}/${String(n).padStart(4, '0')}`;
 }
 
-/** Zero-padded public user id — U0001. */
+/** Zero-padded public user id , U0001. */
 export const userNoStr = (n: number): string =>
   'U' + String(Math.trunc(Number(n ?? 0))).padStart(4, '0');
 

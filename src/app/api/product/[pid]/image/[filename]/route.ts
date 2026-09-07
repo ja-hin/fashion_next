@@ -16,7 +16,7 @@ export const DELETE = handler(
 
     const file = baseName(decodeURIComponent(filename));
 
-    // The hero holds the shoot's locked model — deleting it would break every
+    // The hero holds the shoot's locked model , deleting it would break every
     // later pose, so it's protected.
     if (shoot.hero_file && shoot.hero_file === file) {
       throw new HttpError(

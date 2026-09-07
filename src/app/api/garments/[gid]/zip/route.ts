@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 /**
  * Download a garment's reference images as a ZIP, named by their role.
  *
- * These are the user's own uploads, so they come back exactly as stored — no
+ * These are the user's own uploads, so they come back exactly as stored , no
  * watermark, no derivative. The point of downloading is to get the originals.
  */
 export const GET = handler(

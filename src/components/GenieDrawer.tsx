@@ -53,7 +53,7 @@ interface Bubble {
   set?: ShootSet;
   counts?: number[];
   suggestions?: string[];
-  /** Output settings for a set — Genie never chooses these, the user does. */
+  /** Output settings for a set , Genie never chooses these, the user does. */
   aspect?: string;
   resolution?: string;
   editing?: boolean;
@@ -70,8 +70,8 @@ const sceneLine = (s: ShootSet) =>
  * The art-director panel that slides in from the right of the Add Pose card.
  *
  * Two shapes of answer come back. A SINGLE direction fills the card and lets the
- * user generate it themselves. A SHOOT SET is a whole catalogue — one shared
- * scene and N complementary poses — which generates in one go through the batch
+ * user generate it themselves. A SHOOT SET is a whole catalogue , one shared
+ * scene and N complementary poses , which generates in one go through the batch
  * endpoint, so every image in it was photographed in the same session.
  */
 export default function GenieDrawer({
@@ -100,7 +100,7 @@ export default function GenieDrawer({
   onBalance: (b: number) => void;
   /** Fills the Add Pose card with a single direction, for the user to run. */
   onApply: (pose: string, settings: PoseSettings) => void;
-  /** Generates rows immediately — a whole set, or one shot out of one. */
+  /** Generates rows immediately , a whole set, or one shot out of one. */
   onGenerate: (rows: Array<PoseSettings & { pose: string }>) => void;
 }) {
   const [bubbles, setBubbles] = useState<Bubble[]>([]);
@@ -183,7 +183,7 @@ export default function GenieDrawer({
       pose: sh.pose,
       framing: sh.framing,
       // scene_detail is the full reference description and beats the dropdown
-      // value — sceneClause() passes an unknown backdrop through as free text,
+      // value , sceneClause() passes an unknown backdrop through as free text,
       // which is the only way the reference's specifics survive to the model.
       backdrop: b.set!.scene_detail || b.set!.backdrop,
       mood: b.set!.mood,
@@ -257,7 +257,7 @@ export default function GenieDrawer({
           {!bubbles.length && (
             <div className="rounded-[11px] border border-line bg-surface2 p-3 text-[11.5px] leading-[1.6] text-muted">
               {selection.length
-                ? `Ask Genie to elevate these — you'll get ${selection.length} rewritten pose${
+                ? `Ask Genie to elevate these , you'll get ${selection.length} rewritten pose${
                     selection.length === 1 ? '' : 's'
                   } back, one for each, ready to edit and generate.`
                 : "Describe the shot you want, ask for a catalogue, or attach a photo whose look you'd like to match."}
@@ -470,7 +470,7 @@ export default function GenieDrawer({
 }
 
 /**
- * The scene read off a reference photo. Shown in full rather than truncated —
+ * The scene read off a reference photo. Shown in full rather than truncated ,
  * it is what actually drives the generated image, so the user should be able to
  * check it before spending credits on it.
  */
@@ -534,7 +534,7 @@ function SetCard({
           <MatchedScene text={set.scene_detail} />
         ) : (
           <div className="text-[11.5px] leading-[1.5]">
-            {set.keep_scene ? "Unchanged — the shoot's own backdrop, lighting and mood." : sceneLine(set)}
+            {set.keep_scene ? "Unchanged , the shoot's own backdrop, lighting and mood." : sceneLine(set)}
           </div>
         )}
       </div>
@@ -595,7 +595,7 @@ function SetCard({
         ))}
       </ul>
 
-      {/* Genie never sets these — output settings are the user's call. */}
+      {/* Genie never sets these , output settings are the user's call. */}
       <div className="flex gap-2 border-b border-line px-3 py-2.5">
         <label className="flex-1">
           <span className="mb-[3px] block text-[9.5px] font-bold uppercase tracking-[0.03em] text-muted">

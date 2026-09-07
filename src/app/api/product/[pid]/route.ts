@@ -6,7 +6,7 @@ export const runtime = 'nodejs';
 
 /**
  * Delete a whole shoot: every generated image, the garment reference, and the
- * shoot record. Irreversible — the UI confirms before calling this.
+ * shoot record. Irreversible , the UI confirms before calling this.
  *
  * Saved models made from this shoot are deliberately untouched: their reference
  * images were copied at save time precisely so they'd outlive the shoot.

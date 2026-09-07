@@ -79,7 +79,7 @@ export default function AdminView({
     if (!amt) return;
     await act(async () => {
       await postForm('/api/admin/topup', { user_id: uid, images: amt });
-      // The admin may have topped up their own account — refresh the header.
+      // The admin may have topped up their own account , refresh the header.
       const fresh = await getJson<Me>('/api/me');
       if (fresh.authed && typeof fresh.balance === 'number') onBalance(fresh.balance);
     }, 'Could not top up.');
@@ -150,9 +150,9 @@ export default function AdminView({
               {users.map((u) => (
                 <tr key={u.id} className="hover:bg-surface2">
                   <Td mono>
-                    <span className="font-bold">{u.uid || '—'}</span>
+                    <span className="font-bold">{u.uid || ','}</span>
                   </Td>
-                  <Td>{u.name || '—'}</Td>
+                  <Td>{u.name || ','}</Td>
                   <Td mono>{u.email}</Td>
                   <Td>
                     {u.is_admin ? (

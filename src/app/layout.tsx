@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 
 /**
- * Root layout — deliberately renders nothing but the document shell.
+ * Root layout , deliberately renders nothing but the document shell.
  *
  * The marketing page and the studio have their OWN design systems that both
  * define `--bg`, `--muted`, `--line` and `--shadow` with different values, so

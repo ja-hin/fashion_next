@@ -29,7 +29,7 @@ const toRef = (file: File, mode: RefMode): EnsembleRef => ({
   unsure: true,
 });
 
-/** Wording per mode — the two windows ask genuinely different questions. */
+/** Wording per mode , the two windows ask genuinely different questions. */
 const COPY: Record<RefMode, { badge: string; blurb: string; hint: string }> = {
   ensemble: {
     badge: 'Ensemble',
@@ -40,13 +40,13 @@ const COPY: Record<RefMode, { badge: string; blurb: string; hint: string }> = {
   same_garment: {
     badge: 'Same garment',
     blurb:
-      'Every image is the SAME garment from a different angle. Tag which view each one is — the back photo becomes the truth for the back, so it is never invented.',
+      'Every image is the SAME garment from a different angle. Tag which view each one is , the back photo becomes the truth for the back, so it is never invented.',
     hint: 'front, back, a detail…',
   },
 };
 
 /**
- * "Tag your images" — the window that opens as soon as ensemble images are
+ * "Tag your images" , the window that opens as soon as ensemble images are
  * dropped.
  *
  * Tagging is not optional decoration: the hero prompt addresses each reference
@@ -58,7 +58,7 @@ const COPY: Record<RefMode, { badge: string; blurb: string; hint: string }> = {
  * Roles arrive pre-filled from a vision pass with a confidence and a one-line
  * reason, so the common case is a glance and a confirm.
  *
- * Selection only — Continue hands back to the setup panel, where framing,
+ * Selection only , Continue hands back to the setup panel, where framing,
  * aspect, resolution and the rest of the shoot are set and the hero is actually
  * generated. Nothing here spends a credit.
  */
@@ -72,7 +72,7 @@ export default function EnsembleTagModal({
   mode: RefMode;
   refs: EnsembleRef[];
   onRefs: (next: EnsembleRef[]) => void;
-  /** Continue just closes — framing, aspect and resolution live in the panel. */
+  /** Continue just closes , framing, aspect and resolution live in the panel. */
   onClose: () => void;
 }) {
   const copy = COPY[mode];
@@ -117,10 +117,10 @@ export default function EnsembleTagModal({
       fd.append('mode', mode);
       results = (await postMultipart<{ results: Detected[] }>('/api/ensemble/detect', fd)).results;
     } catch {
-      setNote('Auto-tagging is unavailable — pick what each image is below.');
+      setNote('Auto-tagging is unavailable , pick what each image is below.');
     } finally {
       // One merge point for both outcomes, so a failed call can never leave a
-      // tile spinning forever — it just falls back to being tagged by hand.
+      // tile spinning forever , it just falls back to being tagged by hand.
       //
       // Matched on object identity rather than index: the user can remove a
       // tile while the request is in flight, which would shift every position.
@@ -151,7 +151,7 @@ export default function EnsembleTagModal({
 
     setNote('');
     if (picked.length > room) {
-      setNote(`An ensemble takes at most ${MAX_ENSEMBLE_REFS} images — the rest were skipped.`);
+      setNote(`An ensemble takes at most ${MAX_ENSEMBLE_REFS} images , the rest were skipped.`);
     }
     const taken = picked.slice(0, room);
     if (!taken.length) return;
@@ -198,7 +198,7 @@ export default function EnsembleTagModal({
               </span>
             </div>
             <p className="mt-2 text-[12.5px] leading-[1.6] text-muted">
-              {copy.blurb} Add up to {MAX_ENSEMBLE_REFS} images — more images lowers fidelity on
+              {copy.blurb} Add up to {MAX_ENSEMBLE_REFS} images , more images lowers fidelity on
               each, so keep it tight.
             </p>
           </div>
@@ -253,7 +253,7 @@ export default function EnsembleTagModal({
 
                 <div className="border-t border-line p-2.5">
                   {r.detecting ? (
-                    // No role is shown until one has actually been worked out —
+                    // No role is shown until one has actually been worked out ,
                     // the stored 'garment' is a placeholder, and rendering it
                     // would put words in the classifier's mouth.
                     <>
@@ -322,7 +322,7 @@ export default function EnsembleTagModal({
                 : note
                   ? note
                   : detected
-                    ? '✓ Roles auto-detected — confirm or correct any above.'
+                    ? '✓ Roles auto-detected , confirm or correct any above.'
                     : 'Pick what each image is above.'}
             </span>
             <button

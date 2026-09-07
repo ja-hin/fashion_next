@@ -15,7 +15,7 @@ export interface MePayload {
   admin?: boolean;
   provider?: 'gemini' | 'mock';
   version?: string;
-  /** Public user id — "U0007". Shown so a customer can quote it in support. */
+  /** Public user id , "U0007". Shown so a customer can quote it in support. */
   uid?: string;
   name?: string;
   email?: string;

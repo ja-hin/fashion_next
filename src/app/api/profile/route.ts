@@ -6,7 +6,7 @@ import type { UserDoc } from '@/lib/types';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-/** Everything the profile page renders — never the password hash or salt. */
+/** Everything the profile page renders , never the password hash or salt. */
 function view(u: UserDoc): Profile & {
   uid: string;
   email: string;
@@ -36,7 +36,7 @@ export const GET = handler(async () => json(view(await requireUser())));
 /**
  * Save the profile.
  *
- * Only the fields a user owns are writable — balance, role and active status
+ * Only the fields a user owns are writable , balance, role and active status
  * are admin territory and are simply not read from the body, so a crafted form
  * post can't grant itself credits.
  */

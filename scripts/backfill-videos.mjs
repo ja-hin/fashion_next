@@ -2,7 +2,7 @@
  * Backfill the `videos` list on shoots that already have generated clips.
  *
  * Clips written before the shoot document tracked them are on disk but on no
- * list, so nothing renders them — the storage folder is never enumerated, the
+ * list, so nothing renders them , the storage folder is never enumerated, the
  * document is what every view reads. This walks the outputs directory and adds
  * the entry that should have been written at generation time.
  *
@@ -51,7 +51,7 @@ for (const pid of readdirSync(outputs)) {
 
   const shoot = await shoots.findOne({ _id: pid });
   if (!shoot) {
-    console.log(`  ${pid}  ${clips.length} clip(s) — NO SHOOT DOCUMENT, skipped`);
+    console.log(`  ${pid}  ${clips.length} clip(s) , NO SHOOT DOCUMENT, skipped`);
     continue;
   }
 
@@ -61,7 +61,7 @@ for (const pid of readdirSync(outputs)) {
     if (listed.has(file)) continue;
 
     // Filenames are `video_<base36 ms>_<9x16|16x9>.mp4`. The timestamp is real
-    // information — better than "now" for a clip made days ago — and the aspect
+    // information , better than "now" for a clip made days ago , and the aspect
     // is recoverable too. The preset is not, so it is labelled honestly.
     const m = file.match(/^video_([a-z0-9]+)_(\d+x\d+)\.mp4$/i);
     const ms = m ? parseInt(m[1], 36) : NaN;
@@ -86,6 +86,6 @@ for (const pid of readdirSync(outputs)) {
 
 console.log(
   `\n${found} clip(s) on disk, ${added} needed listing.` +
-    (APPLY ? ' Written.' : ' Dry run — re-run with --apply to write.'),
+    (APPLY ? ' Written.' : ' Dry run , re-run with --apply to write.'),
 );
 await client.close();

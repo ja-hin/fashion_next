@@ -6,9 +6,9 @@
  * reference lock, so the person and the garment in the video are the ones the
  * customer already approved rather than a fresh invention.
  *
- * Mirrors lib/gemini.ts deliberately — same two modes decided by the same key,
+ * Mirrors lib/gemini.ts deliberately , same two modes decided by the same key,
  * same Usage shape for the Logs tab, same "throw with a readable message"
- * contract — so the two providers are read as one layer, not two.
+ * contract , so the two providers are read as one layer, not two.
  */
 import 'server-only';
 import { GoogleGenAI } from '@google/genai';
@@ -30,7 +30,7 @@ export interface VideoResult {
 }
 
 /**
- * Gemini's published Omni rates, which are NOT the image rates in lib/logs.ts —
+ * Gemini's published Omni rates, which are NOT the image rates in lib/logs.ts ,
  * output is an order of magnitude dearer per token. Used only to record what a
  * generation cost us; what the customer pays is the credits grid.
  */
@@ -50,7 +50,7 @@ function readUsage(model: string, interaction: unknown): Usage {
   const num = (k: string) => Number(u?.[k] ?? 0) || 0;
   const inTok = num('total_input_tokens');
   // Thought tokens are billed at the output rate, so they belong in the output
-  // column rather than being dropped — they are most of the bill on a video.
+  // column rather than being dropped , they are most of the bill on a video.
   const outTok = num('total_output_tokens') + num('total_thought_tokens');
   const usd = (inTok / 1e6) * USD_PER_1M_IN + (outTok / 1e6) * USD_PER_1M_OUT;
   return {
@@ -71,7 +71,7 @@ function readUsage(model: string, interaction: unknown): Usage {
  * after that: it costs one property read and it is what a cached or replayed
  * older response looks like.
  *
- * Either way the URI branch is the common one — Google hands back a file that
+ * Either way the URI branch is the common one , Google hands back a file that
  * is still processing, so it has to be polled before it can be downloaded.
  */
 async function videoBytes(interaction: Record<string, unknown>): Promise<Buffer> {
@@ -99,7 +99,7 @@ async function videoBytes(interaction: Record<string, unknown>): Promise<Buffer>
 
   if (uri) {
     // A Files URI is handed back before the file is ready. Poll until Google
-    // says ACTIVE — downloading early returns a truncated or empty body.
+    // says ACTIVE , downloading early returns a truncated or empty body.
     const id = uri.includes('/files/')
       ? uri.split('/files/')[1].split(/[:?/]/)[0]
       : null;
@@ -113,7 +113,7 @@ async function videoBytes(interaction: Record<string, unknown>): Promise<Buffer>
           state =
             typeof info.state === 'string' ? info.state : (info.state?.name ?? null);
         } catch {
-          // A transient lookup failure is not fatal — keep polling.
+          // A transient lookup failure is not fatal , keep polling.
         }
         if (state === 'ACTIVE') break;
         if (state === 'FAILED') throw new Error('Google reported the video failed processing.');
@@ -132,7 +132,7 @@ async function videoBytes(interaction: Record<string, unknown>): Promise<Buffer>
 
   throw new Error(
     'The video model returned nothing downloadable. If the brief tripped a ' +
-      'content filter, this is what that looks like — try a different preset.',
+      'content filter, this is what that looks like , try a different preset.',
   );
 }
 
@@ -184,7 +184,7 @@ export async function customiseBrief(
     const next = obj.brief && typeof obj.brief === 'object' ? obj.brief : brief;
 
     // The Genie is told to leave the lock alone; this is what happens when it
-    // does not. Putting it back beats refusing the edit — the customer gets
+    // does not. Putting it back beats refusing the edit , the customer gets
     // their change AND keeps the identity guarantee they are paying for.
     return {
       brief: withLock({ ...brief, ...next }),
@@ -196,13 +196,13 @@ export async function customiseBrief(
 }
 
 /**
- * Write a whole brief from a plain-English description — no preset behind it.
+ * Write a whole brief from a plain-English description , no preset behind it.
  *
  * The preset path edits slots on an existing shot list; this one authors the
  * shot list too, which is what "a completely new scene" actually needs. The
  * model is given the brief's shape and the 10-second structure and asked to
  * fill it, then the result is merged onto a skeleton so a missing slot is a
- * default rather than `undefined`, and the lock is prepended — the model is
+ * default rather than `undefined`, and the lock is prepended , the model is
  * never told the lock, so it can never include it, and a scene description
  * asking for neon signage would otherwise quietly override "no text, no logos".
  */
@@ -269,8 +269,8 @@ export async function authorBrief(
  *
  * `frames` are the shoot stills that lock identity, in the order the customer
  * picked them. More than one is a `reference_to_video` task; a single frame is
- * `image_to_video`. Text-only is never reached from the studio — a video with
- * no reference has nothing to keep consistent — but the model supports it and
+ * `image_to_video`. Text-only is never reached from the studio , a video with
+ * no reference has nothing to keep consistent , but the model supports it and
  * the task name is set correctly if it ever is.
  */
 export async function generateVideo(opts: {

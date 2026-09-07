@@ -48,7 +48,7 @@ export default function AuthForm({ mode }: { mode: 'login' | 'register' }) {
           </h1>
           <p className="mb-6 mt-1.5 text-center text-[12.5px] text-muted">
             {isSignup
-              ? 'Start with free trial — no card needed.'
+              ? 'Start with free trial , no card needed.'
               : 'Sign in to pick up where you left off.'}
           </p>
 

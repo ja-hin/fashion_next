@@ -16,7 +16,7 @@ import type { LbItem, PoseSettings } from '@/lib/client/types';
 
 interface Props {
   shoot: ShootApi;
-  /** The shoot's category — decides which pose list the add/batch pickers show. */
+  /** The shoot's category , decides which pose list the add/batch pickers show. */
   category: string;
   geniePrice: number;
   /** Credits for one 10-second video, from settings. */
@@ -49,7 +49,7 @@ export default function GenerateView({
   if (!hasResults) {
     return (
       <EmptyState icon="👗" title="Your shoot will appear here">
-        Upload a garment and generate the front shot. Then build the rest — pose by pose, or in a
+        Upload a garment and generate the front shot. Then build the rest , pose by pose, or in a
         batch.
       </EmptyState>
     );
@@ -126,7 +126,7 @@ export default function GenerateView({
             ▶
           </span>
           <span>
-            Resumed — <b>{resumedBanner.title}</b> · {resumedBanner.count} image
+            Resumed , <b>{resumedBanner.title}</b> · {resumedBanner.count} image
             {resumedBanner.count === 1 ? '' : 's'} restored · keep generating below
           </span>
           <button
@@ -154,7 +154,7 @@ export default function GenerateView({
           />
         ))}
 
-        {/* Clips sit in the same grid as the stills they were built from — a
+        {/* Clips sit in the same grid as the stills they were built from , a
             video of this shoot belongs with this shoot, not on a page of its
             own. Poster is the first frame it locked onto, so the card reads as
             part of the set before anything plays. */}
@@ -213,7 +213,7 @@ export default function GenerateView({
             category={category}
             pid={shoot.pid}
             onAddOne={(pose, settings) => shoot.addOne(pose, settings, onBalance)}
-            // Several ticked poses run through the batch endpoint — it already
+            // Several ticked poses run through the batch endpoint , it already
             // generates one image per row, sequentially, which is what keeps
             // Gemini's rate limiter happy.
             onAddMany={(rows) => shoot.runBatch(rows, onBalance)}
@@ -230,7 +230,7 @@ export default function GenerateView({
       </div>
 
       {/* The grid-level Genie has no pose card to fill, so everything it hands
-          back generates straight away — a single direction through addOne, a
+          back generates straight away , a single direction through addOne, a
           catalogue through the batch. */}
       <GenieDrawer
         open={genieOpen}

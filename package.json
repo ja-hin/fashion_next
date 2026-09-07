@@ -1,8 +1,8 @@
 {
-  "name": "vdofy-aimagegen",
+  "name": "vdofy-faishon-studio",
   "version": "1.0.0",
   "private": true,
-  "description": "AImageGen — on-model AI fashion photography studio (Next.js + MongoDB)",
+  "description": "Faishon Studio , on-model AI fashion photography studio (Next.js + MongoDB)",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

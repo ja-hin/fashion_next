@@ -1,6 +1,6 @@
 'use client';
 
-/** The one interactive bit of the invoice page — kept tiny so the rest stays a server component. */
+/** The one interactive bit of the invoice page , kept tiny so the rest stays a server component. */
 export default function PrintButton() {
   return (
     <button

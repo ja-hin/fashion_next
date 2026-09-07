@@ -1,5 +1,5 @@
 /**
- * Central config — every setting is read from the environment, with a safe
+ * Central config , every setting is read from the environment, with a safe
  * fallback for local dev. Port of the old config.py.
  *
  * Server-only: this module reads process.env and must never be imported from a
@@ -37,12 +37,12 @@ export const LOG_PROMPTS =
 
 // ── Image engines ───────────────────────────────────────────────────
 // BASE = everything (poses, edits, imagined-model heroes).
-// HERO = the saved-model hero only — the one call where identity is decided.
+// HERO = the saved-model hero only , the one call where identity is decided.
 export const BASE_MODEL_ID = env('BASE_MODEL_ID', 'gemini-3.1-flash-lite-image');
 export const HERO_MODEL_ID = env('HERO_MODEL_ID', 'gemini-3.1-flash-image');
 
 /**
- * Text engine — Genie's art director, which reasons and returns JSON rather
+ * Text engine , Genie's art director, which reasons and returns JSON rather
  * than pixels. The *-image models above reject `responseMimeType: application/
  * json` with INVALID_ARGUMENT, so this deliberately is NOT one of them.
  */
@@ -58,7 +58,7 @@ export const VIDEO_MODEL_ID = env('VIDEO_MODEL_ID', 'gemini-omni-flash-preview')
 // ── Razorpay ────────────────────────────────────────────────────────
 // KEY_ID is public (it is handed to Razorpay Checkout in the browser).
 // KEY_SECRET and WEBHOOK_SECRET are server-only and must never be imported
-// from a client component — this module is 'server-only', which enforces that.
+// from a client component , this module is 'server-only', which enforces that.
 export const RAZORPAY_KEY_ID = env('RAZORPAY_KEY_ID', '').trim();
 export const RAZORPAY_KEY_SECRET = env('RAZORPAY_KEY_SECRET', '').trim();
 export const RAZORPAY_WEBHOOK_SECRET = env('RAZORPAY_WEBHOOK_SECRET', '').trim();
@@ -79,7 +79,7 @@ export const APP_URL = env('APP_URL', 'http://localhost:3000').replace(/\/+$/, '
 
 /**
  * "smtp" | "resend" | "console".
- * Defaults to console outside production — the reset link is printed to the
+ * Defaults to console outside production , the reset link is printed to the
  * terminal so the flow is testable without a mail account.
  */
 export const MAIL_DRIVER = env(
@@ -103,7 +103,7 @@ export const RESET_TTL_MINUTES = envInt('RESET_TTL_MINUTES', 60);
 
 // ── Invoicing ───────────────────────────────────────────────────────
 // Printed on every GST invoice. A real tax invoice is legally required to
-// carry the seller's registered name, address and GSTIN — fill these in
+// carry the seller's registered name, address and GSTIN , fill these in
 // before sending an invoice to a customer.
 export const SELLER_NAME = env('SELLER_NAME', PAYMENT_BRAND);
 export const SELLER_ADDRESS = env('SELLER_ADDRESS', '');
@@ -114,7 +114,7 @@ export const SELLER_EMAIL = env('SELLER_EMAIL', '');
 export const SELLER_STATE = env('SELLER_STATE', '');
 /** SAC code for online software services. 998314 = IT design & development. */
 export const INVOICE_SAC = env('INVOICE_SAC', '998314');
-/** Prefix for invoice numbers — "VDF" gives VDF/2026-27/0001. */
+/** Prefix for invoice numbers , "VDF" gives VDF/2026-27/0001. */
 export const INVOICE_PREFIX = env('INVOICE_PREFIX', 'INV');
 
 // ── Admin account (seeded on first boot if no admin exists) ─────────
@@ -128,7 +128,7 @@ export const PRICE_PER_IMAGE = 1; // legacy flat fallback; real pricing is the a
 export const MAX_IMG_PX = 1400;
 
 // ── Free-tier watermark ─────────────────────────────────────────────
-/** Kill switch — set WATERMARK=0 to serve every image clean. */
+/** Kill switch , set WATERMARK=0 to serve every image clean. */
 export const WATERMARK_ENABLED = env('WATERMARK', '1') !== '0';
 /** File inside /public. */
 export const WATERMARK_LOGO = env('WATERMARK_LOGO', 'logo-black.png');
@@ -150,13 +150,13 @@ export const GENIE_MAX_PER_PROMPT = 5;
 /**
  * Credits for one 10-second video. Set against a measured API cost of ~₹101.5
  * a clip (≈20 credits at the base ₹5/credit), so this is roughly the same
- * margin a 1K photo carries. Admin-editable in Settings — the model is preview
+ * margin a 1K photo carries. Admin-editable in Settings , the model is preview
  * and its price will move.
  */
 export const VIDEO_PRICE = 35;
 
 // ── What a call costs US, in USD per 1,000,000 tokens ───────────────
-// Purely for the "Cost (USD)" column in the Logs tab — this is our own spend
+// Purely for the "Cost (USD)" column in the Logs tab , this is our own spend
 // with Google, NOT what the user is charged (that stays the credits grid).
 export type TokenRate = { in: number; out: number };
 
@@ -174,7 +174,7 @@ export const TOKEN_RATES_USD: Record<string, TokenRate> = (() => {
     const parsed = JSON.parse(raw);
     if (parsed && typeof parsed === 'object') Object.assign(base, parsed);
   } catch {
-    // Bad JSON must never stop the app booting — keep the defaults.
+    // Bad JSON must never stop the app booting , keep the defaults.
   }
   return base;
 })();

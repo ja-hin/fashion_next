@@ -61,7 +61,7 @@ export const POST = handler(async (req: Request) => {
   if (!refs.length) {
     throw new HttpError(400, 'None of the selected images were found');
   }
-  // A model must always have exactly one primary — that's its thumbnail and the
+  // A model must always have exactly one primary , that's its thumbnail and the
   // identity anchor for character-sheet generation.
   if (!refs.some((r) => r.primary)) refs[0].primary = true;
 

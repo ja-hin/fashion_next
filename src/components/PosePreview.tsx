@@ -8,7 +8,7 @@ import { poseImageSrcs } from '@/lib/client/constants';
  *
  * Walks the candidate paths in order and renders nothing at all once they have
  * all failed, so a pose with no artwork yet simply shows no popover rather than
- * a broken-image box. Mount it keyed by label — the fallback walk is per-pose
+ * a broken-image box. Mount it keyed by label , the fallback walk is per-pose
  * state and has to restart when the hovered pose changes.
  */
 export default function PosePreview({
@@ -24,7 +24,7 @@ export default function PosePreview({
   const srcs = poseImageSrcs(category, label);
   const [i, setI] = useState(0);
 
-  // Every candidate 404'd — this pose isn't illustrated yet.
+  // Every candidate 404'd , this pose isn't illustrated yet.
   if (i >= srcs.length) return null;
 
   return (

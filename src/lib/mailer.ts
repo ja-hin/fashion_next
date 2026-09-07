@@ -2,9 +2,9 @@
  * Outbound email.
  *
  * Three drivers so the app isn't married to one provider:
- *   smtp     — anything with a mailbox (Hostinger, Google Workspace, Zoho…)
- *   resend   — plain HTTPS, no extra dependency
- *   console  — prints the message; the default outside production so the
+ *   smtp     , anything with a mailbox (Hostinger, Google Workspace, Zoho…)
+ *   resend   , plain HTTPS, no extra dependency
+ *   console  , prints the message; the default outside production so the
  *              password-reset flow can be exercised with no mail account
  *
  * Sending never throws to the caller. A failed reset email must not tell an
@@ -28,7 +28,7 @@ export interface Mail {
   html: string;
   text: string;
   /**
-   * Optional. Where a reply should go when that is not the From address — a
+   * Optional. Where a reply should go when that is not the From address , a
    * contact-form notification is addressed to us but should reply to the
    * visitor, so hitting Reply in the inbox does the obvious thing.
    */
@@ -76,7 +76,7 @@ async function sendResend(m: Mail): Promise<void> {
 }
 
 /**
- * Send one message. Returns false when delivery failed — callers use that only
+ * Send one message. Returns false when delivery failed , callers use that only
  * for logging, never to shape the response a visitor sees.
  */
 export async function sendMail(m: Mail): Promise<boolean> {
@@ -87,7 +87,7 @@ export async function sendMail(m: Mail): Promise<boolean> {
       await sendSmtp(m);
     } else {
       // Console driver. The body carries a single-use link, so this is a
-      // development affordance — MAIL_DRIVER defaults to smtp in production.
+      // development affordance , MAIL_DRIVER defaults to smtp in production.
       console.log(
         `\n─── EMAIL (console driver) ${'─'.repeat(42)}\n` +
           `to      ${m.to}\n` +
@@ -122,7 +122,7 @@ export function resetEmail(opts: {
     `We received a request to reset the password for your Faishon.studio account.\n\n` +
     `Reset your password:\n${opts.link}\n\n` +
     `This link works once and expires in ${opts.minutes} minutes.\n\n` +
-    `If you didn't ask for this, you can ignore this email — your password stays as it is.\n`;
+    `If you didn't ask for this, you can ignore this email , your password stays as it is.\n`;
 
   const html = `
 <div style="font:15px/1.6 system-ui,-apple-system,Segoe UI,sans-serif;color:#141414;max-width:520px;margin:0 auto;padding:28px">
@@ -138,7 +138,7 @@ export function resetEmail(opts: {
     This link works once and expires in ${opts.minutes} minutes.
   </p>
   <p style="margin:0 0 22px;color:#666;font-size:13px">
-    If you didn't ask for this, you can ignore this email — your password stays as it is.
+    If you didn't ask for this, you can ignore this email , your password stays as it is.
   </p>
   <p style="margin:0;color:#999;font-size:12px;word-break:break-all">
     Button not working? Paste this into your browser:<br>${esc(opts.link)}

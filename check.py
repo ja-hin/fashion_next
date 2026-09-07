@@ -1,5 +1,5 @@
 """
-genie_studio.py — Genie 2.0: conversational art / studio director for AImageGen.
+genie_studio.py , Genie 2.0: conversational art / studio director for AImageGen.
 
 STANDALONE, NON-INVASIVE. Does NOT touch main.py. Mount later with `register(app)`
 (same pattern as models.py). `python genie_studio.py` serves the test UI so you can
@@ -8,20 +8,20 @@ try the whole flow in isolation.
 WHAT IT DOES
 ------------
 Shoot-level assistant. One session per shoot. The MODEL and the GARMENT are always
-constant (from the locked hero). Genie owns the CREATIVE spec — Pose, Framing,
+constant (from the locked hero). Genie owns the CREATIVE spec , Pose, Framing,
 Backdrop, Lighting, Mood. It NEVER sets aspect ratio or resolution (those are your
 output settings, chosen on the card / set).
 
 Three output modes (the model picks per turn):
-  • single   — one shot. intent ∈ {refine_pose, art_direct, match_reference, clarify}.
+  • single   , one shot. intent ∈ {refine_pose, art_direct, match_reference, clarify}.
                refine_pose keeps the hero scene (keep_scene=true).
-  • series   — a "shoot set": ONE shared scene + N shots, each varying pose+framing.
+  • series   , a "shoot set": ONE shared scene + N shots, each varying pose+framing.
                Feeds your batch pipeline. keep_scene may be true (hero scene) or false.
-  • ask_count— user asked for a set but gave no number → Genie asks, offering chips.
+  • ask_count, user asked for a set but gave no number → Genie asks, offering chips.
 
 BILLING
 -------
-1 credit per Genie usage (per successful turn). Wallet is pluggable — inject your
+1 credit per Genie usage (per successful turn). Wallet is pluggable , inject your
 main.py STATE wallet via `set_wallet(get_balance, charge)`. Image *generation*
 (Use this / Generate all / per-shot ▶) is billed separately by your /one and /batch
 endpoints, not here.
@@ -120,32 +120,32 @@ def _anchor_line(a: Dict[str, Any]) -> str:
     sc = a.get("scene") or {}
     scene = ", ".join([x for x in [sc.get("backdrop"), sc.get("lighting"), sc.get("mood")] if x]) or "as in the hero image"
     return (f"MODEL (locked, never change): {who}.\n"
-            f"GARMENT (locked, never change): {garment} — preserve colour, print, logo, cut, fabric.\n"
+            f"GARMENT (locked, never change): {garment} , preserve colour, print, logo, cut, fabric.\n"
             f"Category: {cat or 'unspecified'}. Hero scene: {scene}.")
 
 def director_system(anchor: Dict[str, Any]) -> str:
     return (
-        "You are Genie — an expert fashion art director, studio photographer and prompt engineer inside "
+        "You are Genie , an expert fashion art director, studio photographer and prompt engineer inside "
         "an on-model fashion image generator (AImageGen). You help a brand's team turn plain-language ideas "
         "into precise, photo-ready generation specs for a whole shoot.\n\n"
-        "ALWAYS CONSTANT — NEVER CHANGE: (1) the MODEL (person, face, body, hair, ethnicity); "
-        "(2) the GARMENT (exact product — colour, print, logo, cut, fabric). Both come from the locked hero. "
+        "ALWAYS CONSTANT , NEVER CHANGE: (1) the MODEL (person, face, body, hair, ethnicity); "
+        "(2) the GARMENT (exact product , colour, print, logo, cut, fabric). Both come from the locked hero. "
         "Every shot is the SAME model in the SAME garment.\n\n"
         "YOU CONTROL (creative): POSE & expression, FRAMING (camera crop), and the SCENE (backdrop, lighting, "
-        "mood). You do NOT control aspect ratio or resolution — the user sets those. Never mention or set them.\n\n"
+        "mood). You do NOT control aspect ratio or resolution , the user sets those. Never mention or set them.\n\n"
         "THE HERO ANCHOR:\n" + _anchor_line(anchor) + "\n\n"
         "CHOOSE A MODE each turn:\n"
-        "• SINGLE — one shot. If the user says 'improve/refine/make this pose better' with no new scene, keep the "
+        "• SINGLE , one shot. If the user says 'improve/refine/make this pose better' with no new scene, keep the "
         "hero scene (keep_scene=true, blank backdrop/lighting/mood) and elevate only pose+framing "
         "(intent=refine_pose). If they give a vibe/campaign feel, design a new scene (intent=art_direct). If an "
         "IMAGE is attached, read its art direction and recreate the LOOK with our model+garment constant "
-        "(intent=match_reference) — never copy the reference's person or clothing.\n"
-        "• SERIES — the user wants several shots / a set / a catalog AND has given a number (e.g. '4 shots', "
+        "(intent=match_reference) , never copy the reference's person or clothing.\n"
+        "• SERIES , the user wants several shots / a set / a catalog AND has given a number (e.g. '4 shots', "
         "'a 6-image catalog'): return a shoot set with ONE shared scene and exactly that many shots, each a "
         "DIFFERENT, complementary pose+framing (think like a photographer: establishing full-body, a hero "
         "three-quarter, movement/walking, a waist-up or close-up detail, etc.). Use keep_scene=true only if they "
         "asked to keep the hero background.\n"
-        "• ASK_COUNT — the user wants a set/catalog but gave NO number: return mode=ask_count with a short "
+        "• ASK_COUNT , the user wants a set/catalog but gave NO number: return mode=ask_count with a short "
         "question and suggested_counts [3,4,6,8]. Do NOT invent a set yet.\n\n"
         "FRAMING must be one of: " + ", ".join(FRAMING_KEYS) + ". POSE = vivid but concise (body, weight, hands, "
         "expression). Scene phrases are short. Be specific and production-ready; keep the garment the hero of the "
@@ -170,7 +170,7 @@ def _transcript(messages, has_image):
         t = (m.get("text") or "").strip()
         if t: lines.append(f"{role}: {t}")
     if has_image:
-        lines.append("User: [attached a reference image — analyse it as the art direction to match]")
+        lines.append("User: [attached a reference image , analyse it as the art direction to match]")
     return "\n".join(lines) if lines else "User: (no message)"
 
 def _extract_json(text):
@@ -252,7 +252,7 @@ def run_director(messages, anchor, image_bytes=None):
             raw = getattr(resp, "text", "") or ""
         except Exception as e:
             raise HTTPException(502, f"Genie failed: {e}")
-        parsed = _extract_json(raw) or {"reply": (raw.strip()[:400] or "Let's try that again — tell me the vibe."),
+        parsed = _extract_json(raw) or {"reply": (raw.strip()[:400] or "Let's try that again , tell me the vibe."),
                                         "mode": "single", "intent": "clarify", "ready": False, "spec": {}}
     if image_bytes:
         parsed = _enforce_reference(parsed)
@@ -269,12 +269,12 @@ def _enforce_reference(parsed):
     parsed["ready"] = bool(sp.get("pose"))
     return parsed
 
-# ── mock brain (no key needed — keeps demo + tests runnable) ──────────────────
+# ── mock brain (no key needed , keeps demo + tests runnable) ──────────────────
 _SERIES_POOL = [
-    ("Straight front, weight even, arms relaxed at sides — clean establishing shot", "full_body"),
+    ("Straight front, weight even, arms relaxed at sides , clean establishing shot", "full_body"),
     ("Contrapposto, one hand on hip, shoulders open to camera, easy confident smile", "three_quarter"),
     ("Mid-stride walking toward camera, natural arm swing, hair with a touch of motion", "full_body"),
-    ("Hands adjusting a sleeve, chin slightly down — fabric and detail focus", "waist_up"),
+    ("Hands adjusting a sleeve, chin slightly down , fabric and detail focus", "waist_up"),
     ("Side profile, chin lifted, calm editorial gaze", "three_quarter"),
     ("Seated on a stool, forward lean, elbows on knees, engaged expression", "waist_up"),
     ("Tight portrait, soft smile, direct eye contact", "portrait"),
@@ -314,7 +314,7 @@ def _mock_director(messages, anchor, has_image):
     # reference image → match look (single by default in mock)
     if has_image or "like this" in lastl or "match" in lastl:
         return {"mode":"single","intent":"match_reference","ready":True,
-                "reply":("⚠ MOCK MODE — I can't truly see images without a Gemini key, so this is a fixed sample. "
+                "reply":("⚠ MOCK MODE , I can't truly see images without a Gemini key, so this is a fixed sample. "
                          "Set GEMINI_API_KEY for real reference analysis." if has_image else
                          "Recreating that look with your model and garment kept constant."),
                 "spec":{"pose":"Relaxed three-quarter turn toward camera, weight on the back leg, one hand grazing the hip, calm confident gaze",
@@ -327,12 +327,12 @@ def _mock_director(messages, anchor, has_image):
     if _mentions_set(all_text) or _find_count(last) is not None and _mentions_set(all_text):
         n = _find_count(all_text)
         if n is None:
-            return {"mode":"ask_count","reply":"Love it — how many shots should the set have? They'll share one scene, with your model & garment constant.",
+            return {"mode":"ask_count","reply":"Love it , how many shots should the set have? They'll share one scene, with your model & garment constant.",
                     "suggested_counts":[3,4,6,8],"suggestions":["A quick 3","Standard 4","Full 6"]}
         keep = any(k in all_text.lower() for k in ["same background","keep the background","keep background","hero scene","same scene","same bg"])
         shots = [{"pose":p,"framing":f} for (p,f) in _SERIES_POOL[:max(2,min(n,MAX_SET_SIZE))]]
         scene = ({} if keep else {"backdrop":"clean studio seamless","lighting":"soft bright daylight","mood":"fresh, upbeat catalog"})
-        return {"mode":"series","reply":f"Here's a {len(shots)}-shot set — one consistent scene, {len(shots)} complementary poses & framings. Same model & garment throughout.",
+        return {"mode":"series","reply":f"Here's a {len(shots)}-shot set , one consistent scene, {len(shots)} complementary poses & framings. Same model & garment throughout.",
                 "set":{"keep_scene":keep,**scene,"shots":shots},
                 "suggestions":["Make it 6 shots","Add a seated pose","Try an outdoor scene"]}
 
@@ -340,21 +340,21 @@ def _mock_director(messages, anchor, has_image):
     if _find_count(last) is not None and _mentions_set(all_text) is False and len(last) <= 12:
         n=_find_count(last)
         shots=[{"pose":p,"framing":f} for (p,f) in _SERIES_POOL[:max(2,min(n,MAX_SET_SIZE))]]
-        return {"mode":"series","reply":f"Great — a {len(shots)}-shot set on one shared scene.",
+        return {"mode":"series","reply":f"Great , a {len(shots)}-shot set on one shared scene.",
                 "set":{"keep_scene":False,"backdrop":"clean studio seamless","lighting":"soft bright daylight","mood":"fresh, upbeat catalog","shots":shots},
                 "suggestions":["Make it 6 shots","Keep the hero background instead","Add a close-up detail"]}
 
     # refine pose (scene kept)
     if any(k in lastl for k in ["better","improve","refine","sharpen","pose"]) and not any(k in lastl for k in ["catalog","campaign","vibe","editorial","background","backdrop","scene"]):
         return {"mode":"single","intent":"refine_pose","ready":True,
-                "reply":"Kept your background, lighting, garment and model as the hero — I elevated the pose and set the framing that flatters it.",
+                "reply":"Kept your background, lighting, garment and model as the hero , I elevated the pose and set the framing that flatters it.",
                 "spec":{"pose":"Confident contrapposto, weight on one leg, shoulders open, one hand loosely in pocket, natural half-smile with engaged eyes",
                         "framing":"three_quarter","keep_scene":True,"backdrop":"","lighting":"","mood":""},
                 "suggestions":["Turn it into a 4-shot set","More dynamic / mid-motion","Waist-up crop"]}
 
     # default: art-direct a single new scene
     return {"mode":"single","intent":"art_direct","ready":True,
-            "reply":"Bright, fresh and energetic — new scene, same model and garment.",
+            "reply":"Bright, fresh and energetic , new scene, same model and garment.",
             "spec":{"pose":"Energetic mid-stride toward camera, arms with a light swing, bright open smile",
                     "framing":"full_body","keep_scene":False,"backdrop":"clean pastel seamless (soft sky-blue)",
                     "lighting":"bright even high-key commercial","mood":"upbeat, fresh, summery"},
@@ -362,7 +362,7 @@ def _mock_director(messages, anchor, has_image):
 
 # ── payload helpers for your existing endpoints ───────────────────────────────
 def spec_to_one_payload(spec):
-    """Fields for POST /api/product/{pid}/one (NO aspect — user sets that on the card)."""
+    """Fields for POST /api/product/{pid}/one (NO aspect , user sets that on the card)."""
     spec = spec or {}
     p = {"custom": spec.get("pose", ""), "framing": spec.get("framing", "")}
     if not spec.get("keep_scene"):
@@ -370,7 +370,7 @@ def spec_to_one_payload(spec):
     return p
 
 def set_to_batch_rows(sset):
-    """Rows for POST /api/product/{pid}/batch — one row per shot, sharing the set scene.
+    """Rows for POST /api/product/{pid}/batch , one row per shot, sharing the set scene.
     keep_scene => omit scene (batch keeps the hero background)."""
     sset = sset or {}; keep = sset.get("keep_scene")
     rows = []
@@ -397,7 +397,7 @@ async def chat(request: Request, messages: str = Form("[]"), anchor: str = Form(
     try:
         msgs = json.loads(messages or "[]"); assert isinstance(msgs, list)
     except Exception:
-        raise HTTPException(400, "Bad 'messages' — expected a JSON array of {role,text}.")
+        raise HTTPException(400, "Bad 'messages' , expected a JSON array of {role,text}.")
     try:
         anc = json.loads(anchor or "{}"); assert isinstance(anc, dict)
     except Exception:
@@ -444,7 +444,7 @@ if __name__ == "__main__":
     import uvicorn
     from fastapi import FastAPI
     from fastapi.responses import HTMLResponse
-    demo = FastAPI(title="Genie Studio — standalone")
+    demo = FastAPI(title="Genie Studio , standalone")
     register(demo)
     DEMO = Path(__file__).parent / "genie_studio_demo.html"
     @demo.get("/", response_class=HTMLResponse)
@@ -452,6 +452,6 @@ if __name__ == "__main__":
         return DEMO.read_text(encoding="utf-8") if DEMO.exists() else "<h1>genie_studio_demo.html not found</h1>"
     port = int(os.environ.get("GENIE_PORT", "8011"))
     print("\n" + "=" * 56 + f"\n  Genie Studio (standalone)   provider: {PROVIDER.upper()}" +
-          ("  (MOCK — set GEMINI_API_KEY for live)" if PROVIDER == "mock" else "") +
+          ("  (MOCK , set GEMINI_API_KEY for live)" if PROVIDER == "mock" else "") +
           f"\n  Test UI : http://localhost:{port}\n" + "=" * 56 + "\n")
     uvicorn.run(demo, host="0.0.0.0", port=port, log_level="warning")

@@ -19,7 +19,7 @@ const TONE: Record<LeadStatus, string> = {
  *
  * A working list rather than a CRM: the useful questions are "who is waiting"
  * and "has anyone replied", so status is the only thing editable here. The
- * message is shown in full — truncating the one field that says what they
+ * message is shown in full , truncating the one field that says what they
  * actually want would mean opening every row to read it.
  */
 export default function AdminLeads() {
@@ -76,7 +76,7 @@ export default function AdminLeads() {
         )}
       </div>
       <p className="mb-4 text-[12.5px] leading-[1.5] text-muted">
-        Sent from the contact form on the landing page. Replying happens in your inbox — this is
+        Sent from the contact form on the landing page. Replying happens in your inbox , this is
         where you record that you have.
       </p>
 
@@ -130,7 +130,7 @@ export default function AdminLeads() {
                     </a>
                     {l.phone && <div className="text-[12px] text-muted">{l.phone}</div>}
                   </Td>
-                  <Td>{l.volume || '—'}</Td>
+                  <Td>{l.volume || ','}</Td>
                   <Td className="max-w-[420px] whitespace-pre-wrap leading-[1.5]">{l.message}</Td>
                   <Td>
                     <select

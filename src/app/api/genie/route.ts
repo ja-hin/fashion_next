@@ -8,7 +8,7 @@ export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 /**
- * Prompt Genie — rewrite a pose/scene description into sharper wording.
+ * Prompt Genie , rewrite a pose/scene description into sharper wording.
  *
  * Charged up front (unlike image generation) because the improvement is the
  * product; if the AI call then fails we still return usable text rather than
@@ -38,7 +38,7 @@ export const POST = handler(async (req: Request) => {
     improved = out.text;
     if (out.usage) usage = { ...out.usage };
   } catch {
-    // Never leave the user with nothing after a charge — fall back to a light
+    // Never leave the user with nothing after a charge , fall back to a light
     // local embellishment.
     improved = `${(prompt ?? '').replace(/[.\s]+$/, '')}, editorial composition, soft cinematic light.`;
   }

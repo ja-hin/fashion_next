@@ -11,7 +11,7 @@ import type { EnsembleRef } from './ensemble-types';
  * would on a fresh upload and every angle can be reviewed, retagged, added to
  * or dropped before a credit is spent.
  *
- * They arrive already tagged, so they are marked confident — the window must
+ * They arrive already tagged, so they are marked confident , the window must
  * not re-run detection over work that was done when the garment was saved, and
  * a fresh guess could overwrite a correct hand-tag with a worse one.
  */

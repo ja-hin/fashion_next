@@ -1,9 +1,9 @@
 /**
- * The editable part of an account — what the /profile page shows and saves.
+ * The editable part of an account , what the /profile page shows and saves.
  *
  * Deliberately NOT 'server-only': the profile form imports the field list and
  * the state dropdown so the browser and the API agree on what is valid. The
- * server still re-validates everything in `sanitiseProfile` before writing —
+ * server still re-validates everything in `sanitiseProfile` before writing ,
  * nothing here is trusted because the client ran it first.
  *
  * The billing fields are not decoration: `gstin` and `state` are snapshotted
@@ -73,7 +73,7 @@ export const INDIAN_STATES = [
   'West Bengal',
 ] as const;
 
-/** 22AAAAA0000A1Z5 — state code, PAN, entity number, 'Z', checksum. */
+/** 22AAAAA0000A1Z5 , state code, PAN, entity number, 'Z', checksum. */
 const GSTIN_RE = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z]$/;
 
 export const isValidGstin = (s: string): boolean => GSTIN_RE.test(s.toUpperCase().trim());
@@ -92,7 +92,7 @@ const clean = (v: unknown, max: number): string =>
 /**
  * Coerce a submitted profile into something safe to store.
  *
- * Returns `[profile, null]` or `[null, message]` — the message is shown to the
+ * Returns `[profile, null]` or `[null, message]` , the message is shown to the
  * user verbatim, so it says what to fix rather than "invalid input". Optional
  * fields left blank stay blank; only a wrong-looking value is rejected, because
  * refusing to save the whole form over an empty phone number would be absurd.
@@ -101,7 +101,7 @@ export function sanitiseProfile(raw: Record<string, unknown>): [Profile, null] |
   const name = clean(raw.name, 80);
   if (!name) return [null, 'Please enter your name.'];
 
-  // Digits, spaces, dashes and a leading + only — a "phone number" with letters
+  // Digits, spaces, dashes and a leading + only , a "phone number" with letters
   // in it is a typo, and it ends up on invoices.
   const phone = clean(raw.phone, 20);
   if (phone && !/^\+?[0-9][0-9\s-]{6,18}$/.test(phone)) {
@@ -120,7 +120,7 @@ export function sanitiseProfile(raw: Record<string, unknown>): [Profile, null] |
   // The state is the place of supply; a GSTIN without one leaves the invoice
   // unable to decide IGST vs CGST+SGST, so it has to come as a pair.
   if (gstin && !state) {
-    return [null, 'Choose your state as well — it decides how GST is split on your invoice.'];
+    return [null, 'Choose your state as well , it decides how GST is split on your invoice.'];
   }
 
   const pincode = clean(raw.pincode, 6);

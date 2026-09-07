@@ -11,7 +11,7 @@ import type { PublicGarment } from '@/lib/types';
  *
  * The counterpart to the model picker: the first thing a shoot needs is a
  * garment, and after the first few shoots the user already has the one they
- * want — asking them to find the files again is asking them to redo work they
+ * want , asking them to find the files again is asking them to redo work they
  * saved specifically to avoid redoing.
  *
  * Choosing one hands it straight back; the caller turns it into tagged refs and
@@ -89,7 +89,7 @@ export default function GarmentPickerModal({
             <div className="py-8 text-center text-[13px] leading-[1.6] text-muted">
               You haven&apos;t saved any garments yet.
               <br />
-              Tag one below and press <b className="text-ink">Save to My Garments</b> — it will be
+              Tag one below and press <b className="text-ink">Save to My Garments</b> , it will be
               here next time.
             </div>
           )}

@@ -1,5 +1,5 @@
 /**
- * Shoot records — the replacement for data/shoots/<pid>.json plus the
+ * Shoot records , the replacement for data/shoots/<pid>.json plus the
  * in-memory PRODUCTS dict the Python app rebuilt on every boot.
  *
  * Because shoots now live in MongoDB, they're durable, queryable and shared
@@ -8,7 +8,7 @@
  * One deliberate schema change: the old records stored ABSOLUTE filesystem
  * paths (pdir / garment_path / hero_path), which broke whenever the app folder
  * moved and needed re-anchoring logic on every load. Here only the *filename*
- * is stored, and the storage layer resolves it — so a shoot record is portable
+ * is stored, and the storage layer resolves it , so a shoot record is portable
  * between machines by construction.
  */
 import 'server-only';
@@ -66,7 +66,7 @@ export async function requireOwnedShoot(
 }
 
 /**
- * The filename prefix for a shoot's downloads — the user's chosen name when
+ * The filename prefix for a shoot's downloads , the user's chosen name when
  * they've set one, otherwise the sequential shoot number (S0007).
  */
 export function shootFilePrefix(shoot: ShootDoc): string {

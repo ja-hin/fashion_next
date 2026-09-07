@@ -1,8 +1,8 @@
 /**
  * Accounts, sessions and the per-user credit wallet.
  *
- * The password hash is deliberately the SAME scheme as the old Python app —
- * pbkdf2-hmac-sha256, 200,000 rounds, hex salt, hex digest — so every existing
+ * The password hash is deliberately the SAME scheme as the old Python app ,
+ * pbkdf2-hmac-sha256, 200,000 rounds, hex salt, hex digest , so every existing
  * account survives the migration and nobody has to reset their password.
  */
 import 'server-only';
@@ -14,7 +14,7 @@ import type { UserDoc, PublicUser } from './types';
 import type { Profile } from './profile';
 
 const ITERATIONS = 200_000;
-const KEYLEN = 32; // sha256 digest size — matches hashlib.pbkdf2_hmac default
+const KEYLEN = 32; // sha256 digest size , matches hashlib.pbkdf2_hmac default
 const DIGEST = 'sha256';
 
 export const SESSION_COOKIE = 'vd_session';
@@ -40,7 +40,7 @@ export function toPublicUser(u: UserDoc): PublicUser {
   return {
     id: u._id,
     // Blank rather than a fake id when a legacy row hasn't been backfilled yet,
-    // so the UI shows "—" instead of inventing a number that means nothing.
+    // so the UI shows "," instead of inventing a number that means nothing.
     uid: u.uid ?? '',
     email: u.email,
     name: u.name ?? '',
@@ -108,7 +108,7 @@ export async function signup(
     });
     return [id, null];
   } catch (e: unknown) {
-    // The unique index on `email` is the real race-condition guard — two
+    // The unique index on `email` is the real race-condition guard , two
     // simultaneous signups for the same address land here on the loser.
     if (e && typeof e === 'object' && (e as { code?: number }).code === 11000) {
       return [null, 'An account with this email already exists.'];
@@ -133,8 +133,8 @@ export async function login(
  * Replace a user's password.
  *
  * A fresh salt is generated rather than reused, and every existing session is
- * destroyed: after a reset, anyone still holding a stolen session cookie —
- * including whoever prompted the reset — is logged out. Returns false when the
+ * destroyed: after a reset, anyone still holding a stolen session cookie ,
+ * including whoever prompted the reset , is logged out. Returns false when the
  * user is unknown.
  */
 export async function setPassword(userId: string, newPassword: string): Promise<boolean> {
@@ -153,7 +153,7 @@ export async function setPassword(userId: string, newPassword: string): Promise<
  * Verify a password against an account without logging anyone in.
  *
  * Used to re-authenticate for a sensitive self-service change (email address,
- * new password) — `login()` would work, but this reads as what it is and takes
+ * new password) , `login()` would work, but this reads as what it is and takes
  * the user we already have rather than looking them up again.
  */
 export function checkPassword(u: UserDoc, password: string): boolean {
@@ -186,7 +186,7 @@ export async function updateProfile(
  * Change the address an account signs in with.
  *
  * Returns false when the address already belongs to someone else. The unique
- * index on `email` is still the real guard — this check only turns the race
+ * index on `email` is still the real guard , this check only turns the race
  * loser's duplicate-key error into a sentence the user can act on.
  */
 export async function changeEmail(userId: string, emailRaw: string): Promise<boolean> {
@@ -276,7 +276,7 @@ export async function getBalance(userId: string | null | undefined): Promise<num
  * Atomically add `delta` (may be negative) to a user's balance.
  *
  * With `allowNegative: false` the update is refused when it would take the
- * balance below zero — the filter does that check inside the same atomic
+ * balance below zero , the filter does that check inside the same atomic
  * findOneAndUpdate, so two concurrent charges can't both pass a stale read.
  *
  * Returns the new balance, or null if the user is unknown / the charge was refused.

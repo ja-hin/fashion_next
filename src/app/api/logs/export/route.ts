@@ -25,7 +25,7 @@ const COLUMNS = [
   'file',
 ];
 
-/** RFC4180 quoting — a pose containing a comma or quote must not break the CSV. */
+/** RFC4180 quoting , a pose containing a comma or quote must not break the CSV. */
 function csvCell(v: unknown): string {
   const s = v === null || v === undefined ? '' : String(v);
   return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
@@ -72,7 +72,7 @@ export const GET = handler(async (req: Request) => {
   return new Response(lines.join('\n'), {
     headers: {
       'Content-Type': 'text/csv; charset=utf-8',
-      'Content-Disposition': 'attachment; filename="aimagegen_logs.csv"',
+      'Content-Disposition': 'attachment; filename="faishon-studio-logs.csv"',
     },
   });
 });

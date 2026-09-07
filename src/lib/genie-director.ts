@@ -1,5 +1,5 @@
 /**
- * Genie — the conversational art director behind the Add Pose drawer.
+ * Genie , the conversational art director behind the Add Pose drawer.
  *
  * Port of the standalone genie_studio prototype. The difference from the older
  * one-shot Prompt Genie (lib/gemini.ts `genieText`) is that this one knows what
@@ -7,7 +7,7 @@
  * the only things it may move are pose, framing and the scene. That anchor is
  * what turns "make it better" from a vague rewrite into a usable direction.
  *
- * It returns a SPEC, not prose — pose text plus framing/backdrop/mood/lighting —
+ * It returns a SPEC, not prose , pose text plus framing/backdrop/mood/lighting ,
  * because the drawer applies those straight onto the Add Pose card's selects.
  * Which is also why the scene fields are constrained to the app's own
  * vocabulary (lib/scene-vocab.ts): a poetic "sunlit terrace" would land on a
@@ -41,7 +41,7 @@ export interface GenieSpec {
    *
    * The dropdown vocabulary exists so Genie's answers can populate <Select>s,
    * but "match THIS photo exactly" is precisely the case a fixed list cannot
-   * express — "outdoor street" throws away everything that made the reference
+   * express , "outdoor street" throws away everything that made the reference
    * worth matching. sceneClause() falls back to `a <value> background` for any
    * value it doesn't recognise (lib/prompts.ts), so free text flows through to
    * the image model intact. This field carries it.
@@ -57,7 +57,7 @@ export interface GenieShot {
 
 /**
  * A catalogue: ONE shared scene plus N complementary shots. This is what feeds
- * the batch endpoint — every row inherits the set's scene, so the whole
+ * the batch endpoint , every row inherits the set's scene, so the whole
  * catalogue looks like it was photographed in one session.
  */
 export interface GenieSet {
@@ -65,16 +65,16 @@ export interface GenieSet {
   backdrop: string;
   lighting: string;
   mood: string;
-  /** Free-text scene to recreate — see GenieSpec.scene_detail. */
+  /** Free-text scene to recreate , see GenieSpec.scene_detail. */
   scene_detail: string;
   shots: GenieShot[];
 }
 
 export interface GenieTurn {
   /**
-   * single    — one shot, applied to the Add Pose card.
-   * series    — a shoot set the user can generate in one go.
-   * ask_count — they asked for a set but gave no number; we offer chips.
+   * single    , one shot, applied to the Add Pose card.
+   * series    , a shoot set the user can generate in one go.
+   * ask_count , they asked for a set but gave no number; we offer chips.
    */
   mode: 'single' | 'series' | 'ask_count';
   reply: string;
@@ -112,7 +112,7 @@ export const blankSpec = (): GenieSpec => ({
 /**
  * The locked facts of this shoot, in the model's words.
  *
- * Derived on the server from the shoot record — never accepted from the client,
+ * Derived on the server from the shoot record , never accepted from the client,
  * because it is interpolated into the system prompt and a caller who could set
  * it could rewrite Genie's instructions.
  */
@@ -121,7 +121,7 @@ function anchorLine(shoot: ShootDoc): string {
   const cat = (opts.category ?? '').trim();
 
   // The same helper the image prompts use, so Genie describes the hero exactly
-  // as the generator does — including the per-shoot `look` variety phrase.
+  // as the generator does , including the per-shoot `look` variety phrase.
   const gender = GENDER_BY_CAT[cat] ?? 'female';
   const who = KID_CATS.has(cat)
     ? 'the locked child model (age-appropriate, fully clothed)'
@@ -131,7 +131,7 @@ function anchorLine(shoot: ShootDoc): string {
 
   return [
     `MODEL (locked, never change): ${who}.`,
-    'GARMENT (locked, never change): the exact uploaded product garment — preserve colour, print, logo, cut and fabric.',
+    'GARMENT (locked, never change): the exact uploaded product garment , preserve colour, print, logo, cut and fabric.',
     `Category: ${cat || 'unspecified'}. Hero scene: ${scene}.`,
   ].join('\n');
 }
@@ -181,18 +181,18 @@ function selectionBlock(selection: string[]): string {
   if (!selection.length) return '';
   const list = selection.map((p, i) => `  ${i + 1}. ${p}`).join('\n');
 
-  // One pose has a natural home — the card's editable prompt box — so it comes
+  // One pose has a natural home , the card's editable prompt box , so it comes
   // back as a single direction. Several can only be reviewed as a set.
   const rule =
     selection.length === 1
       ? [
           'When they ask to improve, refine, restyle or re-direct THIS pose, return mode=single',
           'with spec.pose set to a rewritten, vivid, production-ready version of it. Keep what the',
-          'pose was fundamentally about — a standing pose stays standing, a seated one stays seated.',
+          'pose was fundamentally about , a standing pose stays standing, a seated one stays seated.',
         ]
       : [
           'When they ask to improve, refine, restyle or re-direct THESE poses, you MUST return',
-          `mode=series with EXACTLY ${selection.length} shots — one per picked pose, IN THE SAME ORDER.`,
+          `mode=series with EXACTLY ${selection.length} shots , one per picked pose, IN THE SAME ORDER.`,
           'Each shot rewrites the corresponding pose above into vivid, production-ready wording while',
           'keeping what that pose was fundamentally about: a standing pose stays standing, a seated',
           'one stays seated. Never merge, drop, reorder or invent poses.',
@@ -204,7 +204,7 @@ function selectionBlock(selection: string[]): string {
     '',
     ...rule,
     'Set keep_scene=true unless they explicitly asked for a new scene.',
-    'This does NOT override an explicit request for a catalogue or a set of a different size —',
+    'This does NOT override an explicit request for a catalogue or a set of a different size ,',
     'that is still mode=series (or ask_count when they gave no number).',
   ].join('\n');
 }
@@ -212,11 +212,11 @@ function selectionBlock(selection: string[]): string {
 function referenceBlock(analysis: string): string {
   if (!analysis) return '';
   return [
-    '\nREFERENCE IMAGE — a technician\'s reading of the photo the user attached:',
+    '\nREFERENCE IMAGE , a technician\'s reading of the photo the user attached:',
     analysis,
     '',
     'The user wants THIS setting recreated with our locked model and garment in it.',
-    'Copy the analysis above into scene_detail almost verbatim — it is what the image generator',
+    'Copy the analysis above into scene_detail almost verbatim , it is what the image generator',
     'receives, and every specific detail you drop is a detail the output will get wrong. Do NOT',
     'summarise it into a few adjectives. Set keep_scene=false. Still fill backdrop/lighting/mood',
     'with the CLOSEST value from the vocabulary so the dropdowns show something sensible, but',
@@ -226,46 +226,46 @@ function referenceBlock(analysis: string): string {
 
 function directorSystem(shoot: ShootDoc, selection: string[], analysis: string): string {
   return [
-    'You are Genie — an expert fashion art director, studio photographer and prompt engineer inside',
+    'You are Genie , an expert fashion art director, studio photographer and prompt engineer inside',
     'an on-model fashion image generator. You turn a brand team\'s plain-language ideas into precise,',
     'photo-ready generation specs.\n',
-    'ALWAYS CONSTANT — NEVER CHANGE: (1) the MODEL (person, face, body, hair, ethnicity);',
-    '(2) the GARMENT (exact product — colour, print, logo, cut, fabric). Both come from the locked hero.',
+    'ALWAYS CONSTANT , NEVER CHANGE: (1) the MODEL (person, face, body, hair, ethnicity);',
+    '(2) the GARMENT (exact product , colour, print, logo, cut, fabric). Both come from the locked hero.',
     'Every shot is the SAME model in the SAME garment.\n',
     'YOU CONTROL: POSE & expression, FRAMING (camera crop), and the SCENE (backdrop, lighting, mood).',
-    'You do NOT control aspect ratio or resolution — the user sets those. Never mention or set them.\n',
+    'You do NOT control aspect ratio or resolution , the user sets those. Never mention or set them.\n',
     'THE HERO ANCHOR:',
     anchorLine(shoot),
     selectionBlock(selection),
     referenceBlock(analysis),
     '',
     'EACH TURN, pick a MODE:',
-    '• single — ONE shot. Then also pick an intent:',
-    '    refine_pose — they asked to improve/refine the pose with no new scene. Keep the hero scene',
+    '• single , ONE shot. Then also pick an intent:',
+    '    refine_pose , they asked to improve/refine the pose with no new scene. Keep the hero scene',
     '      (keep_scene=true, blank backdrop/lighting/mood) and elevate only pose + framing.',
-    '    art_direct — they gave a vibe, campaign feel or occasion. Design a new scene to match.',
-    '    match_reference — an IMAGE is attached. Read its art direction and recreate that LOOK with',
+    '    art_direct , they gave a vibe, campaign feel or occasion. Design a new scene to match.',
+    '    match_reference , an IMAGE is attached. Read its art direction and recreate that LOOK with',
     '      our model and garment constant. NEVER copy the reference\'s person, face or clothing.',
-    '    clarify — you genuinely need one more detail. Ask a short question and set ready=false.',
-    '• series — they want a SET / catalogue / several shots AND have given a number (now or earlier',
+    '    clarify , you genuinely need one more detail. Ask a short question and set ready=false.',
+    '• series , they want a SET / catalogue / several shots AND have given a number (now or earlier',
     '    in the conversation). Return ONE shared scene plus EXACTLY that many shots, each a',
     '    DIFFERENT, complementary pose and framing. Think like a photographer building a catalogue:',
     '    an establishing full-body, a hero three-quarter, something with movement, a waist-up or',
     `    close-up detail. Never repeat a pose. Maximum ${MAX_SET_SIZE}.`,
-    '• ask_count — they want a set/catalogue but have given NO number anywhere in the conversation.',
+    '• ask_count , they want a set/catalogue but have given NO number anywhere in the conversation.',
     '    Ask how many, return suggested_counts [3,4,6,8], and do NOT invent the shots yet.\n',
     'A bare number ("3", "6 shots") answering your own count question means mode=series with that',
-    'many shots — not a new question.\n',
-    'STRICT VOCABULARY — these values are applied directly to dropdown menus, so you MUST copy one',
+    'many shots , not a new question.\n',
+    'STRICT VOCABULARY , these values are applied directly to dropdown menus, so you MUST copy one',
     'verbatim or return "". Do not invent phrasing. EVERY shot in a set must carry its own framing',
-    'value from the list below — never leave a shot\'s framing blank, and vary it across the set.',
+    'value from the list below , never leave a shot\'s framing blank, and vary it across the set.',
     `  framing: ${FRAMING_KEYS.join(' | ')}`,
     `  backdrop: ${BACKDROP_KEYS.join(' | ')}`,
     `  lighting: ${LIGHTINGS.join(' | ')}`,
     `  mood: ${MOODS.join(' | ')}\n`,
-    'POSE is the one free-text field: vivid but concise — body, weight, hands, expression. Be specific',
+    'POSE is the one free-text field: vivid but concise , body, weight, hands, expression. Be specific',
     'and production-ready, and keep the garment the hero of the frame.\n',
-    'OUTPUT a SINGLE JSON object in EXACTLY this shape, nothing else — no markdown, no code fence:',
+    'OUTPUT a SINGLE JSON object in EXACTLY this shape, nothing else , no markdown, no code fence:',
     JSON_SHAPE,
   ].join('\n');
 }
@@ -283,7 +283,7 @@ const pick = (v: unknown, allowed: string[]): string => {
 
 /** Scene fields, shared by a single spec and a set. */
 function coerceScene(keepRaw: unknown, src: Record<string, unknown>, fallbackKeep: boolean) {
-  // scene_detail is deliberately NOT run through pick() — it is free text by
+  // scene_detail is deliberately NOT run through pick() , it is free text by
   // design, and is only trusted when a reference image produced it.
   const detail = String(src.scene_detail ?? '').trim().slice(0, 1200);
   // Matching a reference always means changing the scene, whatever was claimed.
@@ -291,7 +291,7 @@ function coerceScene(keepRaw: unknown, src: Record<string, unknown>, fallbackKee
 
   return {
     keep_scene: keep,
-    // keep_scene means "leave the card alone", which is '' — the card's "same".
+    // keep_scene means "leave the card alone", which is '' , the card's "same".
     backdrop: keep ? '' : pick(src.backdrop, BACKDROP_KEYS),
     lighting: keep ? '' : pick(src.lighting, LIGHTINGS),
     mood: keep ? '' : pick(src.mood, MOODS),
@@ -358,10 +358,10 @@ export function coerceTurn(raw: unknown): GenieTurn {
       // Gemini reliably fills framing on a single spec but routinely omits it on
       // set shots. Defaulting them all to one value would flatten a catalogue
       // into N identical crops, so blanks cycle the photographer's spread
-      // instead — variety by construction when the model won't supply it.
+      // instead , variety by construction when the model won't supply it.
       .map((s, i) => ({ ...s, framing: s.framing || CATALOGUE_FRAMINGS[i % CATALOGUE_FRAMINGS.length] }));
 
-    // A "set" with no usable shots is not a set — fall back to asking.
+    // A "set" with no usable shots is not a set , fall back to asking.
     if (!shots.length) {
       return { ...base, mode: 'ask_count', ready: false, suggested_counts: [3, 4, 6, 8] };
     }
@@ -392,7 +392,7 @@ function extractJson(text: string): unknown {
   try {
     return JSON.parse(t);
   } catch {
-    // Some responses wrap the object in a sentence — take the outermost braces.
+    // Some responses wrap the object in a sentence , take the outermost braces.
     const m = t.match(/\{[\s\S]*\}/);
     if (m) {
       try {
@@ -410,7 +410,7 @@ function transcript(messages: GenieMessage[], hasImage: boolean): string {
     .filter((m) => m.text?.trim())
     .map((m) => `${m.role === 'user' ? 'User' : 'Genie'}: ${m.text.trim()}`);
   if (hasImage) {
-    lines.push('User: [attached a reference image — analyse it as the art direction to match]');
+    lines.push('User: [attached a reference image , analyse it as the art direction to match]');
   }
   return lines.length ? lines.join('\n') : 'User: (no message)';
 }
@@ -425,27 +425,27 @@ const client = () => (_client ??= new GoogleGenAI({ apiKey: GEMINI_API_KEY }));
  * actually in it, before deciding anything.
  *
  * Asking a single call to both read an image and emit a structured spec makes
- * it do neither well — the scene collapses to a couple of adjectives, and the
+ * it do neither well , the scene collapses to a couple of adjectives, and the
  * generated image comes back "inspired by" the reference rather than matching
  * it. Separating the passes means the director works from a written description
  * dense enough to rebuild the set from, which is what the image model needs.
  *
  * Deliberately describes the SETTING only. The reference's person and clothing
- * are irrelevant — ours are locked — and describing them invites the generator
+ * are irrelevant , ours are locked , and describing them invites the generator
  * to copy them.
  */
 const ANALYSIS_PROMPT = [
   'Analyse this photograph as a set/lighting technician who has to rebuild it tomorrow.',
   'Describe ONLY the setting and the photography. Completely ignore the person and what they',
-  'are wearing — a different model in different clothing will be placed into this scene.',
+  'are wearing , a different model in different clothing will be placed into this scene.',
   '',
   'Cover, in flowing prose of about 120 words:',
-  '• BACKDROP — what and where: surfaces, materials, colours, architecture or landscape,',
+  '• BACKDROP , what and where: surfaces, materials, colours, architecture or landscape,',
   '  what is near vs far, how much depth and blur is behind the subject.',
-  '• LIGHTING — direction, hardness, colour temperature, where shadows fall, any practicals.',
-  '• CAMERA — apparent lens (wide/normal/tele), height, angle, distance to subject.',
-  '• COLOUR GRADE — palette, warmth, contrast, saturation, any film or filter character.',
-  '• PROPS & SET DRESSING — anything in frame that must be rebuilt.',
+  '• LIGHTING , direction, hardness, colour temperature, where shadows fall, any practicals.',
+  '• CAMERA , apparent lens (wide/normal/tele), height, angle, distance to subject.',
+  '• COLOUR GRADE , palette, warmth, contrast, saturation, any film or filter character.',
+  '• PROPS & SET DRESSING , anything in frame that must be rebuilt.',
   '',
   'Be concrete and specific. Write it as one paragraph that could be handed to a generator',
   'as a scene description. No preamble, no bullet points, no mention of the person.',
@@ -472,7 +472,7 @@ export async function analyseReference(image: Buffer): Promise<string> {
 
 /**
  * One turn of the conversation. Throws on provider failure so the route can
- * refund — unlike the one-shot Genie there is no sensible local fallback for a
+ * refund , unlike the one-shot Genie there is no sensible local fallback for a
  * structured spec.
  */
 export async function runDirector(
@@ -508,7 +508,7 @@ export async function runDirector(
   if (!parsed) throw new Error(`Genie returned unparseable output: ${raw.slice(0, 200)}`);
   const turn = coerceTurn(parsed);
 
-  // A reference image always means "match this look" — never let it collapse
+  // A reference image always means "match this look" , never let it collapse
   // into a pose-only tweak that ignores what the user attached. A set built
   // from a reference must take that reference's scene, not the hero's.
   if (image && turn.ready) {
@@ -529,12 +529,12 @@ function lastUser(messages: GenieMessage[]): string {
   return '';
 }
 
-/** Poses the mock builds a catalogue from — deliberately varied in framing. */
+/** Poses the mock builds a catalogue from , deliberately varied in framing. */
 const MOCK_POOL: GenieShot[] = [
-  { pose: 'Straight front, weight even, arms relaxed at sides — clean establishing shot', framing: 'full_body' },
+  { pose: 'Straight front, weight even, arms relaxed at sides , clean establishing shot', framing: 'full_body' },
   { pose: 'Contrapposto, one hand on hip, shoulders open to camera, easy confident smile', framing: 'three_quarter' },
   { pose: 'Mid-stride walking toward camera, natural arm swing, hair with a touch of motion', framing: 'full_body' },
-  { pose: 'Hands adjusting a sleeve, chin slightly down — fabric and detail focus', framing: 'waist_up' },
+  { pose: 'Hands adjusting a sleeve, chin slightly down , fabric and detail focus', framing: 'waist_up' },
   { pose: 'Side profile, chin lifted, calm editorial gaze', framing: 'three_quarter' },
   { pose: 'Seated forward lean, elbows on knees, engaged expression', framing: 'waist_up' },
   { pose: 'Tight portrait, soft smile, direct eye contact', framing: 'portrait' },
@@ -574,7 +574,7 @@ function mockTurn(messages: GenieMessage[], hasImage: boolean, selection: string
       mode: 'single',
       intent: 'refine_pose',
       ready: true,
-      reply: 'Kept your scene, model and garment — I elevated the pose and set a framing for it.',
+      reply: 'Kept your scene, model and garment , I elevated the pose and set a framing for it.',
       spec: {
         pose: `${selection[0]}, weight settled and shoulders open, hands purposeful, natural engaged expression`,
         framing: 'three_quarter',
@@ -589,7 +589,7 @@ function mockTurn(messages: GenieMessage[], hasImage: boolean, selection: string
   if (selection.length) {
     return coerceTurn({
       mode: 'series',
-      reply: `Elevated all ${selection.length} of your picked poses — same scene, same model and garment, sharper direction on each.`,
+      reply: `Elevated all ${selection.length} of your picked poses , same scene, same model and garment, sharper direction on each.`,
       set: {
         keep_scene: true,
         shots: selection.map((p, i) => ({
@@ -610,7 +610,7 @@ function mockTurn(messages: GenieMessage[], hasImage: boolean, selection: string
       return coerceTurn({
         mode: 'ask_count',
         reply:
-          "Love it — how many shots should the set have? They'll share one scene, with your model & garment constant.",
+          "Love it , how many shots should the set have? They'll share one scene, with your model & garment constant.",
         suggested_counts: [3, 4, 6, 8],
         suggestions: ['A quick 3', 'Standard 4', 'Full 6'],
       });
@@ -620,7 +620,7 @@ function mockTurn(messages: GenieMessage[], hasImage: boolean, selection: string
     const shots = MOCK_POOL.slice(0, Math.max(2, Math.min(n, MAX_SET_SIZE)));
     return coerceTurn({
       mode: 'series',
-      reply: `Here's a ${shots.length}-shot set — one consistent scene, ${shots.length} complementary poses & framings. Same model & garment throughout.`,
+      reply: `Here's a ${shots.length}-shot set , one consistent scene, ${shots.length} complementary poses & framings. Same model & garment throughout.`,
       set: {
         keep_scene: keep,
         backdrop: keep ? '' : 'studio seamless',
@@ -635,7 +635,7 @@ function mockTurn(messages: GenieMessage[], hasImage: boolean, selection: string
   if (hasImage) {
     return coerceTurn({
       reply:
-        'MOCK MODE — no GEMINI_API_KEY is set, so this is a fixed sample rather than a real read of your reference.',
+        'MOCK MODE , no GEMINI_API_KEY is set, so this is a fixed sample rather than a real read of your reference.',
       intent: 'match_reference',
       ready: true,
       spec: {
@@ -658,7 +658,7 @@ function mockTurn(messages: GenieMessage[], hasImage: boolean, selection: string
   if (refining) {
     return coerceTurn({
       reply:
-        'Kept your background, lighting, model and garment as the hero — I elevated the pose and set a framing that flatters it.',
+        'Kept your background, lighting, model and garment as the hero , I elevated the pose and set a framing that flatters it.',
       intent: 'refine_pose',
       ready: true,
       spec: {
@@ -672,7 +672,7 @@ function mockTurn(messages: GenieMessage[], hasImage: boolean, selection: string
   }
 
   return coerceTurn({
-    reply: 'Bright, fresh and energetic — new scene, same model and garment.',
+    reply: 'Bright, fresh and energetic , new scene, same model and garment.',
     intent: 'art_direct',
     ready: true,
     spec: {

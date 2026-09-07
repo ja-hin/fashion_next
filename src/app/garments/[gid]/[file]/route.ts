@@ -41,7 +41,7 @@ export const GET = handler(
       headers: {
         'Content-Type': read?.webp ? 'image/webp' : (MIME[ext] ?? 'application/octet-stream'),
         'Content-Length': String(bytes.length),
-        // Uploads never change once stored — a new upload is a new garment — so
+        // Uploads never change once stored , a new upload is a new garment , so
         // this can cache hard. Private because it is per-user authorised.
         'Cache-Control': 'private, max-age=31536000, immutable',
       },

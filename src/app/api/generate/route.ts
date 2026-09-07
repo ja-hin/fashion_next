@@ -32,7 +32,7 @@ export const POST = handler(async (req: Request) => {
   const modelId = str(fd, 'model_id').trim();
   const category = str(fd, 'category', 'womenswear');
 
-  // A saved model can only anchor a shoot once it has a character sheet — that
+  // A saved model can only anchor a shoot once it has a character sheet , that
   // sheet is what makes the face reproducible across poses.
   if (modelId) {
     const rec = await loadModel(modelId);
@@ -40,7 +40,7 @@ export const POST = handler(async (req: Request) => {
     if (!(rec.refs ?? []).some((r) => r.charsheet === 'grid')) {
       throw new HttpError(
         400,
-        'Selected model has no character sheet yet — generate one before using it in a shoot.',
+        'Selected model has no character sheet yet , generate one before using it in a shoot.',
       );
     }
   }
@@ -52,7 +52,7 @@ export const POST = handler(async (req: Request) => {
   /**
    * An ensemble hero is built from several tagged product shots rather than one
    * garment. They arrive as repeated `refs` parts with a parallel `roles` array,
-   * and the pairing is POSITIONAL — the prompt numbers them "Image 1", "Image
+   * and the pairing is POSITIONAL , the prompt numbers them "Image 1", "Image
    * 2"… so upload order is the manifest and must survive intact.
    */
   let refs: Array<{ bytes: Buffer; role: RefRole }> = [];
@@ -89,7 +89,7 @@ export const POST = handler(async (req: Request) => {
   }
 
   // The first reference doubles as the shoot's garment image, so everything
-  // that already expects `garment_file` — the folder view, "recast", resume —
+  // that already expects `garment_file` , the folder view, "recast", resume ,
   // keeps working on an ensemble shoot without special-casing.
   let garment: Buffer;
   try {

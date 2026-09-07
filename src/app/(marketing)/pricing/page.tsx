@@ -16,16 +16,16 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Pricing — Prepaid AI Fashion Photo Credits | AImageGen',
+  title: 'Pricing , Prepaid AI Fashion Photo Credits | Faishon Studio',
   description:
-    'Simple prepaid credits for on-model AI fashion photography. No subscription, no minimum SKUs. Buy a pack or a custom amount — GST-inclusive, pay only for what you generate.',
-  alternates: { canonical: 'https://aimagegen.com/pricing' },
+    'Simple prepaid credits for on-model AI fashion photography. No subscription, no minimum SKUs. Buy a pack or a custom amount , GST-inclusive, pay only for what you generate.',
+  alternates: { canonical: 'https://faishon.studio/#pricing' },
 };
 
 /**
  * Public pricing page.
  *
- * A server component so the packs an admin has configured are in the HTML —
+ * A server component so the packs an admin has configured are in the HTML ,
  * a price rendered client-side after a fetch is invisible to search engines and
  * flashes empty on load. Uses the landing design system from public/landing.css
  * (loaded by the marketing layout), not the studio's.
@@ -37,7 +37,7 @@ export default async function PricingPage() {
   const packs = activePacks(cfg);
   const gstPct = Math.round(cfg.gst_rate * 100);
 
-  // The cheapest shoot — an imagined model at 1K — is what the "per photo"
+  // The cheapest shoot , an imagined model at 1K , is what the "per photo"
   // figure on each card is quoted against, so it is always a genuine floor
   // rather than a rate some options undercut.
   const creditsPerPhoto = Number(settings.prices?.imagine?.['1K'] ?? settings.price_per_image ?? 1);
@@ -59,7 +59,7 @@ export default async function PricingPage() {
     ],
     [
       'How do I pay?',
-      'Through Razorpay — UPI, cards, net banking and wallets. We never see or store your card details.',
+      'Through Razorpay , UPI, cards, net banking and wallets. We never see or store your card details.',
     ],
     [
       'Can I get a refund?',
@@ -70,10 +70,10 @@ export default async function PricingPage() {
   return (
     <>
       {/* `nav-onlight`: no dark hero on this page either, so the bar needs its
-          own ground — see the note by the class in landing.css. */}
+          own ground , see the note by the class in landing.css. */}
       <header className="nav nav-onlight" id="nav">
         <div className="wrap nav-in">
-          <a className="logo" href="/" aria-label="AImageGen home">
+          <a className="logo" href="/" aria-label="Faishon Studio">
             {/* eslint-disable @next/next/no-img-element */}
             <img className="logo-img logo-light" src="/logo-black.png" alt="Faishon.studio" />
             <img className="logo-img logo-dark" src="/logo-white.png" alt="Faishon.studio" />
@@ -120,7 +120,7 @@ export default async function PricingPage() {
             }}
           >
             Buy credits once and spend them whenever you shoot. No seats, no minimum SKUs, no
-            monthly fee{gstPct > 0 ? ' — and every price below already includes GST' : ''}.
+            monthly fee{gstPct > 0 ? ' , and every price below already includes GST' : ''}.
           </p>
         </section>
 
@@ -277,7 +277,7 @@ export default async function PricingPage() {
 
           {packs.length === 0 && (
             <p style={{ textAlign: 'center', color: 'var(--dim)' }}>
-              Packs are being updated — please check back shortly.
+              Packs are being updated , please check back shortly.
             </p>
           )}
 

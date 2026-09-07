@@ -18,7 +18,7 @@ export const maxDuration = 600;
 /**
  * Generate a 6-angle character sheet: front, back, both knee-up sides, and two
  * close-ups. Each angle is its own focused AI call anchored to the model's
- * primary reference — that produces far better per-angle fidelity than asking
+ * primary reference , that produces far better per-angle fidelity than asking
  * for one collage and slicing it up.
  *
  * Charging is per-frame and immediate, so a partial run (say 4 of 6 succeed)

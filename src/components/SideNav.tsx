@@ -22,7 +22,7 @@ import type { Me } from '@/lib/client/types';
 
 type Item = { href: string; label: string; Icon: (p: { className?: string }) => React.ReactElement };
 
-/** The work itself — where you spend almost all of your time. */
+/** The work itself , where you spend almost all of your time. */
 const MAIN: Item[] = [
   { href: '/generate', label: 'Generate', Icon: WandIcon },
   { href: '/gallery', label: 'Gallery', Icon: ImagesIcon },
@@ -30,7 +30,7 @@ const MAIN: Item[] = [
   { href: '/models', label: 'My Models', Icon: PersonPlusIcon },
 ];
 
-/** Account and money — visited occasionally, so they sit below a divider. */
+/** Account and money , visited occasionally, so they sit below a divider. */
 const ACCOUNT: Item[] = [
   { href: '/recharge', label: 'Recharge', Icon: PlusCircleIcon },
   { href: '/usage', label: 'Usage', Icon: ChartIcon },
@@ -47,14 +47,14 @@ const ADMIN: Item[] = [
  * The studio's primary navigation.
  *
  * Collapses to an icon rail with the label beneath each icon, which keeps every
- * destination readable at ~76px — a rail of bare icons would need a tooltip and
+ * destination readable at ~76px , a rail of bare icons would need a tooltip and
  * a guess. Expanded, the labels move alongside.
  *
  * Lives in the shell rather than a page so it survives navigation, and is
  * hidden below `lg` where the TopBar menu already carries the same links.
  *
  * The balance appears here as well as in the TopBar. Both render the same
- * `balance` from StudioContext, so they cannot drift apart — the rail copy is
+ * `balance` from StudioContext, so they cannot drift apart , the rail copy is
  * simply the one in reach while you are choosing where to go next.
  */
 export default function SideNav({
@@ -82,7 +82,7 @@ export default function SideNav({
   const lower = [...ACCOUNT, ...(me.admin ? ADMIN : [])];
 
   function Row({ href, label, Icon }: Item) {
-    // `/models` must not light up on `/models/abc`'s sibling routes only —
+    // `/models` must not light up on `/models/abc`'s sibling routes only ,
     // startsWith covers the detail pages, which are still that section.
     const active = pathname === href || pathname.startsWith(`${href}/`);
 
@@ -169,7 +169,7 @@ export default function SideNav({
           the same thought. */}
       <Link
         href="/recharge"
-        title={`${fmt(balance)} credits — tap to recharge`}
+        title={`${fmt(balance)} credits , tap to recharge`}
         className={`mt-auto flex flex-shrink-0 items-center rounded-[10px] border border-accent/40 bg-accent-soft text-accent transition hover:border-accent ${
           !wide ? 'flex-col justify-center gap-0.5 px-1 py-2' : 'gap-2 px-3 py-2'
         }`}

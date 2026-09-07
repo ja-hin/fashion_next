@@ -19,7 +19,7 @@ interface Props {
 type Phase = 'browse' | 'generating' | 'result';
 
 /**
- * "Choose a saved model" — browse, filter, and (if the model has no character
+ * "Choose a saved model" , browse, filter, and (if the model has no character
  * sheet yet) generate one inline without leaving the flow.
  */
 export default function ModelPickerModal({
@@ -185,7 +185,7 @@ export default function ModelPickerModal({
             {expectedGender && (
               <div className="-mt-1.5 mb-3 text-[10.5px] font-semibold text-accent">
                 Pre-filtered to <b>{titleCase(expectedGender)}</b> based on your{' '}
-                {titleCase(category)} category — change anytime.
+                {titleCase(category)} category , change anytime.
               </div>
             )}
 
@@ -239,7 +239,7 @@ export default function ModelPickerModal({
                 </div>
                 <h4 className="mb-1.5 text-[13px] font-bold">No character sheet yet</h4>
                 <p className="mb-3 text-[11.5px] leading-[1.5] text-muted">
-                  This model needs a character sheet before it can anchor a new shoot — it keeps the
+                  This model needs a character sheet before it can anchor a new shoot , it keeps the
                   same face and body consistent across every pose.
                 </p>
                 <button

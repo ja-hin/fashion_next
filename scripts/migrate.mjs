@@ -9,7 +9,7 @@
  *   data/state.json → settings document
  *   data/outputs/*  → copied (or left in place) under the new DATA_DIR
  *
- * Password hashes carry over unchanged — the Next app uses the identical
+ * Password hashes carry over unchanged , the Next app uses the identical
  * pbkdf2-hmac-sha256 / 200k-round scheme, so nobody has to reset a password.
  *
  * Safe to re-run: every write is an idempotent upsert keyed on the original id.
@@ -27,7 +27,7 @@ import { MongoClient } from 'mongodb';
 
 // ── env files ───────────────────────────────────────────────────────
 // Next.js loads .env.local automatically, but a plain `node scripts/…` run does
-// not — so without this the script would silently ignore your configuration and
+// not , so without this the script would silently ignore your configuration and
 // fall back to localhost. Real environment variables always win, so
 // `MONGODB_URI=… node scripts/migrate.mjs` still overrides the file.
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -133,7 +133,7 @@ async function upsertAll(col, docs, label) {
 async function migrateUsers(db) {
   const dbFile = path.join(OLD_DATA, 'users.db');
   if (!(await exists(dbFile))) {
-    warn(`no users.db at ${dbFile} — skipping accounts`);
+    warn(`no users.db at ${dbFile} , skipping accounts`);
     return;
   }
 
@@ -175,7 +175,7 @@ async function migrateUsers(db) {
       // Drop anything already past its window rather than importing dead rows.
       .filter((s) => s.expires.getTime() > Date.now());
   } catch {
-    warn('no sessions table — users will simply sign in again');
+    warn('no sessions table , users will simply sign in again');
   }
   await upsertAll(db.collection('sessions'), sessions, 'sessions');
 
@@ -196,7 +196,7 @@ async function migrateShoots(db) {
   for (const f of files) {
     const rec = await readJson(path.join(dir, f));
     if (!rec) {
-      warn(`could not parse ${f} — skipped`);
+      warn(`could not parse ${f} , skipped`);
       continue;
     }
     const pid = path.basename(f, '.json');
@@ -270,7 +270,7 @@ async function migrateLogs(db) {
     try {
       rows.push(JSON.parse(t));
     } catch {
-      // A truncated final line is normal for an append-only file — skip it.
+      // A truncated final line is normal for an append-only file , skip it.
     }
   }
 
@@ -290,7 +290,7 @@ async function migrateLogs(db) {
   // only importing when the collection is empty.
   const existing = await col.countDocuments({}, { limit: 1 });
   if (existing > 0) {
-    warn(`logs collection is not empty — skipping (delete it first to re-import)`);
+    warn(`logs collection is not empty , skipping (delete it first to re-import)`);
     return;
   }
 
@@ -302,7 +302,7 @@ async function migrateLogs(db) {
 async function migrateSettings(db) {
   const state = await readJson(path.join(OLD_DATA, 'state.json'));
   if (!state) {
-    warn('no state.json — settings will use defaults');
+    warn('no state.json , settings will use defaults');
     return;
   }
 
@@ -356,7 +356,7 @@ async function migrateFiles() {
     log('  files: done');
   }
 
-  // model.json files came along with the folder copy but are now redundant —
+  // model.json files came along with the folder copy but are now redundant ,
   // the model records live in MongoDB. Harmless to leave, so we do.
 }
 
@@ -364,7 +364,7 @@ async function migrateFiles() {
 async function main() {
   log('');
   log('═'.repeat(60));
-  log('  AImageGen migration — Python/SQLite/JSON → MongoDB');
+  log('  Faishon Studio migration , Python/SQLite/JSON → MongoDB');
   log('═'.repeat(60));
   log(`  source   : ${OLD_DATA}`);
   log(`  env      : ${loadedEnvFiles.length ? loadedEnvFiles.join(', ') : 'none found (using defaults)'}`);
@@ -421,7 +421,7 @@ async function main() {
 
 main().catch((e) => {
   // A connection failure is by far the most common way this script fails, and
-  // the driver's stack trace buries the actual cause — so name it plainly.
+  // the driver's stack trace buries the actual cause , so name it plainly.
   if (e?.name === 'MongoServerSelectionError') {
     console.error(`\n✗ Could not reach MongoDB at ${redactUri(MONGODB_URI)}`);
     console.error('');

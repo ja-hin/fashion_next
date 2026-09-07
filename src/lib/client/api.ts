@@ -23,7 +23,7 @@ async function toError(r: Response): Promise<ApiError> {
     const j = await r.json();
     if (j?.detail) detail = String(j.detail);
   } catch {
-    // Non-JSON error body — keep the generic message.
+    // Non-JSON error body , keep the generic message.
   }
   return new ApiError(r.status, detail);
 }
@@ -76,7 +76,7 @@ export async function del<T>(url: string): Promise<T> {
  * Cache-bust an image URL.
  *
  * Generated images are served with a long immutable cache, and a regenerated
- * pose can reuse a URL the browser already has — so freshly rendered images get
+ * pose can reuse a URL the browser already has , so freshly rendered images get
  * a one-off query param.
  */
 export const bust = (u: string) =>
@@ -92,7 +92,7 @@ export type ImgVariant = 'thumb' | 'web';
  *
  * Display never loads the original. The serve routes return a WebP derivative
  * for `?v=`, so a 230px gallery card fetches ~20 KB instead of a multi-megabyte
- * master. Downloads deliberately do NOT go through here — they hit
+ * master. Downloads deliberately do NOT go through here , they hit
  * /api/product/<pid>/file/... and /api/product/<pid>/zip, which always hand back
  * the untouched original the model produced.
  *
@@ -100,7 +100,7 @@ export type ImgVariant = 'thumb' | 'web';
  * to the original and backfills the WebP on that first request.
  */
 export const imgSrc = (u: string, v: ImgVariant): string =>
-  // The bust() is a separate, known problem — it defeats the browser cache on
+  // The bust() is a separate, known problem , it defeats the browser cache on
   // every render. Routed through here so removing it is a one-line change.
   u ? bust(`${u}${u.includes('?') ? '&' : '?'}v=${v}`) : u;
 
@@ -131,7 +131,7 @@ const ETH_LABELS: Record<string, string> = {
   diverse: 'Diverse',
 };
 
-export const ethLabel = (s: string | undefined) => ETH_LABELS[s ?? ''] ?? s ?? '—';
+export const ethLabel = (s: string | undefined) => ETH_LABELS[s ?? ''] ?? s ?? ',';
 
 /** dd/mm/yyyy hh:mm from an ISO timestamp. */
 export function fmtLogDate(ts: string | undefined): string {
@@ -143,7 +143,7 @@ export function fmtLogDate(ts: string | undefined): string {
 }
 
 /**
- * Per-image AI spend is fractions of a cent, so this shows 4 decimals —
+ * Per-image AI spend is fractions of a cent, so this shows 4 decimals ,
  * anything less rounds every row to $0.00 and the column looks broken.
  */
 export function fmtUsd(v: unknown): string {

@@ -1,7 +1,8 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { LABEL_FOR, MAX_ENSEMBLE_REFS, type RefMode } from '@/lib/ensemble';
+import { UploadIcon, ShirtIcon } from './icons';
 import type { EnsembleRef } from '@/lib/client/ensemble-types';
 
 /**
@@ -10,7 +11,7 @@ import type { EnsembleRef } from '@/lib/client/ensemble-types';
  * Deliberately thin: dropping images here opens the tagging window rather than
  * trying to tag them in a 336px column. Six items with a role select, a
  * confidence badge and a reason line each do not fit in a sidebar, and tagging
- * is the step that decides whether the hero comes out right — see
+ * is the step that decides whether the hero comes out right , see
  * EnsembleTagModal.
  *
  * Once tagged, this shows the summary so the panel still tells you what the
@@ -25,7 +26,7 @@ export default function EnsembleUploader({
 }: {
   mode: RefMode;
   refs: EnsembleRef[];
-  /** Files dropped straight onto the panel — the modal opens to tag them. */
+  /** Files dropped straight onto the panel , the modal opens to tag them. */
   onAdd: (files: File[]) => void;
   onOpen: () => void;
   /** Open the library instead of uploading. */
@@ -33,6 +34,27 @@ export default function EnsembleUploader({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
+  const [menu, setMenu] = useState(false);
+  const menuWrap = useRef<HTMLDivElement>(null);
+
+  /* Close on a click anywhere else, or on Escape. `mousedown` rather than
+     `click`, so the menu is gone before the zone underneath sees the release
+     and opens the file picker. Bound only while it is open. */
+  useEffect(() => {
+    if (!menu) return;
+    const away = (e: MouseEvent) => {
+      if (!menuWrap.current?.contains(e.target as Node)) setMenu(false);
+    };
+    const esc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenu(false);
+    };
+    document.addEventListener('mousedown', away);
+    document.addEventListener('keydown', esc);
+    return () => {
+      document.removeEventListener('mousedown', away);
+      document.removeEventListener('keydown', esc);
+    };
+  }, [menu]);
 
   function take(files: FileList | File[] | null | undefined) {
     const picked = Array.from(files ?? []).filter((f) => f.type.startsWith('image/'));
@@ -85,7 +107,6 @@ export default function EnsembleUploader({
   }
 
   return (
-    <>
     <div
       onClick={() => inputRef.current?.click()}
       onDragOver={(e) => {
@@ -98,20 +119,82 @@ export default function EnsembleUploader({
         setDragging(false);
         take(e.dataTransfer.files);
       }}
-      className={`mb-4 cursor-pointer rounded-xl border-[1.5px] border-dashed p-[22px_14px] text-center text-[12.5px] transition ${
-        dragging
-          ? 'border-brand bg-brand-soft text-brand'
-          : 'border-line bg-surface2 text-muted hover:border-brand hover:bg-brand-soft hover:text-brand'
+      className={`mb-4 cursor-pointer rounded-xl border-[1.5px] border-dashed px-4 py-7 text-center transition ${
+        dragging ? 'border-brand bg-brand-soft' : 'border-line bg-surface hover:border-brand'
       }`}
     >
-      <span className="mb-1.5 block text-[22px] opacity-60">⤓</span>
-      Drop your{' '}
-      <b className="text-ink">{mode === 'ensemble' ? 'product images' : 'garment photos'}</b>
-      <br />
-      <span className="text-[11px]">
-        {mode === 'ensemble' ? 'a top, a bag, shoes…' : 'front, back, a detail…'} up to{' '}
-        {MAX_ENSEMBLE_REFS}
-      </span>
+      <UploadIcon className="mx-auto mb-3 h-9 w-9 text-brand" />
+      <div className="text-[13.5px] font-bold text-ink">Drag &amp; drop files here</div>
+      <div className="mt-1 text-[11.5px] leading-[1.5] text-muted">
+        {mode === 'ensemble' ? 'A top, a bag, shoes…' : 'Front, back, a detail…'} up to{' '}
+        {MAX_ENSEMBLE_REFS} images
+      </div>
+
+      {/* A split button, and real buttons at that: the whole panel being
+          clickable is an affordance you cannot see, and a bare <div onClick>
+          cannot be reached by keyboard at all. The zone still takes a click and
+          a drop; this is the part that takes a Tab and an Enter.
+          Every handler in here stops propagation, or the click bubbles back to
+          the zone and opens the file picker behind the menu. */}
+      <div
+        ref={menuWrap}
+        className="relative mt-4 inline-flex"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          className="rounded-l-[9px] bg-brand px-5 py-2.5 text-[12.5px] font-bold text-white transition hover:brightness-110"
+        >
+          Select File
+        </button>
+        {/* Hairline between the halves so the caret reads as its own control. */}
+        <button
+          type="button"
+          aria-label="More upload options"
+          aria-haspopup="menu"
+          aria-expanded={menu}
+          onClick={() => setMenu((v) => !v)}
+          className="rounded-r-[9px] border-l border-white/25 bg-brand px-2.5 py-2.5 text-white transition hover:brightness-110"
+        >
+          <span className={`block text-[9px] leading-none transition ${menu ? '' : 'rotate-180'}`}>
+            ▲
+          </span>
+        </button>
+
+        {menu && (
+          <div
+            role="menu"
+            className="absolute left-1/2 top-[calc(100%+6px)] z-30 w-[196px] -translate-x-1/2 overflow-hidden rounded-xl border border-line bg-surface py-1 text-left shadow-card"
+          >
+            <button
+              role="menuitem"
+              type="button"
+              onClick={() => {
+                setMenu(false);
+                inputRef.current?.click();
+              }}
+              className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-[12.5px] font-semibold text-ink hover:bg-surface2"
+            >
+              <UploadIcon className="h-4 w-4 text-muted" />
+              From my computer
+            </button>
+            <button
+              role="menuitem"
+              type="button"
+              onClick={() => {
+                setMenu(false);
+                onPickSaved();
+              }}
+              className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-[12.5px] font-semibold text-ink hover:bg-surface2"
+            >
+              <ShirtIcon className="h-4 w-4 text-accent" />
+              Use a saved garment
+            </button>
+          </div>
+        )}
+      </div>
+
       <input
         ref={inputRef}
         type="file"
@@ -121,21 +204,5 @@ export default function EnsembleUploader({
         onChange={(e) => take(e.target.files)}
       />
     </div>
-
-    {/* After the first few shoots the garment you want is usually already
-        saved, and hunting for the files again is redoing the work the library
-        exists to avoid. */}
-    <div className="mb-4 mt-2 flex items-center gap-2">
-      <span className="h-px flex-1 bg-line" />
-      <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-muted">or</span>
-      <span className="h-px flex-1 bg-line" />
-    </div>
-    <button
-      onClick={onPickSaved}
-      className="mb-4 -mt-2 w-full rounded-[9px] border border-accent/40 bg-accent-soft p-[9px] text-[12px] font-bold text-accent hover:border-accent"
-    >
-      ♡ Use a saved garment
-    </button>
-    </>
   );
 }

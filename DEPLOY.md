@@ -5,20 +5,20 @@ FastAPI/uvicorn/SQLite setup.
 
 Placeholders to replace as you go:
 
-- `YOUR_VPS_IP` — the server IP from Hostinger hPanel
-- `yourdomain.com` — a domain pointed at the VPS (needed for HTTPS)
-- `deploy` — the Linux user the app runs as
+- `YOUR_VPS_IP` , the server IP from Hostinger hPanel
+- `yourdomain.com` , a domain pointed at the VPS (needed for HTTPS)
+- `deploy` , the Linux user the app runs as
 
 ---
 
 ## 0. Before you start
 
-- **Rotate your Gemini API key** at https://aistudio.google.com/ — the old one
+- **Rotate your Gemini API key** at https://aistudio.google.com/ , the old one
   has been sitting in the repo.
 - Decide a strong **admin password**.
 - Point a **domain** at the VPS (an A record → `YOUR_VPS_IP`) if you want HTTPS.
   Log-in cookies are only fully safe over HTTPS, and the app marks the session
-  cookie `Secure` in production — meaning **login will not work over plain HTTP
+  cookie `Secure` in production , meaning **login will not work over plain HTTP
   in production**. Get the certificate sorted.
 
 ---
@@ -75,7 +75,7 @@ sudo systemctl enable --now nginx
 sudo npm install -g pm2
 ```
 
-**MongoDB binds to 127.0.0.1 by default — leave it that way.** The app talks to
+**MongoDB binds to 127.0.0.1 by default , leave it that way.** The app talks to
 it over localhost; it should never be reachable from the internet. Confirm:
 
 ```bash
@@ -151,7 +151,7 @@ node scripts/migrate.mjs --from /path/to/old/vdofy_app --dry-run
 node scripts/migrate.mjs --from /path/to/old/vdofy_app --copy-files
 ```
 
-Everyone's password still works — the hashing scheme is unchanged.
+Everyone's password still works , the hashing scheme is unchanged.
 
 Verify:
 
@@ -182,7 +182,7 @@ curl -s localhost:8080/api/me      # expect {"authed":false}
 ```
 
 > **Run exactly one instance.** Generation jobs are tracked in process memory,
-> so `pm2 start -i max` (cluster mode) would break progress polling — a request
+> so `pm2 start -i max` (cluster mode) would break progress polling , a request
 > could land on a worker that has never heard of the job. One process, always.
 
 ---
@@ -213,7 +213,7 @@ server {
         proxy_set_header   X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
 
-        # A 4K batch can run for several minutes — the default 60s would cut
+        # A 4K batch can run for several minutes , the default 60s would cut
         # the response off mid-generation.
         proxy_read_timeout    900s;
         proxy_connect_timeout 900s;
@@ -238,7 +238,7 @@ sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
 ```
 
 Certbot rewrites the nginx config and sets up auto-renewal. **Do this before
-inviting anyone in** — the session cookie is `Secure` in production, so login
+inviting anyone in** , the session cookie is `Secure` in production, so login
 won't work until HTTPS is live.
 
 ---
@@ -247,7 +247,7 @@ won't work until HTTPS is live.
 
 Two things to back up, and they're different.
 
-**The database** (small — a few MB):
+**The database** (small , a few MB):
 
 ```bash
 sudo mkdir -p /var/backups/aimagegen
@@ -262,7 +262,7 @@ crontab -e
 ```
 
 **The images** (650 MB and growing ~0.5 GB/month). A VPS disk has no
-redundancy — if the box dies, they're gone. Sync them somewhere off-server.
+redundancy , if the box dies, they're gone. Sync them somewhere off-server.
 Cloudflare R2 is ~$0.015/GB-month with no egress fees, so this costs pennies:
 
 ```bash
@@ -301,11 +301,11 @@ never touches them.
 | Login does nothing in production | No HTTPS. The session cookie is `Secure`; the browser drops it over plain HTTP. |
 | `MongoServerSelectionError` on boot | `mongod` isn't running (`sudo systemctl status mongod`) or `MONGODB_URI` is wrong. |
 | Progress bar hangs forever | More than one app instance. Run a single process, never pm2 cluster mode. |
-| 502 from nginx | App crashed — check `pm2 logs aimagegen`. |
+| 502 from nginx | App crashed , check `pm2 logs aimagegen`. |
 | 413 on upload | Raise `client_max_body_size`. |
 | Big batch dies around 60s | `proxy_read_timeout` wasn't raised in the nginx block. |
 | Images 404 after a move | `DATA_DIR` doesn't point at the folder holding `outputs/` and `models/`. |
-| Banner says DEMO mode | `GEMINI_API_KEY` is empty or wasn't picked up — check `.env`, then `pm2 restart aimagegen`. |
+| Banner says DEMO mode | `GEMINI_API_KEY` is empty or wasn't picked up , check `.env`, then `pm2 restart aimagegen`. |
 
 Useful commands:
 
@@ -313,5 +313,5 @@ Useful commands:
 pm2 logs aimagegen          # app logs
 pm2 monit                   # live CPU/memory
 sudo journalctl -u mongod -n 50
-df -h                       # disk — watch this as images accumulate
+df -h                       # disk , watch this as images accumulate
 ```

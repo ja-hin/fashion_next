@@ -18,7 +18,7 @@ export const GET = handler(async (req: Request) => {
 
   /*
    * Non-admins are pinned to their own shoots, always. The `user` parameter is
-   * read ONLY for admins — honouring it for anyone else would turn this into an
+   * read ONLY for admins , honouring it for anyone else would turn this into an
    * "any shoot by id" endpoint and undo the isolation entirely.
    */
   const filter: Record<string, unknown> = me.is_admin ? {} : { 'opts.owner': me._id };
@@ -58,7 +58,7 @@ export const GET = handler(async (req: Request) => {
     const man = s.manifest ?? [];
     const vids = s.videos ?? [];
     // A shoot generated straight to video has no stills at all. Skipping on the
-    // manifest alone would hide it completely — the same bug as a clip written
+    // manifest alone would hide it completely , the same bug as a clip written
     // to disk that nothing lists, one level up.
     if (!man.length && !vids.length) continue;
 
@@ -72,7 +72,7 @@ export const GET = handler(async (req: Request) => {
     const category = s.opts?.category ?? '';
 
     // Search covers the seed, category, name, shoot number, every pose and the
-    // date — the same haystack as the old app.
+    // date , the same haystack as the old app.
     const owner = me.is_admin ? ownerById.get(s.opts?.owner ?? '') : undefined;
 
     if (q) {
@@ -108,7 +108,7 @@ export const GET = handler(async (req: Request) => {
       thumb: shootUrl(s._id, thumbFile),
       category,
       model: s.opts?.style ?? '',
-      // Present only for admins — a regular user never receives another
+      // Present only for admins , a regular user never receives another
       // account's identity, even as a label.
       owner_uid: owner?.uid,
       owner_email: owner?.email,

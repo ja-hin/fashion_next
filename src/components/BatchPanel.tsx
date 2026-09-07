@@ -39,7 +39,7 @@ export default function BatchPanel({
   geniePrice,
   priceFor,
 }: {
-  /** Drives which pose list is offered — menswear and womenswear differ. */
+  /** Drives which pose list is offered , menswear and womenswear differ. */
   category: string;
   onRun: (rows: Array<PoseSettings & { pose: string }>) => void;
   onClose: () => void;
@@ -53,7 +53,7 @@ export default function BatchPanel({
   const poses = useMemo(() => posesFor(category), [category]);
   const poseOpts = useMemo<Array<[string, string]>>(
     () => [
-      ['', '— choose a pose —'],
+      ['', ', choose a pose ,'],
       ...poses.map(([label], i) => [String(i), label] as [string, string]),
     ],
     [poses],

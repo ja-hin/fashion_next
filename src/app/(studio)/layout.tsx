@@ -14,7 +14,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'AImageGen Studio',
+  title: 'Faishon Studio',
   robots: { index: false, follow: false },
 };
 
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
  * Layout for every signed-in studio route.
  *
  * The auth check runs on the server, so an unauthenticated visitor is redirected
- * before any HTML is sent — no flash of the app followed by a login screen.
+ * before any HTML is sent , no flash of the app followed by a login screen.
  */
 export default async function StudioLayout({ children }: { children: React.ReactNode }) {
   await ensureBootstrapped();

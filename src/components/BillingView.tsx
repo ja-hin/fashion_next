@@ -21,7 +21,7 @@ interface Row {
 const STATUS: Record<Row['status'], { text: string; cls: string }> = {
   paid: { text: 'Paid', cls: 'bg-green-soft text-green' },
   failed: { text: 'Failed', cls: 'bg-brand-soft text-brand' },
-  // An order that was started but never completed — the user closed Checkout.
+  // An order that was started but never completed , the user closed Checkout.
   created: { text: 'Incomplete', cls: 'bg-surface2 text-muted' },
 };
 
@@ -75,8 +75,12 @@ export default function BillingView({ balance }: { balance: number }) {
           </div>
         )}
 
+        {/* Seven columns. Left as a table where there is room for one, and
+            restated as a stack of cards below `sm` , horizontally scrolling a
+            billing history means the amount and the invoice link both start
+            off-screen, which are the two things anyone opens this page for. */}
         {rows && rows.length > 0 && (
-          <div className="overflow-x-auto">
+          <div className="hidden overflow-x-auto sm:block">
             <table className="w-full border-collapse text-[12.5px]">
               <thead>
                 <tr className="text-[10.5px] uppercase tracking-[0.06em] text-muted">
@@ -96,10 +100,10 @@ export default function BillingView({ balance }: { balance: number }) {
                     <tr key={r.order_id} className="border-t border-line">
                       <Td>{invoiceDate(r.date)}</Td>
                       <Td>
-                        <span className="font-semibold">{r.invoice_no ?? '—'}</span>
+                        <span className="font-semibold">{r.invoice_no ?? ','}</span>
                       </Td>
                       <Td>{r.label}</Td>
-                      <Td right>{r.status === 'paid' ? fmt(r.credits) : '—'}</Td>
+                      <Td right>{r.status === 'paid' ? fmt(r.credits) : ','}</Td>
                       <Td right>{money(r.amount)}</Td>
                       <Td>
                         <span
@@ -117,7 +121,7 @@ export default function BillingView({ balance }: { balance: number }) {
                             View
                           </Link>
                         ) : (
-                          <span className="text-muted">—</span>
+                          <span className="text-muted">,</span>
                         )}
                       </Td>
                     </tr>
@@ -125,6 +129,46 @@ export default function BillingView({ balance }: { balance: number }) {
                 })}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {rows && rows.length > 0 && (
+          <div className="divide-y divide-line sm:hidden">
+            {rows.map((r) => {
+              const st = STATUS[r.status];
+              return (
+                <div key={r.order_id} className="p-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[12px] font-semibold">{invoiceDate(r.date)}</span>
+                    {r.invoice_no && <span className="text-[11px] text-muted">{r.invoice_no}</span>}
+                    <span
+                      className={`ml-auto inline-block rounded-md px-2 py-[3px] text-[10.5px] font-bold ${st.cls}`}
+                    >
+                      {st.text}
+                    </span>
+                  </div>
+
+                  <div className="mt-1.5 text-[12.5px] leading-[1.45]">{r.label}</div>
+
+                  {/* Amount first and largest , on a phone it is the line people
+                      are scanning for. */}
+                  <div className="mt-2 flex items-baseline gap-2.5">
+                    <span className="text-[15px] font-bold">{money(r.amount)}</span>
+                    {r.status === 'paid' && (
+                      <span className="text-[11.5px] text-muted">{fmt(r.credits)} credits</span>
+                    )}
+                    {r.status === 'paid' && (
+                      <Link
+                        href={`/invoice/${r.order_id}`}
+                        className="ml-auto text-[12px] font-bold text-accent hover:underline"
+                      >
+                        Invoice ›
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

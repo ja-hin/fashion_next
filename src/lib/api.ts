@@ -2,7 +2,7 @@
  * Shared helpers for route handlers.
  *
  * The client posts `application/x-www-form-urlencoded` / `multipart/form-data`
- * and expects FastAPI-shaped errors (`{"detail": "..."}`) — both are preserved
+ * and expects FastAPI-shaped errors (`{"detail": "..."}`) , both are preserved
  * so the front end error handling is identical to the old app.
  */
 import 'server-only';
@@ -85,7 +85,7 @@ export function num(fd: FormData, key: string, dflt: number | null = null): numb
   return dflt;
 }
 
-/** Accepts "1"/"true"/"on"/"yes" as true — matches FastAPI's bool form parsing. */
+/** Accepts "1"/"true"/"on"/"yes" as true , matches FastAPI's bool form parsing. */
 export const bool = (fd: FormData, key: string, dflt = false): boolean => {
   const v = fd.get(key);
   if (typeof v !== 'string') return dflt;

@@ -7,7 +7,7 @@ import { VIDEO_PRESETS, CUSTOM_KEY, type VideoBrief } from '@/lib/video-presets'
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-/** Art direction, not detail work — the same ceiling the image director uses. */
+/** Art direction, not detail work , the same ceiling the image director uses. */
 const MAX_REF_PX = 1024;
 
 /**
@@ -21,7 +21,7 @@ const MAX_REF_PX = 1024;
  * use its reference images only for the model's identity and the garment, so
  * handing it a fifth image of a location would contradict the one instruction
  * the whole feature rests on. Turning the photo into a paragraph of set and
- * lighting notes puts the scene in the brief where it belongs — and it is the
+ * lighting notes puts the scene in the brief where it belongs , and it is the
  * same trick, and the same analyser, the image director already uses.
  */
 export const POST = handler(async (req: Request) => {
@@ -51,7 +51,7 @@ export const POST = handler(async (req: Request) => {
         .jpeg({ quality: 90 })
         .toBuffer();
     } catch {
-      throw new HttpError(400, "Couldn't read that reference image — use a JPG, PNG or WebP.");
+      throw new HttpError(400, "Couldn't read that reference image , use a JPG, PNG or WebP.");
     }
     scene = await analyseReference(bytes);
   }
@@ -62,7 +62,7 @@ export const POST = handler(async (req: Request) => {
     }
     const preset = VIDEO_PRESETS[presetKey];
     if (!preset) throw new HttpError(400, 'Unknown video preset');
-    // Nothing asked for, nothing to do — and no reason to spend a model call.
+    // Nothing asked for, nothing to do , and no reason to spend a model call.
     return json({ brief: sent ?? preset.brief, gist: preset.gist });
   }
 

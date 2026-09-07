@@ -125,7 +125,7 @@ export default function AdminPacks() {
       // what customers will now be charged, not what was typed.
       setCfg(j.billing);
       setRows(j.billing.packs.map(toRow));
-      setFlash('Saved — live on the pricing page and Recharge.');
+      setFlash('Saved , live on the pricing page and Recharge.');
       setTimeout(() => setFlash(''), 3000);
     } catch (e) {
       await dialog.alert(e instanceof ApiError ? e.message : 'Could not save pricing.');
@@ -158,7 +158,7 @@ export default function AdminPacks() {
       <h3 className="mb-[5px] text-[15px] font-bold">Top-up packs &amp; pricing</h3>
       <p className="mb-4 text-[12.5px] leading-[1.5] text-muted">
         What customers see on the public pricing page and the Recharge screen. Prices are
-        GST-inclusive — the amount here is exactly what gets charged.
+        GST-inclusive , the amount here is exactly what gets charged.
       </p>
 
       <div className="overflow-x-auto">
@@ -242,7 +242,7 @@ export default function AdminPacks() {
                   <td className="whitespace-nowrap p-[7px_10px] text-right">
                     <b>{total}</b> cr
                     <div className="text-[10px] text-muted">
-                      {total > 0 ? rupees(Math.round(paise / total)) : '—'}/cr
+                      {total > 0 ? rupees(Math.round(paise / total)) : ','}/cr
                       {save > 0 && <span className="ml-1 text-green">save {save}%</span>}
                     </div>
                   </td>

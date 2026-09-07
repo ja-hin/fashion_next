@@ -6,12 +6,12 @@
  * is the only part a customer reads.
  *
  * The briefs are data, not prompts assembled at call time, because the Genie
- * edits them slot by slot — see lib/video.ts. Keeping them as plain objects is
+ * edits them slot by slot , see lib/video.ts. Keeping them as plain objects is
  * what lets "make it sunset" change `background` and leave the shot list alone.
  */
 
 /**
- * The reference lock. Baked into every preset's prompt and never editable — it
+ * The reference lock. Baked into every preset's prompt and never editable , it
  * is the whole reason a video keeps the model's face and the garment from the
  * stills it was built from. The Genie is told in its system prompt not to touch
  * it, and lib/video.ts re-checks that it survived before generating.
@@ -393,7 +393,7 @@ export const VIDEO_PRESETS: Record<string, VideoPreset> = {
 /**
  * The "describe your own" pseudo-preset.
  *
- * Not in VIDEO_PRESETS because it has no brief of its own — the brief is
+ * Not in VIDEO_PRESETS because it has no brief of its own , the brief is
  * written by the Genie from the customer's own description. This is its key on
  * the wire and the skeleton the authored brief is merged onto, so a model that
  * omits a slot still produces a complete brief rather than an undefined one.
@@ -415,7 +415,7 @@ export const CUSTOM_SKELETON: VideoBrief = {
 };
 
 /**
- * The lock for references that show the garment but nobody wearing it —
+ * The lock for references that show the garment but nobody wearing it ,
  * flat-lays, packshots, a ghost mannequin.
  *
  * The default lock says "keep the same model", which is an instruction with no
@@ -439,7 +439,7 @@ export type LockMode = 'model' | 'garment';
  * it), and an edited one can lose it to a careless rewrite. Prepended, so it
  * outranks anything the description asked for.
  *
- * Swapping — not just prepending — matters for garment mode: the twelve presets
+ * Swapping , not just prepending , matters for garment mode: the twelve presets
  * have the on-model lock baked into their prompt text, so leaving it in beside
  * the garment lock would hand the model two contradictory instructions.
  */

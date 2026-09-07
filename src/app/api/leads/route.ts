@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 /**
  * The marketing page's contact form.
  *
- * Unauthenticated by necessity — the whole point is to hear from people who do
+ * Unauthenticated by necessity , the whole point is to hear from people who do
  * not have an account. That makes it the one write endpoint a stranger can
  * reach, so it carries two cheap defences instead of one expensive one:
  *
@@ -28,7 +28,7 @@ const WINDOW_MS = 10 * 60_000;
 
 /*
  * In-memory, so it resets on deploy and is per-instance rather than global.
- * That is a real limit and worth being honest about — it is a speed bump for
+ * That is a real limit and worth being honest about , it is a speed bump for
  * casual flooding, not a rate limiter. Anything stronger belongs in Redis or at
  * the edge, and neither is worth standing up for a contact form.
  */
@@ -66,7 +66,7 @@ export const POST = handler(async (req: Request) => {
   if (String(body.company_website ?? '').trim()) return json({ ok: true });
 
   if (throttled(clientIp(req))) {
-    throw new HttpError(429, 'That is a few too many — please email us directly.');
+    throw new HttpError(429, 'That is a few too many , please email us directly.');
   }
 
   try {

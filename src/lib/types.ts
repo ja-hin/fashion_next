@@ -17,7 +17,7 @@ export type Gender = 'female' | 'male' | 'child';
 export interface UserDoc {
   _id: string; // hex id (kept from the old SQLite `users.id`)
   /**
-   * Short human-readable id shown in the UI and quoted in support — "U0007".
+   * Short human-readable id shown in the UI and quoted in support , "U0007".
    * Sequential and stable; `_id` stays the internal key so nothing has to be
    * re-pointed. Optional because accounts created before this existed are
    * backfilled at boot.
@@ -39,13 +39,13 @@ export interface UserDoc {
    * watermark (see lib/watermark.ts). Set once and never cleared: paying once
    * removes the mark from everything they have ever generated, and running the
    * balance back down to zero does not bring it back. Credits granted by an
-   * admin deliberately do NOT set this — only a real payment does.
+   * admin deliberately do NOT set this , only a real payment does.
    */
   first_paid_at?: string; // ISO
 
   /**
    * Profile details the user maintains themselves (see lib/profile.ts). All
-   * optional — an account created before this existed simply has none of them,
+   * optional , an account created before this existed simply has none of them,
    * and nothing may assume they are present.
    *
    * `gstin` and `state` are billing data: they are snapshotted onto each order
@@ -60,7 +60,7 @@ export interface UserDoc {
   pincode?: string;
 }
 
-/** A user as sent to the browser — never includes the password hash/salt. */
+/** A user as sent to the browser , never includes the password hash/salt. */
 export interface PublicUser {
   id: string;
   uid: string;
@@ -76,7 +76,7 @@ export interface PublicUser {
 /**
  * One outstanding password-reset request.
  *
- * `_id` is the SHA-256 of the emailed token, never the token itself — someone
+ * `_id` is the SHA-256 of the emailed token, never the token itself , someone
  * who reads this collection still cannot construct a working link. Rows expire
  * via a TTL index and are deleted the moment a token is used.
  */
@@ -107,7 +107,7 @@ export interface ShootOpts {
   aspect: string;
   framing: string;
   /**
-   * What the uploaded photo IS — a garment to try on, a shot that already has a
+   * What the uploaded photo IS , a garment to try on, a shot that already has a
    * model, or one to recast. Independent of `ref_mode`.
    *
    * 'ensemble' is legacy: the mode used to be stored here, which meant picking
@@ -116,7 +116,7 @@ export interface ShootOpts {
    */
   input_family: 'garment_in' | 'extend' | 'recast' | 'ensemble';
   /**
-   * How the tagged references relate to each other — several angles of ONE
+   * How the tagged references relate to each other , several angles of ONE
    * garment, or several DIFFERENT items to assemble. Absent on older shoots,
    * where it is inferred from input_family.
    */
@@ -169,7 +169,7 @@ export interface ShootDoc {
 /** One generated clip, stored beside the shoot's stills. */
 export interface ShootVideo {
   file: string;
-  /** Preset label, e.g. "Turntable / 360" — shown under the card. */
+  /** Preset label, e.g. "Turntable / 360" , shown under the card. */
   preset: string;
   aspect: string;
   /** The frames it was built from, so the lock is auditable after the fact. */
@@ -183,7 +183,7 @@ export interface ShootVideo {
  * A reusable garment: one product, photographed from several angles and tagged
  * once, so it can anchor any number of later shoots without re-uploading.
  *
- * Deliberately the same shape a shoot consumes (see lib/ensemble.ts) — a saved
+ * Deliberately the same shape a shoot consumes (see lib/ensemble.ts) , a saved
  * garment IS a set of tagged references, so "use this" is a copy rather than a
  * conversion. `mode` records which kind it is: several angles of one garment,
  * or a whole assembled look.
@@ -265,7 +265,7 @@ export interface PublicModel {
 
 // ── event log ───────────────────────────────────────────────────────
 /**
- * One row in the event log. `_id` is deliberately absent — Mongo assigns an
+ * One row in the event log. `_id` is deliberately absent , Mongo assigns an
  * ObjectId, and reads come back as WithId<LogDoc>.
  */
 export interface LogDoc {
@@ -314,7 +314,7 @@ export interface SettingsDoc {
   invoice_seq?: Record<string, number>;
   /**
    * Top-up packs and rates, edited from the admin page. Optional because
-   * documents written before this existed won't have it — getBilling() falls
+   * documents written before this existed won't have it , getBilling() falls
    * back to DEFAULT_BILLING.
    */
   billing?: BillingConfig;
@@ -332,7 +332,7 @@ export interface OrderDoc {
   _id: string; // razorpay order_id, e.g. "order_NpQ..."
   user_id: string;
   user_email: string;
-  /** Credits to grant on success — locked in at order time, never re-read from the client. */
+  /** Credits to grant on success , locked in at order time, never re-read from the client. */
   credits: number;
   amount: number; // paise, GST-inclusive
   gst: number; // paise, the tax portion of `amount`
@@ -350,14 +350,14 @@ export interface OrderDoc {
    */
   status: 'created' | 'paid' | 'failed';
   payment_id?: string;
-  /** How the payment was confirmed — useful when reconciling against Razorpay. */
+  /** How the payment was confirmed , useful when reconciling against Razorpay. */
   credited_via?: 'checkout' | 'webhook';
   failure_reason?: string;
   created: string; // ISO
   paid_at?: string; // ISO
 
   /**
-   * Assigned once, at the moment the payment is credited — never at order
+   * Assigned once, at the moment the payment is credited , never at order
    * creation, because an abandoned checkout must not burn an invoice number.
    * Tax invoice numbering has to be gapless.
    */
@@ -407,7 +407,7 @@ export interface LeadDoc {
   volume: string; // rough monthly catalogue size, one of LEAD_VOLUMES
   message: string;
   status: LeadStatus;
-  /** Which page sent it — there is one form today, there may be more. */
+  /** Which page sent it , there is one form today, there may be more. */
   source: string;
   created: string; // ISO, seconds precision
   /** When the status last moved off `new`. */

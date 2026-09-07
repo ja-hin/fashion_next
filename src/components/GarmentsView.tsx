@@ -11,7 +11,7 @@ import type { PublicGarment } from '@/lib/types';
 import type { LbItem } from '@/lib/client/types';
 
 /**
- * My Garments — the reusable product library.
+ * My Garments , the reusable product library.
  *
  * Tagging a garment's angles is the work that stops its back being invented,
  * and it is work nobody wants to repeat per shoot. This is where that work
@@ -112,12 +112,12 @@ export default function GarmentsView({
 
   return (
     <div className="animate-fade-up">
-      <div className="mb-5 flex items-center gap-[14px]">
+      <div className="mb-5 flex flex-wrap items-center gap-[14px]">
         <h2 className="text-[23px] font-bold tracking-[-0.01em]">My Garments</h2>
         <span className="rounded-[20px] bg-surface2 px-2.5 py-1 text-xs font-semibold text-muted">
           {rows.length} saved
         </span>
-        <div className="ml-auto w-[240px]">
+        <div className="ml-auto w-full sm:w-[240px]">
           <SearchBox value={q} onChange={setQ} placeholder="Search garments…" />
         </div>
       </div>
@@ -134,7 +134,7 @@ export default function GarmentsView({
           return (
             <div
               key={g.id}
-              className="w-[230px] overflow-hidden rounded-card border border-line bg-surface shadow-card transition hover:-translate-y-[3px] hover:shadow-pop"
+              className="w-[calc(50%-8px)] sm:w-[230px] overflow-hidden rounded-card border border-line bg-surface shadow-card transition hover:-translate-y-[3px] hover:shadow-pop"
             >
               <div
                 className="relative aspect-[4/5] cursor-zoom-in bg-surface2"

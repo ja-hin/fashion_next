@@ -2,7 +2,7 @@
  * Invoice maths.
  *
  * Deliberately free of config and database imports so the arithmetic can be
- * checked in isolation — the route supplies the seller details.
+ * checked in isolation , the route supplies the seller details.
  *
  * Everything is paise. The one rule that matters: the tax components must add
  * back up to the amount actually charged, exactly. Rounding each component
@@ -11,7 +11,7 @@
  */
 
 /**
- * Indian financial year label for a date — April 1 to March 31.
+ * Indian financial year label for a date , April 1 to March 31.
  * A payment on 2026-03-31 belongs to 2025-26; one day later, to 2026-27.
  * Invoice numbering restarts each April, so this decides the counter key.
  */
@@ -100,7 +100,7 @@ function twoDigits(n: number): string {
   return o ? `${t} ${o}` : t;
 }
 
-/** Indian grouping — lakh and crore, not million. */
+/** Indian grouping , lakh and crore, not million. */
 function wordsForInt(n: number): string {
   if (n === 0) return 'Zero';
   const parts: string[] = [];
@@ -121,7 +121,7 @@ function wordsForInt(n: number): string {
   return parts.join(' ');
 }
 
-/** "Rupees One Thousand Two Hundred Fifty Only" — expected on Indian invoices. */
+/** "Rupees One Thousand Two Hundred Fifty Only" , expected on Indian invoices. */
 export function amountInWords(paise: number): string {
   const rupees = Math.floor(paise / 100);
   const p = paise % 100;
@@ -129,7 +129,7 @@ export function amountInWords(paise: number): string {
   return p ? `${head} and ${twoDigits(p)} Paise Only` : `${head} Only`;
 }
 
-/** "₹1,250.00" — invoices always show both decimal places. */
+/** "₹1,250.00" , invoices always show both decimal places. */
 export function money(paise: number): string {
   return (
     '₹' +
@@ -142,8 +142,8 @@ export function money(paise: number): string {
 
 /** "05 Aug 2026" from an ISO timestamp. */
 export function invoiceDate(iso: string | undefined): string {
-  if (!iso) return '—';
+  if (!iso) return ',';
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
+  if (Number.isNaN(d.getTime())) return ',';
   return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 }

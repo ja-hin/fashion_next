@@ -7,7 +7,7 @@ import { EmptyState, SearchBox } from './ui';
 import ModelFolderModal from './ModelFolderModal';
 import type { SavedModel, LbItem } from '@/lib/client/types';
 
-/** The "My Models" tab — the roster of reusable people. */
+/** The "My Models" tab , the roster of reusable people. */
 export default function ModelsView({
   onZoom,
   onBalance,
@@ -76,12 +76,12 @@ export default function ModelsView({
         />
       </div>
 
-      {/* Admin only — a regular user never has a filter to be told about. */}
+      {/* Admin only , a regular user never has a filter to be told about. */}
       {isAdmin && userFilter && (
         <div className="mb-[18px] flex flex-wrap items-center gap-2.5 rounded-card border border-accent-soft bg-accent-soft px-3.5 py-2.5 text-[12.5px]">
           {viewing ? (
             <>
-              <span className="font-bold text-accent">{viewing.uid || '—'}</span>
+              <span className="font-bold text-accent">{viewing.uid || ','}</span>
               <span className="text-muted">{viewing.email}</span>
             </>
           ) : (
@@ -112,14 +112,14 @@ export default function ModelsView({
             titleCase(m.tags?.gender ?? ''),
             titleCase(m.tags?.vibe ?? ''),
           ]
-            .filter((t) => t && t !== '—')
+            .filter((t) => t && t !== ',')
             .join(' · ');
 
           return (
             <div
               key={m.id}
               onClick={() => setOpenMid(m.id)}
-              className="w-[230px] cursor-pointer overflow-hidden rounded-card border border-line bg-surface shadow-card transition hover:-translate-y-[3px] hover:shadow-pop"
+              className="w-[calc(50%-9px)] sm:w-[230px] cursor-pointer overflow-hidden rounded-card border border-line bg-surface shadow-card transition hover:-translate-y-[3px] hover:shadow-pop"
             >
               <div className="relative aspect-[4/3] bg-surface2">
                 <span className="absolute left-2 top-2 z-[2] rounded-[5px] bg-black/70 px-[7px] py-[3px] text-[9px] font-bold text-white">

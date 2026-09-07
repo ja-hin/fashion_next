@@ -22,7 +22,7 @@ interface Props {
    *
    * With a shoot the references are stills that already show the model in the
    * garment, so the video keeps that person. From uploads there is no person
-   * yet, so the guarantee is the garment and the model is invented — the server
+   * yet, so the guarantee is the garment and the model is invented , the server
    * swaps the lock accordingly. Same modal, because the choices are identical.
    */
   pid: string | null;
@@ -51,7 +51,7 @@ type Phase = 'setup' | 'working' | 'done';
  * The frames a customer picks here are the reference lock: the video keeps the
  * face and the garment from stills they have already approved, rather than
  * inventing a model of its own. That is why this opens from inside a shoot and
- * offers no upload — an unrelated photo has nothing to stay consistent with.
+ * offers no upload , an unrelated photo has nothing to stay consistent with.
  */
 export default function VideoModal({
   pid,
@@ -95,7 +95,7 @@ export default function VideoModal({
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose, phase]);
 
-  /** Changing preset discards any tuning — the brief it edited is gone. */
+  /** Changing preset discards any tuning , the brief it edited is gone. */
   function pickPreset(key: string) {
     setPresetKey(key);
     setInstruction('');
@@ -127,7 +127,7 @@ export default function VideoModal({
 
   async function tune() {
     const text = instruction.trim();
-    // A photo on its own is a complete request — "make it look like this".
+    // A photo on its own is a complete request , "make it look like this".
     if ((!text && !ref) || tuning) return;
     setTuning(true);
     try {
@@ -145,11 +145,11 @@ export default function VideoModal({
       if (j.brief) setBrief(j.brief);
       if (j.gist) setGist(j.gist);
       if (custom) setAuthored(true);
-      // The photo has been read into the brief — keeping it staged would send
+      // The photo has been read into the brief , keeping it staged would send
       // it again on the next tweak and re-describe a scene already written in.
       clearRef();
     } catch (e) {
-      // The brief simply stays as it was — nothing was charged for trying.
+      // The brief simply stays as it was , nothing was charged for trying.
       await dialog.alert(e instanceof Error ? e.message : 'Could not reach Genie just now.');
     } finally {
       setTuning(false);
@@ -162,7 +162,7 @@ export default function VideoModal({
     try {
       let res: Response;
       if (fromShoot) {
-        // The frames are already on the server — sending filenames rather than
+        // The frames are already on the server , sending filenames rather than
         // bytes keeps a caller from billing arbitrary images to this shoot.
         res = await fetch('/api/video', {
           method: 'POST',
@@ -369,14 +369,14 @@ export default function VideoModal({
                   >
                     <div className="text-[12.5px] font-bold">✎ Describe your own</div>
                     <div className="mt-0.5 text-[10.5px] leading-[1.35] text-muted">
-                      Any scene, mood and music — written for you
+                      Any scene, mood and music , written for you
                     </div>
                   </button>
                 </div>
               </div>
 
               {/* ── 4 · Genie ── */}
-              {/* Genie by name and by face, the same as on the results grid —
+              {/* Genie by name and by face, the same as on the results grid ,
                   it is the same job (say it plainly, get direction back), so it
                   should not look like a different tool here. */}
               <div className="mb-5 rounded-[13px] border border-line bg-surface2 p-3">
@@ -386,7 +386,7 @@ export default function VideoModal({
                     <div className="text-[13px] font-bold">Genie · video director</div>
                     <div className="text-[10.5px] leading-[1.5] text-muted">
                       {custom
-                        ? 'Describe the film you want — Genie writes the shots, camera and music.'
+                        ? 'Describe the film you want , Genie writes the shots, camera and music.'
                         : 'Change the scene, mood, pace or music. Your model and garment stay locked.'}
                     </div>
                   </div>
@@ -398,7 +398,7 @@ export default function VideoModal({
                     onChange={(e) => {
                       setInstruction(e.target.value);
                       // Editing the description invalidates the brief written
-                      // from the old one — generating now would shoot the
+                      // from the old one , generating now would shoot the
                       // previous scene.
                       if (custom) setAuthored(false);
                     }}
@@ -411,7 +411,7 @@ export default function VideoModal({
                     className="flex-1"
                   />
                   {/* A photo of a place is often easier to hand over than to
-                      describe. It never reaches the video model — Genie reads
+                      describe. It never reaches the video model , Genie reads
                       it into the brief as set and lighting notes, which is what
                       keeps the identity lock honest. */}
                   <button
@@ -459,7 +459,7 @@ export default function VideoModal({
                   </div>
                 )}
 
-                {/* The gist is the only part of the brief a customer reads —
+                {/* The gist is the only part of the brief a customer reads ,
                     the JSON behind it is the model's business, not theirs. */}
                 <div className="mt-2.5 rounded-[10px] bg-accent-soft p-[10px_12px] text-[12px] leading-[1.5] text-accent">
                   {gist}
@@ -473,7 +473,7 @@ export default function VideoModal({
           <div className="flex flex-shrink-0 items-center gap-3 border-t border-line px-[22px] py-4">
             <div className="text-[11.5px] leading-[1.4] text-muted">
               {phase === 'working'
-                ? 'Generating — this takes about a minute. Keep this window open.'
+                ? 'Generating , this takes about a minute. Keep this window open.'
                 : custom && !authored
                   ? 'Describe the video and press “Write it” first'
                   : `${price} credits · charged only if the video comes back`}

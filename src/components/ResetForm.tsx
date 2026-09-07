@@ -41,7 +41,7 @@ export default function ResetForm({ token, valid }: { token: string; valid: bool
       <div className="rounded-2xl border border-line bg-surface p-8 shadow-pop">
         <h1 className="text-center text-[19px] font-bold">Link expired</h1>
         <p className="mb-6 mt-2.5 text-center text-[12.5px] leading-[1.6] text-muted">
-          This reset link is no longer valid. Links work once and expire after an hour — request a
+          This reset link is no longer valid. Links work once and expire after an hour , request a
           fresh one and it&apos;ll land in your inbox.
         </p>
         <Link

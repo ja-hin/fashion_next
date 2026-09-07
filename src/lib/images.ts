@@ -1,5 +1,5 @@
 /**
- * Image processing — the sharp port of the Pillow code in the old main.py.
+ * Image processing , the sharp port of the Pillow code in the old main.py.
  *
  * Four live operations:
  *   resizeInput        cap an upload at MAX_IMG_PX and normalise it to JPEG
@@ -14,7 +14,7 @@ import { AR_SIZE } from './prompts';
 
 const JPEG = { quality: 92, mozjpeg: true } as const;
 
-/** Thrown when an upload isn't a readable image — surfaced to the user as a 400. */
+/** Thrown when an upload isn't a readable image , surfaced to the user as a 400. */
 export class BadImageError extends Error {
   constructor(message = 'Could not read that image. Please upload a JPG, PNG, WebP or AVIF file.') {
     super(message);
@@ -148,7 +148,7 @@ export async function composeDisplayGrid(frames: Buffer[]): Promise<Buffer> {
 
 /**
  * Best-effort: true when an uploaded on-model photo looks like it's missing or
- * cropped at the head. Deliberately conservative — it only flags when the top
+ * cropped at the head. Deliberately conservative , it only flags when the top
  * centre band has body content but almost no skin tone, i.e. shoulders and
  * garment with the head cut off above the frame.
  *

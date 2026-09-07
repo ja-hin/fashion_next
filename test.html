@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Genie · smoke summon — animation preview</title>
+<title>Genie · smoke summon , animation preview</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   :root{--bg:#f4f3ef;--ink:#191813;--muted:#77756c;--line:#e6e3dc;--accent:#7c5cff;--gold:#c9a24b}
@@ -41,12 +41,12 @@
   @keyframes bob{0%,100%{transform:translateY(0) rotate(-1.2deg)}50%{transform:translateY(-9px) rotate(1.2deg)}}
   @keyframes halo{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:.8;transform:scale(1.15)}}
 
-  /* vanish (poof) — quick, smooth shrink to a point + soft blur/fade; bob paused */
+  /* vanish (poof) , quick, smooth shrink to a point + soft blur/fade; bob paused */
   .genie.poof{animation:none;opacity:0;filter:blur(6px);
      transform:scale(.1) translateY(-6px);
      transition:opacity .40s ease-in, filter .40s ease-in, transform .44s cubic-bezier(.55,0,.82,.2)}
   .genie.hidden{opacity:0;visibility:hidden}
-  /* materialize — grow back from a point with a gentle pop */
+  /* materialize , grow back from a point with a gentle pop */
   .genie.materialize{animation:materialize .6s cubic-bezier(.2,.9,.3,1.25)}
   @keyframes materialize{
     0%{opacity:0;filter:blur(9px);transform:scale(.12)}
@@ -81,7 +81,7 @@
 </style>
 </head>
 <body>
-  <div class="top"><span class="d">✦</span> AImageGen · animation preview</div>
+  <div class="top"><span class="d">✦</span> Faishon Studio · animation preview</div>
   <div class="wrap">
     <h2>Genie summon animation</h2>
     <div class="hint">Click the floating Genie card → it poofs into smoke and the overlay sweeps in. Close the overlay → Genie re-materialises from smoke.</div>
@@ -107,7 +107,7 @@
   <div class="overlay" id="overlay">
     <div class="ov-hd"><div class="orb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2l2.3 6.1L20.5 10l-6.2 1.9L12 18l-2.3-6.1L3.5 10l6.2-1.9z"/></svg></div>
       <div class="nm">Genie</div><button class="x" onclick="dismiss()">✕</button></div>
-    <div class="ov-body"><span>Overlay placeholder — the real Genie chat UI goes here.<br><br>Close me (✕) to watch Genie re-appear from smoke.</span></div>
+    <div class="ov-body"><span>Overlay placeholder , the real Genie chat UI goes here.<br><br>Close me (✕) to watch Genie re-appear from smoke.</span></div>
   </div>
 
   <div class="note">Preview: click Genie → smoke out + overlay in · close ✕ → smoke in</div>

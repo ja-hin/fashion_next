@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 /**
  * Change your own password.
  *
- * `setPassword` destroys every session for the account — which is the point:
+ * `setPassword` destroys every session for the account , which is the point:
  * anyone else holding a cookie is signed out. A fresh cookie is then issued to
  * this browser, so the person who made the change stays where they were instead
  * of being bounced to the login screen for doing the right thing.

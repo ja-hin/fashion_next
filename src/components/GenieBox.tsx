@@ -66,14 +66,14 @@ export default function GenieBox({
         type="button"
         onClick={run}
         disabled={busy}
-        title="Prompt Genie — sharpen your wording"
+        title="Prompt Genie , sharpen your wording"
         className={`group absolute bottom-[7px] right-[7px] flex items-center justify-center rounded-lg transition hover:scale-110 disabled:opacity-50 ${
           compact ? 'h-[26px] w-[26px]' : 'h-[30px] w-[30px]'
         }`}
       >
         <GenieIcon className={compact ? 'h-6 w-6' : 'h-7 w-7'} />
         <span className="pointer-events-none absolute bottom-[38px] right-0 z-[9] w-[184px] rounded-lg bg-ink px-2.5 py-2 text-[11px] leading-[1.45] text-surface opacity-0 transition group-hover:opacity-100">
-          <b className="text-[#c9a8ff]">✦ Prompt Genie</b> — sharpen your wording.{' '}
+          <b className="text-[#c9a8ff]">✦ Prompt Genie</b> , sharpen your wording.{' '}
           {geniePrice > 0 ? `${geniePrice} credit each.` : 'Free.'}
         </span>
       </button>

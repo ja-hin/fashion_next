@@ -9,7 +9,7 @@
  * compositor can handle on its own.
  *
  * Everything animates transform / opacity / filter only, and no particle
- * carries a box-shadow — the glow comes from a bright gradient core instead.
+ * carries a box-shadow , the glow comes from a bright gradient core instead.
  * That keeps the whole burst off the paint path, so the drawer sliding in at
  * the same moment stays smooth.
  */
@@ -105,7 +105,7 @@ function shockRing(x: number, y: number) {
  * Burst smoke at a point on screen.
  *
  * `gather: false` scatters outward (Genie leaving), `true` converges inward
- * (Genie returning). A no-op under prefers-reduced-motion — the card still
+ * (Genie returning). A no-op under prefers-reduced-motion , the card still
  * appears and disappears, just without the theatre.
  */
 export function smokeBurst(x: number, y: number, gather: boolean): void {

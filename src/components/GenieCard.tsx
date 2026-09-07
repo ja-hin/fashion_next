@@ -6,14 +6,14 @@ import { GenieIcon } from './icons';
 
 /** Timings mirror the animation durations in globals.css. */
 const OVERLAY_LAG = 150; // let the poof start before the drawer sweeps in
-const POOF_MS = 470; // vanish finished — safe to hide
+const POOF_MS = 470; // vanish finished , safe to hide
 const REFORM_LAG = 150; // let the drawer clear before Genie comes back
 const MATERIALIZE_MS = 640;
 
 type Phase = 'idle' | 'poof' | 'hidden' | 'materialize';
 
 /**
- * The floating "Ask Genie" tile beside "Add pose" — and the summon it performs.
+ * The floating "Ask Genie" tile beside "Add pose" , and the summon it performs.
  *
  * Clicking it does not simply open a panel: the card bursts into smoke, the
  * drawer sweeps in behind it, and closing the drawer re-forms the card out of
@@ -35,7 +35,7 @@ export default function GenieCard({
   const cardRef = useRef<HTMLButtonElement>(null);
   const [phase, setPhase] = useState<Phase>('idle');
 
-  // Every step is a timeout, and the user can navigate away mid-sequence — so
+  // Every step is a timeout, and the user can navigate away mid-sequence , so
   // they are tracked and cleared rather than left to fire into a dead tree.
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const after = (ms: number, fn: () => void) => {
@@ -49,7 +49,7 @@ export default function GenieCard({
     [],
   );
 
-  /** Centre of the card in viewport coords — where the smoke comes from. */
+  /** Centre of the card in viewport coords , where the smoke comes from. */
   function centre() {
     const r = cardRef.current?.getBoundingClientRect();
     return r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : { x: 0, y: 0 };
@@ -71,7 +71,7 @@ export default function GenieCard({
     if (open || phase !== 'hidden') return;
 
     after(REFORM_LAG, () => {
-      // Measured while still hidden — `visibility: hidden` keeps the slot in
+      // Measured while still hidden , `visibility: hidden` keeps the slot in
       // layout, so the centre is the same point the smoke left from.
       const { x, y } = centre();
       setPhase('materialize');
@@ -100,7 +100,7 @@ export default function GenieCard({
         onClick={summon}
         aria-hidden={phase === 'hidden'}
         tabIndex={phase === 'hidden' ? -1 : undefined}
-        title="Ask Genie — describe a shot, build a catalogue, or match a reference photo"
+        title="Ask Genie , describe a shot, build a catalogue, or match a reference photo"
         className={`genie-card group relative w-[190px] cursor-pointer rounded-[18px] border border-accent/25 px-[14px] py-4 text-center ${stateClass}`}
       >
         <span className="genie-orb relative mx-auto mb-2.5 flex h-[64px] w-[64px] items-center justify-center transition group-hover:scale-105">

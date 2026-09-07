@@ -16,7 +16,7 @@ interface Props {
 export default function Lightbox({ items, index, onIndex, onClose }: Props) {
   const item = items[index];
 
-  // imgSrc() cache-busts with Date.now(), so it has to be pinned per image —
+  // imgSrc() cache-busts with Date.now(), so it has to be pinned per image ,
   // recomputing it on every render would restart the load (and the spinner).
   const url = item?.url ?? '';
   const src = useMemo(() => (url ? imgSrc(url, 'web') : ''), [url]);

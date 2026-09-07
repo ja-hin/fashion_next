@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // sharp + mongodb are native/server-only — keep them out of the bundler so
+  // sharp + mongodb are native/server-only , keep them out of the bundler so
   // Next doesn't try to trace or inline their binaries into route bundles.
   serverExternalPackages: ['sharp', 'mongodb', '@google/genai'],
 
@@ -12,7 +12,7 @@ const nextConfig = {
 
   // Long-running generation happens in-process (see src/lib/jobs.ts), so the app
   // must run as ONE real Node server (`next start` behind nginx), never in an
-  // edge/serverless runtime and never clustered across workers — a poll could
+  // edge/serverless runtime and never clustered across workers , a poll could
   // otherwise land on a process that has never heard of the job. Every
   // generation route pins `runtime = 'nodejs'` explicitly.
 

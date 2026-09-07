@@ -6,7 +6,7 @@ import AuthShell from '@/components/AuthShell';
 import ForgotForm from '@/components/ForgotForm';
 
 export const runtime = 'nodejs';
-export const metadata: Metadata = { title: 'Reset your password — Faishon.studio' };
+export const metadata: Metadata = { title: 'Reset your password , Faishon.studio' };
 
 export default async function ForgotPage() {
   await ensureBootstrapped();

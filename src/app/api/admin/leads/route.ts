@@ -6,7 +6,7 @@ import type { LeadStatus } from '@/lib/types';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-/** Newest first, capped — the panel shows a working list, not an archive. */
+/** Newest first, capped , the panel shows a working list, not an archive. */
 const LIMIT = 200;
 
 /** Every enquiry, for the admin panel. */

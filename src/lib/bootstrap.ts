@@ -76,7 +76,7 @@ async function bootstrap(): Promise<void> {
   await ensureIndexes();
   await getSettings(); // materialise the settings document with defaults
 
-  // Before the admin check below — that returns early once an admin exists, and
+  // Before the admin check below , that returns early once an admin exists, and
   // a backfill placed after it would never run on an existing install.
   await backfillUserIds();
   await backfillFirstPayments();

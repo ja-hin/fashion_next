@@ -1,14 +1,19 @@
 /* ============ THEME TOKENS ============ */
 :root{
   --flame:#E4572E; --flame-2:#D0491F; --mint:#1F9E6E;
-  /* Playfair carries the headings — high-contrast and editorial, which is the
+  /* Playfair carries the headings , high-contrast and editorial, which is the
      register a fashion product wants. Geist keeps the body and the technical
      labels quiet and modern underneath it, so the serif is the only voice
      raised on the page. */
   /* One size for every section heading. Each section used to carry its own,
      which had drifted from 2.5rem to 4rem across the page and left the
      sections looking unrelated to each other. */
-  --h2:25px;
+  /* Section headings: 25px on a phone, 33px on a desktop. `2.6vw` is what makes
+     both ends land exactly , it reaches 25px at a 960px viewport and 33px at
+     1270px, so the clamp holds the floor below one and the ceiling above the
+     other. Set on the token rather than per heading, because eight rules read
+     it and only one of them was `.sec-h2`. */
+  --h2:clamp(25px,2.6vw,33px);
 
   --serif:"Playfair Display",Georgia,serif;
   --sans:"Geist","Geist Fallback",system-ui,-apple-system,sans-serif;
@@ -23,7 +28,7 @@
   --shadow:0 30px 70px -35px rgba(23,21,15,.5);
   --grain-blend:multiply; --grain-op:.05;
   --veil:radial-gradient(ellipse 72% 62% at 50% 45%, rgba(241,236,225,.62), rgba(241,236,225,.97) 78%);
-  /* The bar is dark in both states — see the note by `header.nav.solid`. */
+  /* The bar is dark in both states , see the note by `header.nav.solid`. */
   --nav-bg:rgba(10,9,8,.86);
   --glow:radial-gradient(circle, rgba(228,87,46,.12), transparent 62%);
 }
@@ -43,7 +48,7 @@
 
 *{box-sizing:border-box}
 /* No overflow on the root at all: `clip` here is what silently killed every
-   `position:sticky` pin on the page — Chrome treats a clip container as the
+   `position:sticky` pin on the page , Chrome treats a clip container as the
    sticky's scrollport, and a box that never scrolls never unsticks. The
    horizontal overflow is still held by `body{overflow-x:hidden}` below, which
    propagates to the viewport now that the root is visible again. */
@@ -75,8 +80,8 @@ h1,h2,h3{margin:0;font-family:var(--serif);font-weight:500;letter-spacing:-.014e
 /* ============ shared card hover: gradient rim + coloured bloom ============
    Opt in by adding `card-glow` alongside a card's own class. Two independent parts:
 
-   The RIM is one gradient masked down to its own padding box — the standard
-   two-layer mask/exclude trick — so it rides over whatever border the card
+   The RIM is one gradient masked down to its own padding box , the standard
+   two-layer mask/exclude trick , so it rides over whatever border the card
    already carries without a second element and without touching the card's
    background. It lives on ::after because `.stat` already spends ::before on
    its top accent.
@@ -120,14 +125,14 @@ header.nav.nav-away{transform:translateY(-100%)}
 /* Dark once it solidifies, not light. It starts transparent over the dark hero
    and used to flip to the page's cream on scroll, which meant the logo, links
    and burger all had to swap colour mid-scroll. Keeping it dark throughout
-   makes the bar one object that fades in rather than two that trade places —
+   makes the bar one object that fades in rather than two that trade places ,
    and the hairline goes light with it, since a dark-on-light rule is invisible
    against this. */
 header.nav.solid{background:var(--nav-bg);backdrop-filter:blur(12px);
   border-color:rgba(237,231,218,.12)}
 /* Solid from the first pixel, for pages with no dark hero under the bar.
    `.solid` only arrives once landing.js sees 40px of scroll, which is right on
-   the home page — the bar is transparent over a dark hero until then. On a page
+   the home page , the bar is transparent over a dark hero until then. On a page
    that opens on the cream background it meant light-on-dark contents floating on
    cream: a white logo and pale links on pale paper. A separate class rather than
    presetting `.solid`, because the frame loop owns that one and would clear it
@@ -156,7 +161,7 @@ footer .logo-img{height:46px}
    `@property` is what makes the angle animatable: a plain custom property is
    an untyped token, so it would jump 0deg → 360deg with nothing in between.
    Declaring it an <angle> is what lets the engine interpolate it. Where
-   @property is unsupported the gradient simply holds at 0deg — a static rim,
+   @property is unsupported the gradient simply holds at 0deg , a static rim,
    not a broken one. */
 @property --sweep-angle{syntax:"<angle>";initial-value:0deg;inherits:false}
 @keyframes sweep{to{--sweep-angle:360deg}}
@@ -167,7 +172,7 @@ footer .logo-img{height:46px}
 .btn-cta{background:var(--card);color:var(--text);border-color:var(--line-soft);
   border-radius:10px;position:relative;isolation:isolate;
   box-shadow:0 10px 26px -18px rgba(23,21,15,.5); padding: 0.8em;}
-/* Same masked ring as .hiw-card — one gradient clipped to its own padding box,
+/* Same masked ring as .hiw-card , one gradient clipped to its own padding box,
    so only the rim paints and the button's white face is untouched. */
 .btn-cta::before{content:"";position:absolute;inset:0;border-radius:inherit;
   padding:1.6px;pointer-events:none;
@@ -180,7 +185,7 @@ footer .logo-img{height:46px}
 .btn-cta:hover{transform:translateY(-2px);
   box-shadow:0 16px 34px -18px rgba(23,21,15,.5),
              0 18px 40px -20px color-mix(in srgb,#7c5cff 40%,transparent)}
-/* Twice round while the pointer is on it — the button answers the hover
+/* Twice round while the pointer is on it , the button answers the hover
    without changing colour or size enough to shift anything around it. */
 .btn-cta:hover::before{animation-duration:3s}
 .btn-line{border-color:var(--line);color:var(--text)}
@@ -205,12 +210,12 @@ footer .logo-img{height:46px}
 .hero-note{font-family:var(--mono);font-size:.66rem;color:var(--muted);margin-top:22px;letter-spacing:.12em;text-transform:uppercase;opacity:0;animation:fadeup 1s .9s forwards}
 @keyframes fadeup{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
 
-/* the collage — three overlapping frames, each easing up in turn */
+/* the collage , three overlapping frames, each easing up in turn */
 .collage{position:relative;height:min(76svh,680px)}
 .pl{position:absolute;border-radius:6px;overflow:hidden;box-shadow:var(--shadow);opacity:0;animation:plin 1s cubic-bezier(.16,.84,.24,1) forwards}
 /* Top-anchored, not centred.
    `cover` on a portrait photograph in a plate that is wider than it is tall
-   scales to the width and overflows vertically — and the default `50% 50%`
+   scales to the width and overflows vertically , and the default `50% 50%`
    spends that overflow equally at both ends, which takes the crown off every
    model. `0%` keeps the top of the source, so whatever headroom the photograph
    was framed with is the headroom the plate shows; the trim all comes off the
@@ -221,7 +226,7 @@ footer .logo-img{height:46px}
 @keyframes plin{from{opacity:0;transform:translateY(26px) rotate(var(--r,0deg))}to{opacity:1;transform:rotate(var(--r,0deg))}}
 /* Four plates, laid so the hero frame keeps the left and the three smaller ones
    stack down the right and across the bottom. Each is nudged off-square by a
-   degree or two — a perfectly aligned collage reads as a grid, not a pinboard.
+   degree or two , a perfectly aligned collage reads as a grid, not a pinboard.
    The right column stops at 78% so the SHOT ON stamp has its corner. */
 .pl.main{left:4%;top:2%;width:52%;height:74%;--r:0deg;animation-delay:.25s;z-index:2}
 .pl.b{right:0;top:0;width:40%;height:40%;--r:1.6deg;animation-delay:.4s;z-index:3}
@@ -235,7 +240,7 @@ footer .logo-img{height:46px}
 .pl .pl-media{position:absolute;inset:0;z-index:1;transition:opacity .45s,transform .45s}
 .pl .pl-media.out{opacity:0;transform:scale(1.03)}
 .pl .pl-media img,.pl .pl-media svg{width:100%;height:100%;object-fit:cover;object-position:50% 0%;display:block}
-/* A camera flash on the lead frame — it is what makes the swap read as a shot
+/* A camera flash on the lead frame , it is what makes the swap read as a shot
    being taken rather than a slideshow advancing. */
 .shutter{position:absolute;inset:0;background:#fff;opacity:0;z-index:2;pointer-events:none}
 .shutter.snap{animation:snap .32s ease-out}
@@ -286,12 +291,16 @@ footer .logo-img{height:46px}
 .rail-head{max-width:1180px;margin:0 auto;padding:clamp(44px,5vw,68px) 24px 0;text-align:center}
 .rail-head h2{font-size:var(--h2);margin-top:16px}
 .rail-head h2 em{font-style:italic;color:var(--flame)}
+.rv h2 em{font-style:italic;color:var(--flame)}
+
+.head h2 em{font-style:italic;color:var(--flame)}
+
 .rail-head .eyebrow{color:var(--flame)}
 .rail-head .sec-p{color:var(--dim);font-size:1.02rem;line-height:1.6;max-width:56ch;margin:18px auto 0}
 
 .rail-pinzone{position:relative}
 /* `pan-y` hands vertical swipes to the browser and keeps horizontal ones for
-   the drag handler in landing.js — without it a sideways swipe on a phone does
+   the drag handler in landing.js , without it a sideways swipe on a phone does
    nothing at all, because the browser has no horizontal scroll to give it. */
 /* Capped, not proportional. At `80svh` the pin grew with the window while the
    cards stayed ~405px tall, so a 1150px screen centred them inside 920px and
@@ -317,12 +326,12 @@ footer .logo-img{height:46px}
   border:1px solid var(--line-soft);border-radius:10px;overflow:hidden;
   box-shadow:0 10px 26px -20px rgba(23,21,15,.5);
   /* `translate` is left free for the reveal below, so the two compose instead
-     of overwriting each other — the lift is the only thing on `transform`. */
+     of overwriting each other , the lift is the only thing on `transform`. */
   transition:transform .35s cubic-bezier(.2,.7,.2,1),border-color .35s,box-shadow .35s}
 .rcard:hover{transform:translateY(-8px);border-color:rgba(228,87,46,.55);
   box-shadow:0 26px 46px -28px rgba(23,21,15,.55)}
 
-/* Still dark behind the picture — it is a photographic frame, and a light
+/* Still dark behind the picture , it is a photographic frame, and a light
    ground would flash white before the image paints. */
 .rcard .pimg{position:relative;aspect-ratio:4/3.1;background:#1b1915;overflow:hidden}
 .rcard .pimg img,.rcard .pimg svg{width:100%;height:100%;object-fit:cover;display:block;
@@ -351,7 +360,7 @@ footer .logo-img{height:46px}
   color:var(--muted);text-transform:uppercase}
 
 /* Each card rises as the track carries it in. Gated behind `.reveal`, which
-   landing.js adds — without JS nothing is ever hidden in the first place. */
+   landing.js adds , without JS nothing is ever hidden in the first place. */
 .rail-track.reveal .rcard{opacity:0;translate:0 26px}
 .rail-track.reveal .rcard.in{opacity:1;translate:none;
   transition:opacity .55s cubic-bezier(.2,.7,.2,1),translate .55s cubic-bezier(.2,.8,.2,1)}
@@ -386,7 +395,7 @@ footer .logo-img{height:46px}
   transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s,border-color .35s}
 /* The accent draws itself across the top edge when the number starts counting,
    so the card arrives as one gesture rather than two. `.lit` is set by the
-   same observer that runs the count — see landing.js. */
+   same observer that runs the count , see landing.js. */
 .stat::before{content:"";position:absolute;left:0;top:0;height:3px;width:100%;
   background:linear-gradient(90deg,var(--flame),transparent);
   transform:scaleX(0);transform-origin:0 50%;
@@ -407,7 +416,7 @@ footer .logo-img{height:46px}
 
 /* ---------- assurances ---------- */
 /* These are the reassurances, so they are set as eight affirmative cards
-   rather than ruled rows — underlined grey text reads as the small print the
+   rather than ruled rows , underlined grey text reads as the small print the
    heading is promising it is not. */
 .assure{padding:clamp(30px,4vw,50px) 0 clamp(60px,8vw,100px)}
 .agrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -420,8 +429,8 @@ footer .logo-img{height:46px}
    so the block lands as a sweep rather than eight things at once.
 
    Deliberately an animation on `translate`, not a transition on `transform`:
-   a staggered transition-delay would also delay the hover lift — the eighth
-   card would hang for 385ms before moving — and an animation that filled
+   a staggered transition-delay would also delay the hover lift , the eighth
+   card would hang for 385ms before moving , and an animation that filled
    `transform` would outrank the hover rule in the cascade and pin the card
    down. `translate` is its own property, so the reveal and the lift compose
    instead of fighting. */
@@ -429,7 +438,7 @@ footer .logo-img{height:46px}
   animation-delay:calc(var(--i,0) * 55ms)}
 @keyframes aitemIn{from{opacity:0;translate:0 14px}to{opacity:1;translate:none}}
 /* A card this small would be swamped by the full bloom, so it gets a shorter
-   throw — the rim and the lift are shared, only the shadow is scaled. */
+   throw , the rim and the lift are shared, only the shadow is scaled. */
 .aitem.card-glow:hover{transform:translateY(-3px);
   box-shadow:0 10px 22px -18px rgba(23,21,15,.4),
              0 16px 32px -14px color-mix(in srgb,var(--genie) 32%,transparent)}
@@ -447,17 +456,20 @@ footer .logo-img{height:46px}
   .aitem{padding:15px 16px;font-size:.96rem}
 }
 
-/* ---------- contact sheet demo (dark in both themes — it's a light table) ---------- */
-.demo{padding:0 0 30px 0}
+/* ---------- contact sheet demo (dark in both themes , it's a light table) ---------- */
+/* Was `0` on top at every width, so "AI fashion shoot studio" began the instant
+   the reel strip ended. Matches the reels band above it so the two read as
+   evenly spaced sections rather than one running into the next. */
+.demo{padding:clamp(52px,7vw,86px) 0 30px}
 /* `auto` on the sheet track, not a fraction: sized as a fraction the sheet
-   grew with the viewport, and its frames are 3:4 — so every extra pixel of
+   grew with the viewport, and its frames are 3:4 , so every extra pixel of
    width cost a third again in height. The sheet now sets its own width and the
    copy takes what is left. */
 .demo-grid{display:grid;grid-template-columns:minmax(0,1fr) auto;
   gap:clamp(26px,3.6vw,52px);align-items:center}
 /* Sized for a column, not for the full measure: at the old clamp the headline
    ran to four lines beside the sheet. */
-.demo h2{font-size:var(--h2);margin-top:14px}
+.demo h2{margin-top:14px}
 .demo .sec-p{color:var(--dim);font-size:1rem;max-width:42ch;margin:14px 0 0;line-height:1.55}
 .demo .sec-p b{color:var(--text)}
 
@@ -470,7 +482,7 @@ footer .logo-img{height:46px}
    or bolting an unrelated class onto that paragraph purely as a hook.
 
    `revert` rather than `block`, so the pair works on whatever element it is
-   put on — a <div> or a <ul> gets its own natural display back, not a <p>'s.
+   put on , a <div> or a <ul> gets its own natural display back, not a <p>'s.
 
    Declared before the breakpoint that reverses them: these have equal
    specificity, so whichever came last would otherwise win outright. */
@@ -493,7 +505,7 @@ footer .logo-img{height:46px}
 @keyframes pop{to{opacity:1;transform:none}}
 /* Top-anchored for the poses, centred for the packshot.
    `cover` in this 3/4 cell overflows vertically for any source taller than 4:3
-   — the 9:16 frames overflow by 26% — and the default `50% 50%` spends half of
+   , the 9:16 frames overflow by 26% , and the default `50% 50%` spends half of
    that on the top, which is where the head is.
    Frame 00 is excluded on purpose: it is the garment on its own, so the whole
    piece matters and there is no head to protect. Anchoring it to the top would
@@ -505,7 +517,7 @@ footer .logo-img{height:46px}
 .frame.garment{outline:1.5px solid var(--flame);outline-offset:-1.5px}
 .frame .tag{position:absolute;top:6px;right:7px;z-index:3;font-family:var(--mono);font-size:.48rem;letter-spacing:.1em;background:var(--flame);color:#fff;padding:2px 5px;border-radius:2px;text-transform:uppercase}
 .frame .idc{position:absolute;top:6px;right:7px;z-index:3;width:8px;height:8px;border-radius:50%;background:#5FD3A3;box-shadow:0 0 0 3px rgba(95,211,163,.25)}
-/* A set whose frame is missing still holds its slot — the gap is the point,
+/* A set whose frame is missing still holds its slot , the gap is the point,
    it shows which angles this shoot does not have. */
 .frame.missing{opacity:.28!important;transform:none!important}
 
@@ -543,21 +555,26 @@ footer .logo-img{height:46px}
 
 /* ---------- pricing ---------- */
 .pricing{padding:50px 0 0 0;background:var(--bg2);border-top:1px solid var(--line-soft);transition:background .5s}
-.pricing .head{text-align:center;max-width:760px;margin:0 auto 64px}
+.pricing .head{text-align:center;max-width:760px;margin:0 auto clamp(30px,4vw,48px)}
 .pricing h2{font-size:var(--h2);margin-top:16px}
 .pricing .head p{color:var(--dim);margin-top:20px}
 /* The packs ride the same scroll-scrubbed rail as "Inside the studio": the zone
    is as tall as the row is wide, the pin holds the row still while you scroll
    through it, and landing.js maps one onto the other. `pan-y` is what lets a
-   thumb drag sideways — see the note on .rail-pin. */
+   thumb drag sideways , see the note on .rail-pin. */
 .price-pinzone{position:relative}
-.price-pin{position:sticky;top:0;height:70svh;display:flex;align-items:center;
+/* Capped, not a plain fraction. At `70svh` the pin grew with the window while
+   the card stayed ~376px, so a 1080px screen centred it inside 756px and left
+   190px of empty band above and below. The floor is not taste: `.rail-progress`
+   sits at bottom:34px inside this box, so anything under ~444px would draw that
+   hairline through the bottom of a centred card. */
+.price-pin{position:sticky;top:0;height:clamp(470px,52svh,540px);display:flex;align-items:center;
   overflow:hidden;touch-action:pan-y;cursor:grab}
 .price-pin:active{cursor:grabbing}
 .plans{display:flex;gap:16px;padding:0 24px;width:max-content;will-change:transform;align-items:stretch}
 .plans.dragging{user-select:none}
 .plans.dragging *{pointer-events:none}
-/* Wide enough that every card fits — or so nearly that scrubbing it would mean
+/* Wide enough that every card fits , or so nearly that scrubbing it would mean
    a screen and a half of pinned scroll for fifty pixels of movement. Either way
    there is nothing worth scrubbing, so the zone stops being tall, the pin has
    no range to hold in, and the packs go back to being a plain grid. The class
@@ -569,7 +586,7 @@ footer .logo-img{height:46px}
 .no-travel .plan{flex:none}
 .no-travel .rail-progress{display:none}
 /* The dots exist only where the plans grid becomes a rail. Declared here, not
-   after the breakpoint that turns them on — same specificity, so whichever
+   after the breakpoint that turns them on , same specificity, so whichever
    came last would win, and that has to be the media query. landing.js also
    sets `hidden`; this is the belt to that pair of braces. */
 .plan-dots{display:none}
@@ -587,7 +604,7 @@ footer .logo-img{height:46px}
 .p-cap{font-size:.9rem;color:var(--dim);margin:16px 0 20px}
 .plan ul{list-style:none;padding:0;margin:0 0 28px;flex:1;display:grid;gap:10px}
 .plan li{font-size:.9rem;color:var(--dim);display:flex;gap:9px;line-height:1.45}
-.plan li::before{content:"—";color:var(--flame)}
+.plan li::before{content:",";color:var(--flame)}
 .plan .btn{width:100%;justify-content:center;margin-top:auto}
 .pnote{text-align:center;font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-top:36px}
 
@@ -607,9 +624,9 @@ footer .logo-img{height:46px}
 
 /* ── contact / lead capture ───────────────────────────────────────────
    Sits between the closing CTA and the footer. Two columns: the case for
-   writing in on the left, the form on the right — so the form is what the eye
+   writing in on the left, the form on the right , so the form is what the eye
    lands on, and the reasons are there for the people who need them. */
-/* Also the page's closing section now — the full-height `.final` band that used
+/* Also the page's closing section now , the full-height `.final` band that used
    to sit above it has folded into the left column, which is why the padding is
    a little more generous than a mid-page section would want. */
 .contact{position:relative;overflow:hidden;border-top:1px solid var(--line-soft);
@@ -619,7 +636,7 @@ footer .logo-img{height:46px}
 .contact::before{content:"";position:absolute;left:-10%;top:50%;width:60vw;height:60vw;
   max-width:820px;max-height:820px;transform:translateY(-50%);border-radius:50%;
   background:var(--glow);pointer-events:none;z-index:0}
-/* Above the glow — without a stacking context of its own the grid would sit
+/* Above the glow , without a stacking context of its own the grid would sit
    under a decorative pseudo-element. */
 .contact .wrap{position:relative;z-index:1}
 .ct-grid{display:grid;grid-template-columns:1fr 1.05fr;gap:64px;align-items:start}
@@ -634,7 +651,7 @@ footer .logo-img{height:46px}
    The label starts inside the field, where a placeholder would be, and rises
    onto the border when the field is focused or has something in it. One piece
    of text doing both jobs: nothing is asked twice, and the question stays
-   readable while you answer it — which a placeholder does not, because it
+   readable while you answer it , which a placeholder does not, because it
    disappears the moment you type. */
 .ct-field{position:relative;display:block}
 .ct-field>span{
@@ -661,12 +678,12 @@ footer .logo-img{height:46px}
 .ct-field:has(select)>span{transform:translateY(-21px) scale(.84)}
 .ct-field:has(:focus)>span{color:var(--flame)}
 /* The example text belongs to the field you are filling in, not to the one you
-   are looking at — shown once the label has moved out of its way. */
+   are looking at , shown once the label has moved out of its way. */
 .ct-field textarea::placeholder{opacity:0;transition:opacity .18s}
 .ct-field textarea:focus::placeholder{opacity:.7}
 /* Without `:has()` the label has no way to know whether its field is filled, so
    a floating label would sit on top of whatever you typed. In that case it goes
-   back to the stacked micro-label it was before — plainer, but never wrong. */
+   back to the stacked micro-label it was before , plainer, but never wrong. */
 @supports not selector(:has(*)){
   .ct-field{display:grid;gap:7px}
   .ct-field>span{position:static;transform:none;background:none;padding:0;
@@ -674,7 +691,7 @@ footer .logo-img{height:46px}
   .ct-field textarea::placeholder{opacity:.7}
 }
 .ct-field textarea{resize:vertical;min-height:104px;line-height:1.55}
-/* The ring is the focus indicator, so it must not be removed with the outline —
+/* The ring is the focus indicator, so it must not be removed with the outline ,
    keyboard users have nothing else to go on. */
 .ct-field :focus-visible{outline:none;border-color:var(--flame);box-shadow:0 0 0 3px rgba(228,87,46,.16)}
 .ct-field select{appearance:none;cursor:pointer;
@@ -683,7 +700,7 @@ footer .logo-img{height:46px}
   background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:38px}
 .ct-form.sending{opacity:.6;pointer-events:none}
 
-/* Off-screen rather than display:none — a bot that skips hidden inputs would
+/* Off-screen rather than display:none , a bot that skips hidden inputs would
    walk straight past a honeypot it cannot see. */
 .ct-hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 
@@ -706,7 +723,7 @@ footer .logo-img{height:46px}
   .ct-say h2{max-width:none}
   /* The global `.rv.in{text-align:center}` further down catches everything that
      reveals, this form included. A label has to stay left of its field and a
-     rule marker left of its line, so both opt back out — the form by
+     rule marker left of its line, so both opt back out , the form by
      out-specifying it, the list by being targeted directly, which beats an
      inherited value whatever its specificity. */
   .ct-form.rv.in{text-align:left}
@@ -724,7 +741,7 @@ footer .logo-img{height:46px}
    The authored documents ship their own stylesheet; this is deliberately NOT
    that one. Those files use their own variable names over a different palette,
    and loading two systems that both define --bg would corrupt whichever landed
-   second — the same reason the marketing layout links landing.css rather than
+   second , the same reason the marketing layout links landing.css rather than
    importing it. So the body copy comes across and the styling is rebuilt on
    this page's tokens. */
 .legal{padding-top:74px}          /* clears the fixed header */
@@ -739,7 +756,7 @@ footer .logo-img{height:46px}
 
 .lg-shell{display:grid;grid-template-columns:250px 1fr;gap:56px;align-items:start;padding:46px 0 70px}
 
-/* Sticky at desktop width, a real <details> below it — see the note in
+/* Sticky at desktop width, a real <details> below it , see the note in
    LegalShell for why the collapse is markup and not script. */
 .lg-toc{position:sticky;top:96px}
 .lg-toc details{border:1px solid var(--line-soft);border-radius:8px;background:var(--card);padding:14px 16px}
@@ -754,8 +771,8 @@ footer .logo-img{height:46px}
 .lg-body h2{font-size:clamp(1.3rem,2.2vw,1.7rem);line-height:1.25;margin:46px 0 14px;
   display:flex;align-items:baseline;gap:12px;scroll-margin-top:96px}
 .lg-body h2:first-child{margin-top:0}
-/* The numeral is decoration — the heading text already reads "1. Who We Are" in
-   the contents — so it is sized down and set in mono rather than competing with
+/* The numeral is decoration , the heading text already reads "1. Who We Are" in
+   the contents , so it is sized down and set in mono rather than competing with
    the heading it sits beside. */
 .lg-body .secnum{flex:0 0 auto;font-family:var(--mono);font-size:.72rem;color:var(--flame);
   border:1px solid var(--line);border-radius:5px;padding:3px 7px;line-height:1}
@@ -776,8 +793,8 @@ footer .logo-img{height:46px}
   .lg-toc{position:static}
   .lg-head{padding:40px 0 32px}
   .lg-dates{gap:26px}
-  /* The global `.rv.in{text-align:center}` does not reach here — nothing on
-     these pages carries .rv — but the head is centred by design and the body
+  /* The global `.rv.in{text-align:center}` does not reach here , nothing on
+     these pages carries .rv , but the head is centred by design and the body
      must not follow it. */
   .lg-body{text-align:left}
 }
@@ -798,25 +815,25 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 @media(max-width:960px){
   .rv.in{text-align: center;}
   .nav-links{display:none}
-  /* The collage stacks under the copy rather than beside it, and loses height —
+  /* The collage stacks under the copy rather than beside it, and loses height ,
      a 76svh photo block below the fold is all a phone would show. */
   .hero{padding:75px 0 50px}
   .hero-grid{grid-template-columns:1fr;gap:44px}
   .collage{height:60svh}
   .stats-in{grid-template-columns:1fr 1fr}
   .demo-grid{grid-template-columns:1fr;gap:24px}
-  /* Stacked, the sheet has the column to itself — the desktop cap would leave
+  /* Stacked, the sheet has the column to itself , the desktop cap would leave
      it stranded left of a full-width block of copy. */
   .sheet{width:100%;max-width:452px;justify-self:center}
   .cost-bars{gap:30px}
 }
 @media(max-width:620px){
-  /* The clamp's 2.9rem floor never kicks in on a phone — 46px of display type
+  /* The clamp's 2.9rem floor never kicks in on a phone , 46px of display type
      ate the fold, so the h1 is pinned flat here instead. */
   .hero h1{font-size:26px !important}
   /* Centre the credits block without flattening it.
      `display:flex` here overrode the inline `display:grid` on that span, and a
-     flex row puts all four children — label, value, label, value — on one line.
+     flex row puts all four children , label, value, label, value , on one line.
      Only the alignment needed changing; the grid's two columns are what put
      "Base Credit" and "Bonus Credit" on rows of their own. */
   .p-cap span{justify-content:center !important}
@@ -824,19 +841,21 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
      scrolling nearly four screens and holding the last price in your head;
      side by side you can swipe them against each other, which is the decision
      this section exists for. Full-bleed with a 8vw gutter so a card sits dead
-     centre with its neighbours peeking in — the peek is the affordance, so it
+     centre with its neighbours peeking in , the peek is the affordance, so it
      needs no "swipe me" label. */
-  /* Still pinned — the drag works by scrolling the page, so it needs the zone's
+  /* Still pinned , the drag works by scrolling the page, so it needs the zone's
      height to push into. Just shorter, and the gutter narrows so a card sits
      centred with its neighbours peeking in. */
-  .price-pin{min-height:0;height:78svh}
+  /* The hairline is hidden at this width (below), so nothing has to clear the
+     card and the pin can sit tighter to it than the desktop one. */
+  .price-pin{min-height:0;height:clamp(430px,60svh,500px)}
   .plans{gap:12px;padding:0 8vw}
   .plan{flex:0 0 84vw}
   /* Dots here, the hairline on the desktop. Two readouts of the same position
      is one too many, and the dots are the one that reads on a phone. */
   .price-pin .rail-progress{display:none}
   /* Built by landing.js. The active dot stretches into a bar rather than just
-     changing colour — a size change reads at a glance where a shade change on
+     changing colour , a size change reads at a glance where a shade change on
      a 7px circle does not. */
   .plan-dots{display:flex;justify-content:center;align-items:center;gap:7px;margin-top:2px}
   .pdot{width:7px;height:7px;padding:0;border:0;border-radius:100px;cursor:pointer;
@@ -857,7 +876,7 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 
 /* ---------- darkroom filmstrip ---------- */
 /* A reel of frames that develop from raw negative to finished photograph as
-   they cross a central beam — the transformation the product performs, shown
+   they cross a central beam , the transformation the product performs, shown
    rather than described. Drag to scrub; page scroll drives the reel's speed. */
 .darkroom{padding:90px 0 0}
 .dark-strip{position:relative;background:#100E0B;border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);
@@ -872,7 +891,7 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 .track{display:flex;gap:16px;width:max-content;will-change:transform;padding:0 8px}
 .cell{position:relative;height:250px;aspect-ratio:3/4;border-radius:4px;overflow:hidden;flex:0 0 auto;background:#1b1915}
 .cell img,.cell svg{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
-/* The filter rides on .inner, not .cell — filtering the cell would take the
+/* The filter rides on .inner, not .cell , filtering the cell would take the
    caption and frame number down with the image. */
 .cell .inner{position:absolute;inset:0;will-change:filter,transform}
 .cell .cap{position:absolute;bottom:0;left:0;right:0;padding:12px 8px 6px;background:linear-gradient(transparent,rgba(0,0,0,.62));
@@ -899,14 +918,14 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 }
 
 /* ---------- casting panel: one garment, every model ---------- */
-/* A 5×6 matrix — five models, six setups — flipping past at shutter speed.
+/* A 5×6 matrix , five models, six setups , flipping past at shutter speed.
    The claim being made is range WITH identity held, so the minimap matters as
    much as the loupe: every frame in a row is visibly the same face. */
 .castworld{padding:20px 0 0}
-/* The head centres as one block on a shared measure — the same `-head` pattern
+/* The head centres as one block on a shared measure , the same `-head` pattern
    the reels, create and cats sections use. */
 .castworld-head{text-align:center;max-width:760px;margin:0 auto}
-.castworld-head h2{font-size:var(--h2);margin-top:16px}
+.castworld-head h2{margin-top:16px}
 .castworld-head .sec-p{color:var(--dim);font-size:1.02rem;line-height:1.6;
   margin:18px auto 0;max-width:62ch}
 .castworld-head .sec-p b{color:var(--text)}
@@ -916,26 +935,26 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 .lr-box .roll{font-family:var(--mono);font-size:.64rem;color:#F0774E;letter-spacing:.1em}
 .lr-main{display:grid;grid-template-columns:1.05fr 1fr;gap:24px;align-items:stretch}
 
-/* the loupe — the frame currently being looked at */
+/* the loupe , the frame currently being looked at */
 .loupe{position:relative;border-radius:6px;overflow:hidden;background:#1b1915;aspect-ratio:3/4;max-height:560px; width: 78%;}
 .loupe .media{position:absolute;inset:0;animation:settle .3s cubic-bezier(.2,.8,.2,1)}
 .loupe .media img,.loupe .media svg{width:100%;height:100%;object-fit:cover;display:block}
 @keyframes settle{from{transform:scale(1.035);opacity:.55}to{transform:none;opacity:1}}
-/* The overlays that used to sit here — .veil, .who, .idchip, .fno — are gone
+/* The overlays that used to sit here , .veil, .who, .idchip, .fno , are gone
    with the markup they styled. .veil went too: its only job was darkening the
    bottom of every frame so the caption could be read, and with no caption it
    was dimming the photograph for nothing. */
 .loupe .bar{position:absolute;left:0;bottom:0;height:3px;background:var(--flame);z-index:3;width:0%}
 
-/* the matrix — rows are models, columns are setups */
+/* the matrix , rows are models, columns are setups */
 /* Capped, and pushed to the right of its column.
    The label track used to take 86px of this width; with the names gone that
    went straight into the six thumbnails, which is why they grew. This puts a
-   ceiling on the matrix instead of letting it spread — five rows of 3:4 cells
+   ceiling on the matrix instead of letting it spread , five rows of 3:4 cells
    is also what sets the panel's height, so capping the width caps both. */
 .mapside{display:flex;flex-direction:column;gap:14px;min-width:0;
   width:100%;max-width:486px;justify-self:end;}
-/* Six even columns, no label track — the header row and the per-row model names
+/* Six even columns, no label track , the header row and the per-row model names
    are gone (see landing.js), so the grid is the photographs and nothing else. */
 .mm-row{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-top:6px}
 .mm-row:first-child{margin-top:0}
@@ -955,7 +974,7 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
   }
   .lr-main{grid-template-columns:1fr}
   .loupe{max-height:none; width: 100%;}
-  /* No .mapside rule here on purpose — the matrix is hidden outright below this
+  /* No .mapside rule here on purpose , the matrix is hidden outright below this
      width further down the file, so anything set on it would never apply. */
 }
 @media(prefers-reduced-motion:reduce){
@@ -963,14 +982,14 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 }
 
 /* ---------- how it works: the shot setup ---------- */
-/* An interactive version of the pitch — pick a model, a background and a pose
+/* An interactive version of the pitch , pick a model, a background and a pose
    and watch the frame change. Every other panel on this page shows finished
    work; this one lets the visitor drive it, which is the closest thing to a
    trial before signing up. */
 .hiw{padding:50px 0 0}
 .hiw-head{text-align:center;max-width:640px;margin:0 auto}
 .hiw-head .sec-p{margin-left:auto;margin-right:auto}
-/* Womenswear / Menswear — a segmented control rather than another pill row,
+/* Womenswear / Menswear , a segmented control rather than another pill row,
    because it does not set one property of the shot, it swaps the whole panel
    underneath it. */
 .hiw-tabs{margin:30px auto 0}
@@ -993,8 +1012,8 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
   position:relative;overflow:hidden}
 
 /* ── the light that runs round the card ──────────────────────────────
-   The colours are the requested sweep — transparent → violet → flame →
-   transparent — but laid out as a conic gradient rather than a linear one,
+   The colours are the requested sweep , transparent → violet → flame →
+   transparent , but laid out as a conic gradient rather than a linear one,
    because only a conic can be spun about the card's centre and read as one
    light travelling the perimeter. A linear gradient can be slid, and that
    reads as a bar crossing the card, not a border in motion.
@@ -1015,14 +1034,14 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
           mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
   -webkit-mask-composite:xor;mask-composite:exclude;
   animation:sweep 6s linear infinite}
-/* the garments being worked on — a card, not a pill: this is the one choice
+/* the garments being worked on , a card, not a pill: this is the one choice
    the visitor should be able to see rather than read */
 /* A left-aligned wrap row, not a full-width two-column grid. Garment was the
    only group in this card that spanned the whole column, which made a choice
    between two items look heavier than the model, backdrop and pose rows under
    it. Now every group in the card is a row of small controls that start at the
    same left edge. */
-/* The same track as `.hiw-tabs` — grey capsule, hairline, 5px of padding — so
+/* The same track as `.hiw-tabs` , grey capsule, hairline, 5px of padding , so
    the two rows read as one kind of control. Listed alongside it rather than
    duplicated, so a change to the track reaches both. */
 .hiw-tabs,.hiw-garments{display:flex;justify-content:center;gap:6px;width:max-content;max-width:100%;
@@ -1047,13 +1066,13 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
   padding:.62em 1.15em;font-size:.92rem;font-weight:500;cursor:pointer;
   transition:background .25s,border-color .25s,color .25s,transform .2s}
 .opt:hover{border-color:var(--text);transform:translateY(-1px)}
-/* The gradient marks every made choice — model, backdrop and pose alike. It was
+/* The gradient marks every made choice , model, backdrop and pose alike. It was
    on the model pill alone, on the reasoning that the model is the only choice
    that changes WHO is in the photo; in practice that made two of the three rows
    look like settings rather than choices. One rule now, not one per row, so
    `.opt` cannot drift between them.
    `background-image` has no interpolation, so the fill lands at once while the
-   border and text still ease — the model pill has always behaved this way. */
+   border and text still ease , the model pill has always behaved this way. */
 .opt.on{background:linear-gradient(90deg,var(--flame),#7c5cff);border-color:transparent;color:#fff}
 .hiw-cta{margin-top:30px}
 
@@ -1061,7 +1080,7 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 .hiw-view{position:relative;border-radius:16px;overflow:hidden;background:#1b1915;aspect-ratio:1/1}
 .hiw-view .media{position:absolute;inset:0;animation:settle .32s cubic-bezier(.2,.8,.2,1)}
 /* The desktop box is square while the photography is 4:5, so `cover` overflows
-   vertically and a centred crop takes ~10% off the top — the head, on a panel
+   vertically and a centred crop takes ~10% off the top , the head, on a panel
    whose entire job is showing a model. Top-anchored for the photograph only;
    the drawn croquis is authored to fit the box and must not be shifted. */
 .hiw-view .media img,.hiw-view .media svg{width:100%;height:100%;object-fit:cover;display:block}
@@ -1075,7 +1094,7 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 .hiw-flex{ display: flex; flex-direction: row; gap: 25px;}
   /* Stacked, the whole widget has to fit one phone screen. It is a thing you
      drive, and a control whose result is 400px below it is a control you
-     cannot tell is working — so every part is trimmed to keep the frame in
+     cannot tell is working , so every part is trimmed to keep the frame in
      view while you tap. No `order` override on purpose: the card still reads
      in the order it is used, category through pose, then the frame those
      choices produce. */
@@ -1106,7 +1125,7 @@ footer .fbot{margin-top:44px;padding-top:24px;border-top:1px solid var(--line-so
 }
 
 /* ---------- dark hero band ---------- */
-/* The hero runs dark in BOTH themes — photographs read better against it, and
+/* The hero runs dark in BOTH themes , photographs read better against it, and
    it gives the page a clear opening beat before the light sections below.
    Written with literals rather than the theme tokens on purpose: this band is
    dark by design, not by preference. */
@@ -1131,7 +1150,7 @@ header.nav .btn-line:hover{border-color:#EDE7DA;background:rgba(237,231,218,.06)
 
 /* ---------- mobile navigation ---------- */
 /* Below 960px the inline links and CTAs are hidden, so the burger IS the
-   navigation — it is never hidden, and it takes the nav's light-on-dark
+   navigation , it is never hidden, and it takes the nav's light-on-dark
    treatment at every scroll position. */
 .burger{display:none;position:relative;width:42px;height:42px;border:1px solid var(--line);border-radius:100px;
   background:transparent;cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px;
@@ -1182,7 +1201,7 @@ body.mnav-open .mnav-sheet{transform:none}
 
 /* ---------- "what do you want to create" accordion ---------- */
 /* Four entry points that expand on hover. The panels animate `flex-grow`
-   rather than width — grow is a single transitionable number and the row stays
+   rather than width , grow is a single transitionable number and the row stays
    exactly full whatever the viewport, where animating widths would need them
    to sum correctly at every frame. */
 .create{padding:50px 0 0}
@@ -1201,7 +1220,7 @@ body.mnav-open .mnav-sheet{transform:none}
   cursor:pointer;border:0;padding:0;text-align:left;color:#fff;display:block;
   will-change:flex-grow;transition:flex-grow .55s cubic-bezier(.22,.9,.3,1)}
 /* Only the width moves. The others keep flex-grow:1 and simply lose their share
-   as the open one claims more — 1 : 1 : 1 : 5.8 puts the open card at ~66% of
+   as the open one claims more , 1 : 1 : 1 : 5.8 puts the open card at ~66% of
    the row and each closed one at ~11%, which is the proportion in the design. */
 .cpanel.on{flex-grow:5.8}
 /* The card is a fixed window; the image behind it is what moves. Scaling the
@@ -1217,7 +1236,7 @@ body.mnav-open .mnav-sheet{transform:none}
      `object-position` handles the bigger one. Closed, the panel is narrow and
      tall, so `cover` fits by height and nothing is cropped vertically. Open,
      it is ~6x wider, so `cover` switches to fitting by width and the image
-     overflows the box vertically by a lot — and 50% 30% then holds the crop
+     overflows the box vertically by a lot , and 50% 30% then holds the crop
      30% down, which on a full-length shot lands below the chin. Panning to
      the top edge as it opens keeps the head in frame at every width. */
   transform-origin:50% 0;
@@ -1245,7 +1264,7 @@ body.mnav-open .mnav-sheet{transform:none}
 @media(max-width:860px){
   /* The row turns on its side: four full-width banners stacked, each showing
      only its name until it is opened. Sideways the panels either had to be
-     slivers or a rail that hides three of the four doors off-screen — stacked,
+     slivers or a rail that hides three of the four doors off-screen , stacked,
      all four are visible at once and the open one has the width to be read.
      Height is the animated property here rather than flex-grow: the column has
      no fixed extent to share out, so each panel owns its own size. */
@@ -1258,16 +1277,16 @@ body.mnav-open .mnav-sheet{transform:none}
   .lr-box{margin-top: 10px;}
   .sheet-foot{justify-content: center;}
   
-  /* Sized so the whole stack — one open card plus three closed — fits inside
+  /* Sized so the whole stack , one open card plus three closed , fits inside
      the pinned viewport. A row taller than the pin would have its last card
      cut off with no way to scroll to it, since scrolling is what advances the
      accordion rather than moving the section. */
   .create-row .cpanel{flex:0 0 auto;height:72px;
     transition:height .5s cubic-bezier(.22,.9,.3,1)}
-  /* `.on` is set by landing.js, not :hover — on a touch screen the first tap
+  /* `.on` is set by landing.js, not :hover , on a touch screen the first tap
      opens the panel and only the second follows the link. */
   .create-row .cpanel.on{height:min(48svh,360px)}
-  .cnext{display:none}              /* nothing to advance to — all four show */
+  .cnext{display:none}              /* nothing to advance to , all four show */
 }
 @media(prefers-reduced-motion:reduce){
   .cpanel,.cpanel img,.cpanel svg,.cpanel video,.cpanel .cname,.cpanel .cdetail{transition:none}
@@ -1276,7 +1295,7 @@ body.mnav-open .mnav-sheet{transform:none}
 /* ---------- "built for brands at every stage" category carousel ---------- */
 /* Pills pick a category; the deck fans three cards with the chosen one upright
    in the middle. The tilt on the outer two is what stops this reading as three
-   equal cards in a row — they are clearly waiting their turn. */
+   equal cards in a row , they are clearly waiting their turn. */
 .cats{overflow:hidden}
 .cats-head{text-align:center;max-width:680px;margin:0 auto}
 .cats-head .sec-p{margin:14px auto 0}
@@ -1289,7 +1308,7 @@ body.mnav-open .mnav-sheet{transform:none}
 
 /* the deck */
 .cats-stage{position:relative;height:min(78svh,660px);margin-top:40px;cursor:grab;
-  /* Horizontal gestures belong to the deck, vertical ones to the page — without
+  /* Horizontal gestures belong to the deck, vertical ones to the page , without
      this the browser claims the drag as a scroll and the deck never moves. */
   touch-action:pan-y;user-select:none;-webkit-user-select:none}
 .cats-stage.dragging{cursor:grabbing}
@@ -1318,7 +1337,7 @@ body.mnav-open .mnav-sheet{transform:none}
   box-shadow:0 8px 20px -8px rgba(10,9,8,.5)}
 .ccard .clearn .arw{transition:transform .3s}
 .ccard:hover .clearn .arw{transform:translateX(4px)}
-/* Only the middle card is a live target — the others are there to be brought
+/* Only the middle card is a live target , the others are there to be brought
    forward first, and their copy is half-turned and unreadable anyway. */
 .ccard:not(.mid){pointer-events:auto}
 .ccard:not(.mid) .clearn{display:none}
@@ -1327,7 +1346,7 @@ body.mnav-open .mnav-sheet{transform:none}
   /* One card at a time: a fanned deck at phone width is three slivers, and the
      side cards' rotated copy is unreadable. The pills still drive it. */
   .cats-stage{height:min(72svh,560px)}
-  /* One card, near full-bleed — at this width the deck is a single card, so it
+  /* One card, near full-bleed , at this width the deck is a single card, so it
      should use the room rather than sit in the middle of two empty margins. */
   .ccard{width:min(88vw,420px)}
   .ccard-in{left:26px;right:26px}
@@ -1380,8 +1399,8 @@ body.mnav-open .mnav-sheet{transform:none}
    tile and the panel it becomes must share one centre, or the smoke would
    leave from one point and the panel form at another. Transparent to the
    pointer so the copy underneath stays selectable. */
-/* The padding pushes the centre — and so the tile, the burst and the panel
-   that forms out of it — clear of the copy above. */
+/* The padding pushes the centre , and so the tile, the burst and the panel
+   that forms out of it , clear of the copy above. */
 .genie-stage{position:absolute;inset:0;z-index:3;pointer-events:none;padding-top:min(120px,14vh);
   display:flex;align-items:center;justify-content:center}
 
@@ -1416,9 +1435,9 @@ body.mnav-open .mnav-sheet{transform:none}
 .gt-sub{display:block;margin-top:3px;font-size:.76rem;color:var(--muted)}
 
 /* ---- the panel the smoke turns into ---- */
-/* Dark in both themes, like the contact sheet — it is a player, not a card. */
+/* Dark in both themes, like the contact sheet , it is a player, not a card. */
 /* The third cap is the height one: a 16/9 player plus its bar and caption is
-   taller than a short viewport, and .pin clips whatever runs past it — so the
+   taller than a short viewport, and .pin clips whatever runs past it , so the
    panel is narrowed until it fits rather than cropped. */
 .genie-modal{position:absolute;width:min(780px,calc(100vw - 40px),calc((100svh - 320px) * 16 / 9));
   border-radius:14px;overflow:hidden;opacity:0;
@@ -1488,11 +1507,14 @@ body.mnav-open .mnav-sheet{transform:none}
 }
 
 /* ---------- the output: a fan of frames that play ---------- */
-/* The arc itself is written from landing.js — the angle of each card depends
+/* The arc itself is written from landing.js , the angle of each card depends
    on how wide the card actually rendered, so it cannot be a static list of
    rotations. Everything here is the part that does not depend on that: the
    frame, the hover, and the two shapes the row takes. */
-.reels{padding:50px 0 0px;overflow:hidden}
+/* Top padding scales rather than sitting at a fixed 50px, and the phone no
+   longer zeroes it — the eyebrow was landing hard against the section above
+   with nothing between them. */
+.reels{padding:clamp(52px,7vw,86px) 0 0;overflow:hidden}
 .reels-head{text-align:center;max-width:760px}
 .reels-head h2{font-size:var(--h2);margin-top:16px}
 .reels-head h2 em{font-style:italic;color:var(--flame)}
@@ -1507,7 +1529,7 @@ body.mnav-open .mnav-sheet{transform:none}
   height:470px !important}
 
 /* Outer box carries the card's place in the arc, inner box carries the hover.
-   Two boxes because one transform cannot be written by two owners — the arc
+   Two boxes because one transform cannot be written by two owners , the arc
    is set from JS, the lift belongs to CSS. */
 .reel{position:absolute;left:50%;top:0;width:clamp(132px,15vw,212px);
   opacity:0;transform:translate(-50%,46px);
@@ -1545,7 +1567,7 @@ body.mnav-open .mnav-sheet{transform:none}
    and a box that resized with it would walk the hint below up and down. */
 /* The caption, on the frame it describes.
    Sat below the arc it could only ever name one of eleven fanned cards, and
-   the one it named was whichever you happened to be pointing at — so the row
+   the one it named was whichever you happened to be pointing at , so the row
    had a line of text that changed under you as you moved. On the card it is
    attached to the thing it is about, and every frame carries its own. */
 .reel-cap-in{position:absolute;left:0;right:0;bottom:0;z-index:3;
@@ -1566,7 +1588,7 @@ body.mnav-open .mnav-sheet{transform:none}
   font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.72);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-/* Strengthened — not revealed — on the card the row has raised: hover, keyboard
+/* Strengthened , not revealed , on the card the row has raised: hover, keyboard
    focus, or the frame the tour is playing. Exactly the three states that already
    straighten a card out of the arc. The caption is on every card at rest now, so
    what these do is deepen the scrim under the one you are looking at, which is
@@ -1583,7 +1605,6 @@ body.mnav-open .mnav-sheet{transform:none}
   /* An arc of nine frames at phone width is nine slivers. The same cards
      become one swipeable strip instead, and JS stops writing arc transforms
      so nothing fights the scroller. */
-  .reels{padding:0px 0 0px}
   .reel-arc{display:flex;gap:12px;height:auto;position:static;overflow-x:auto;
     padding:4px 24px 10px;scroll-snap-type:x mandatory;
     scrollbar-width:none;-ms-overflow-style:none; height: 339px !important;}
@@ -1599,7 +1620,7 @@ body.mnav-open .mnav-sheet{transform:none}
 /* A dark band, like the hero and the contact sheet: the three numbers are the
    page's summary and they read louder against black than against the cream.
    Written with literals rather than theme tokens for the same reason the hero
-   is — this band is dark by design, not by preference. */
+   is , this band is dark by design, not by preference. */
 .why{position:relative;overflow:hidden;background:#0B0A0F;color:#EDE7DA;
   padding:clamp(54px,7vw,92px) 0}
 /* Two soft pools of colour so the black is lit rather than flat. Behind the
@@ -1620,7 +1641,7 @@ body.mnav-open .mnav-sheet{transform:none}
   transition:border-color .35s,background .35s,transform .35s cubic-bezier(.2,.8,.2,1)}
 .wcard:hover{transform:translateY(-4px);border-color:rgba(237,231,218,.2);
   background:linear-gradient(180deg,rgba(237,231,218,.085),rgba(237,231,218,.02))}
-/* The flame tick above each number — the one warm mark on the card, and what
+/* The flame tick above each number , the one warm mark on the card, and what
    stops three bordered boxes reading as a table. */
 .wcard::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
   width:54px;height:2px;border-radius:2px;
@@ -1651,7 +1672,7 @@ body.mnav-open .mnav-sheet{transform:none}
    percentage in the keyframe resolves against that, not against the viewport. */
 .use-track{display:flex;width:max-content;animation:useMarquee 30s linear infinite}
 /* One copy is 25% of a four-copy track, so travelling that far lands the next
-   copy exactly where the last one started — the loop point is invisible. */
+   copy exactly where the last one started , the loop point is invisible. */
 @keyframes useMarquee{from{transform:translateX(-25%)}to{transform:none}}
 /* Reading a chip should not mean chasing it. */
 .use-marquee:hover .use-track{animation-play-state:paused}
@@ -1667,7 +1688,7 @@ body.mnav-open .mnav-sheet{transform:none}
 
 @media(max-width:860px){
   .why-grid{grid-template-columns:1fr}
-  /* The marquee already runs at every width — nothing to convert to a rail. */
+  /* The marquee already runs at every width , nothing to convert to a rail. */
   .use-chip{font-size:.9rem;padding:.62em 1.05em}
   .ens { flex-direction: column;
   }
@@ -1684,12 +1705,12 @@ body.mnav-open .mnav-sheet{transform:none}
 
 /* ---------- ensemble: the styling map ---------- */
 /* Six pieces beside one figure, each tied to the spot it is styled onto.
-   Light, on the page's own surface — this sits between two light sections and
+   Light, on the page's own surface , this sits between two light sections and
    a dark band here would read as a different site. */
 .ens{ display: flex;
     align-items: center; padding:clamp(30px,3.6vw,50px) 0}
 .ens-head{text-align:center;max-width:720px;margin:0 auto}
-.ens-head h2{font-size:var(--h2);margin-top:16px}
+.ens-head h2{margin-top:16px}
 .ens-head h2 em{font-style:italic;color:var(--flame)}
 .hiw-head h2 em{font-style:italic;color:var(--flame)}
 .demo-copy h2 em{font-style:italic;color:var(--flame)}
@@ -1698,7 +1719,7 @@ body.mnav-open .mnav-sheet{transform:none}
 
 /* Sized to its contents and centred, not stretched across the text column.
    Given a `1fr` right track the stage centred inside a 700px column while the
-   pieces stayed pinned left — a widget with a hole in the middle, and a
+   pieces stayed pinned left , a widget with a hole in the middle, and a
    tie-line that spanned the gap while the real distance was three times it.
    Both tracks are fixed now, so the gap IS the distance between them. */
 .ens-grid{--ens-gap:clamp(18px,2.4vw,32px);
@@ -1739,7 +1760,7 @@ body.mnav-open .mnav-sheet{transform:none}
 /* ---- the figure ---- */
 .ens-stage{position:relative;width:100%;justify-self:center;
   /* The shoot's own ratio (928x1152). At 2/3 the photograph would be cropped
-     at the sides — and every pin below was measured against the uncropped
+     at the sides , and every pin below was measured against the uncropped
      frame, so a crop would slide them off the pieces they point at. */
   aspect-ratio:928/1152;border-radius:14px;overflow:hidden;background:#EFEBE3;
   border:1px solid var(--line-soft);box-shadow:var(--shadow)}
@@ -1756,7 +1777,7 @@ body.mnav-open .mnav-sheet{transform:none}
   transform:scale(.72);opacity:.45;
   transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .3s}
 .ens-pin.on{transform:scale(1);opacity:1}
-/* The ring only pulses on the active pin — six pulsing at once would be noise
+/* The ring only pulses on the active pin , six pulsing at once would be noise
    rather than a pointer. */
 .ens-pin.on::after{content:"";position:absolute;inset:-5px;border-radius:50%;
   border:1.5px solid var(--flame);animation:ensPulse 1.6s ease-out infinite}
@@ -1769,10 +1790,10 @@ body.mnav-open .mnav-sheet{transform:none}
   text-transform:uppercase;white-space:nowrap;pointer-events:none;max-width:none;
   opacity:0;transition:opacity .3s,left .35s cubic-bezier(.2,.8,.2,1),top .35s cubic-bezier(.2,.8,.2,1)}
 .ens-flag.on{opacity:1}
-/* Opens leftward for a pin right of centre — see the note in landing.js. */
+/* Opens leftward for a pin right of centre , see the note in landing.js. */
 .ens-flag.flip{transform:translate(calc(-100% - 14px),-50%)}
 
-/* Aligned to the widget, not to the page — a caption stretched to the full
+/* Aligned to the widget, not to the page , a caption stretched to the full
    text column reads as belonging to the section, not to the thing above it. */
 .ens-foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
   max-width:calc(208px + 296px + 32px);margin:clamp(12px,1.6vw,18px) auto 0}

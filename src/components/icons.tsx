@@ -24,6 +24,15 @@ export const RegenIcon = ({ className = 'w-[15px] h-[15px]' }: P) => (
   </svg>
 );
 
+/** Arrow out of a tray. The mirror of DownloadIcon, so the pair read as a pair. */
+export const UploadIcon = ({ className = 'w-[15px] h-[15px]' }: P) => (
+  <svg viewBox="0 0 24 24" className={className} {...stroke}>
+    <path d="M12 16V4" />
+    <path d="M7 9l5-5 5 5" />
+    <path d="M4 15v4a1 1 0 001 1h14a1 1 0 001-1v-4" />
+  </svg>
+);
+
 export const DownloadIcon = ({ className = 'w-[15px] h-[15px]' }: P) => (
   <svg viewBox="0 0 24 24" className={className} {...stroke}>
     <path d="M12 3v12" />
@@ -179,7 +188,7 @@ export const GridIcon = ({ className = 'w-5 h-5' }: P) => (
   </svg>
 );
 
-/** My Garments — a t-shirt outline. */
+/** My Garments , a t-shirt outline. */
 export const ShirtIcon = ({ className = 'w-4 h-4' }: P) => (
   <svg viewBox="0 0 24 24" className={className} {...stroke}>
     <path d="M9 3L5 5 3 9l3 1v10h12V10l3-1-2-4-4-2" />
@@ -187,7 +196,7 @@ export const ShirtIcon = ({ className = 'w-4 h-4' }: P) => (
   </svg>
 );
 
-/** The Generate tab — a wand with a spark. */
+/** The Generate tab , a wand with a spark. */
 export const WandIcon = ({ className = 'w-4 h-4' }: P) => (
   <svg viewBox="0 0 24 24" className={className} {...stroke}>
     <path d="M4 20L16 8" />
@@ -197,7 +206,7 @@ export const WandIcon = ({ className = 'w-4 h-4' }: P) => (
   </svg>
 );
 
-/** Credits — a stack of coins, as in the balance pill. */
+/** Credits , a stack of coins, as in the balance pill. */
 export const CoinsIcon = ({ className = 'w-4 h-4' }: P) => (
   <svg viewBox="0 0 24 24" className={className} {...stroke}>
     <ellipse cx="12" cy="7" rx="8" ry="3.4" />
@@ -214,6 +223,15 @@ export const ChevronLeftIcon = ({ className = 'w-4 h-4' }: P) => (
 );
 
 /** The classic sidebar glyph: a panel with its rail picked out. */
+/** A monitor on a stand , for "this needs a bigger screen". */
+export const DesktopIcon = ({ className = 'w-4 h-4' }: P) => (
+  <svg viewBox="0 0 24 24" className={className} {...stroke}>
+    <rect x="2" y="4" width="20" height="13" rx="2" />
+    <path d="M9 21h6" />
+    <path d="M12 17v4" />
+  </svg>
+);
+
 export const PanelIcon = ({ className = 'w-4 h-4' }: P) => (
   <svg viewBox="0 0 24 24" className={className} {...stroke}>
     <rect x="3" y="4" width="18" height="16" rx="2" />
@@ -235,7 +253,7 @@ export const SaveIcon = ({ className = 'w-[15px] h-[15px]' }: P) => (
 );
 
 /**
- * The Genie mark — the character artwork, not a glyph.
+ * The Genie mark , the character artwork, not a glyph.
  *
  * Served from /genie.webp rather than the 1.65 MB source PNG in public: this
  * renders between 15px and 64px, and shipping a 1254px master for a 15px button
@@ -243,7 +261,7 @@ export const SaveIcon = ({ className = 'w-[15px] h-[15px]' }: P) => (
  * still covers the largest use at 4x DPI. Regenerate it from
  * "New-Genie Lite.png" if the artwork changes.
  *
- * `object-contain` matters — every caller sizes this with square h-/w- classes,
+ * `object-contain` matters , every caller sizes this with square h-/w- classes,
  * and the artwork is not square once its transparent margin is trimmed.
  */
 export const GenieIcon = ({ className = 'w-7 h-7' }: P) => (

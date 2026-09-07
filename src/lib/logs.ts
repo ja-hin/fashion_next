@@ -1,7 +1,7 @@
 /**
  * The append-only event log that powers the Logs and Usage tabs.
  *
- * Was data/logs.jsonl; now a MongoDB collection. Rows are never updated — one
+ * Was data/logs.jsonl; now a MongoDB collection. Rows are never updated , one
  * document per AI call (image, character-sheet frame, or Genie improvement).
  */
 import 'server-only';
@@ -32,7 +32,7 @@ export function usdCost(
 }
 
 /**
- * USD for a log row — the stored value when present, otherwise priced from the
+ * USD for a log row , the stored value when present, otherwise priced from the
  * row's token counts so rows written before this column existed still show a cost.
  */
 export function rowUsd(r: LogDoc): number {
@@ -44,7 +44,7 @@ export function rowUsd(r: LogDoc): number {
 }
 
 /**
- * Write one event. Fire-and-forget by design — logging must never be the reason
+ * Write one event. Fire-and-forget by design , logging must never be the reason
  * a successful generation reports failure, so errors are swallowed.
  */
 export async function logEvent(row: Partial<LogDoc> & { type: LogDoc['type'] }): Promise<void> {
@@ -64,7 +64,7 @@ export async function logEvent(row: Partial<LogDoc> & { type: LogDoc['type'] }):
  * Map each row's owner email to its public user id (U0007).
  *
  * Resolved at read time rather than stamped on write, so rows logged before
- * user ids existed get one too — the alternative would leave every historical
+ * user ids existed get one too , the alternative would leave every historical
  * row blank forever. One indexed query for the whole page, not one per row.
  */
 export async function withUserIds<T extends { user?: string }>(
@@ -79,6 +79,6 @@ export async function withUserIds<T extends { user?: string }>(
     .toArray();
 
   const byEmail = new Map(found.map((u) => [u.email, u.uid ?? '']));
-  // Deleted accounts leave rows behind — blank rather than a wrong id.
+  // Deleted accounts leave rows behind , blank rather than a wrong id.
   return rows.map((r) => ({ ...r, uid: byEmail.get(r.user ?? '') ?? '' }));
 }

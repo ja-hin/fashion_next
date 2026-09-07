@@ -25,7 +25,7 @@ export const POST = handler(
     const mood = str(fd, 'mood');
     const lighting = str(fd, 'lighting');
 
-    // Only build a scene override when the user actually changed something —
+    // Only build a scene override when the user actually changed something ,
     // otherwise the pose prompt keeps the hero's background verbatim.
     const scene = backdrop || mood || lighting ? sceneClause({ backdrop, lighting, mood }) : null;
 

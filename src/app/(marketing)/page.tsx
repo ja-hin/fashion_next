@@ -17,7 +17,7 @@ import { LEAD_VOLUMES } from '@/lib/leads';
 export const runtime = 'nodejs';
 /**
  * The pricing section reads admin-managed packs, so this page must not be
- * statically prerendered — a build-time snapshot would freeze prices and keep
+ * statically prerendered , a build-time snapshot would freeze prices and keep
  * serving them after an admin changed them.
  */
 export const dynamic = 'force-dynamic';
@@ -26,16 +26,16 @@ export const metadata: Metadata = {
   title: 'AI Fashion Photo & Video in minutes | Faishon Studio',
   description:
     'Create full on-model AI photoshoots and videos from one garment photo. Consistent AI models, marketplace-ready for Amazon, Flipkart and Myntra. No subscription. No lock in. Start free.',
-  alternates: { canonical: 'https://aimagegen.com/' },
+  alternates: { canonical: 'https://faishon.studio/' },
 };
 
 const ORG_LD = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  name: 'AImageGen',
+  name: 'Faishon Studio',
   legalName: '3rd i Visuals Pvt Ltd',
-  url: 'https://aimagegen.com/',
-  logo: 'https://aimagegen.com/Webassets/front.jpg',
+  url: 'https://faishon.studio/',
+  logo: 'https://faishon.studio/Webassets/front.jpg',
   description:
     'AI-powered on-model fashion photography platform for D2C brands, ecommerce sellers and agencies in India.',
   address: { '@type': 'PostalAddress', addressCountry: 'IN' },
@@ -44,7 +44,7 @@ const ORG_LD = {
 const APP_LD = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
-  name: 'AImageGen',
+  name: 'Faishon Studio',
   applicationCategory: 'DesignApplication',
   operatingSystem: 'Web',
   description:
@@ -53,48 +53,48 @@ const APP_LD = {
 
 /**
  * Offers for the SoftwareApplication schema, built from the live packs.
- * Hardcoding these means Google indexes a price the admin has since changed —
+ * Hardcoding these means Google indexes a price the admin has since changed ,
  * which is both wrong and a rich-result penalty.
  */
 const appLd = (packs: Pack[]) => ({
   ...APP_LD,
   offers: packs.map((p) => ({
     '@type': 'Offer',
-    name: `${p.name} — ${packCredits(p)} photo credits`,
+    name: `${p.name} , ${packCredits(p)} photo credits`,
     price: String(p.paise / 100),
     priceCurrency: 'INR',
-    url: 'https://aimagegen.com/pricing',
+    url: 'https://faishon.studio/pricing',
   })),
 });
 
 const FAQS: Array<[string, string]> = [
   [
     'How much does an AI photoshoot cost in India?',
-    'AImageGen produces on-model photos from ₹25 per photo on a prepaid credit wallet. A traditional ecommerce apparel photoshoot in India typically costs ₹250–₹2,500 per photo, plus model, studio and crew fees.',
+    'Faishon Studio produces on-model photos from ₹25 per photo on a prepaid credit wallet. A traditional ecommerce apparel photoshoot in India typically costs ₹250–₹2,500 per photo, plus model, studio and crew fees.',
   ],
   [
     'Can I use AI-generated photos on Amazon, Flipkart, Myntra and Meesho?',
-    "Yes. AImageGen generates marketplace-ready, correctly framed on-model images. Always review each marketplace's current listing guidelines for your category before publishing.",
+    "Yes. Faishon Studio generates marketplace-ready, correctly framed on-model images. Always review each marketplace's current listing guidelines for your category before publishing.",
   ],
   [
     'Will the same model appear across my whole catalogue?',
-    'Yes. You can save your own AI models and reuse them on every SKU — the same recognisable face across your entire catalogue, drop after drop.',
+    'Yes. You can save your own AI models and reuse them on every SKU , the same recognisable face across your entire catalogue, drop after drop.',
   ],
   [
     'Is there a minimum number of SKUs or photos?',
-    'No minimums. Traditional studios often require 100+ SKUs per shoot; with AImageGen you can shoot a single garment or a thousand.',
+    'No minimums. Traditional studios often require 100+ SKUs per shoot; with Faishon Studio you can shoot a single garment or a thousand.',
   ],
   [
     'Can I come back later and continue a shoot?',
-    'Yes. Every shoot is saved with its model, look and lighting. Restart weeks later — for a new colourway or a missing angle — with full continuity and no re-booking.',
+    'Yes. Every shoot is saved with its model, look and lighting. Restart weeks later , for a new colourway or a missing angle , with full continuity and no re-booking.',
   ],
   [
     'What image resolution do I get?',
-    'Standard output is optimised for product pages and social. Native 2K and 4K renders are available for web heroes, print and billboards — true native resolution, not upscaled.',
+    'Standard output is optimised for product pages and social. Native 2K and 4K renders are available for web heroes, print and billboards , true native resolution, not upscaled.',
   ],
   [
     'Do I need a subscription?',
-    'No. AImageGen is prepaid: load an INR credit wallet (GST invoice available) and spend it whenever you shoot. Credits stay valid for 12 months.',
+    'No. Faishon Studio is prepaid: load an INR credit wallet (GST invoice available) and spend it whenever you shoot. Credits stay valid for 12 months.',
   ],
 ];
 
@@ -111,7 +111,7 @@ const FAQ_LD = {
 /**
  * The three proof points, and the doors into the product beneath them.
  *
- * Every number here is a claim this page already makes elsewhere — the 10x in
+ * Every number here is a claim this page already makes elsewhere , the 10x in
  * the cost counter, the 2 min and the ₹25 in the stats band. Nothing new is
  * asserted, so there is one set of numbers to keep honest rather than two.
  */
@@ -143,14 +143,14 @@ const USE_CASES = [
 ];
 
 const ASSURANCES = [
-  'No minimum SKUs — shoot one kurti or a thousand',
+  'No minimum SKUs , shoot one kurti or a thousand',
   'Restart any shoot later with full continuity',
   'Save your own models & reuse them forever',
-  'Commercial rights on every image — yours, permanently',
+  'Commercial rights on every image , yours, permanently',
   'Marketplace-ready framing for Amazon, Flipkart, Myntra & Meesho',
   '2K & 4K output when you need print-grade',
   'GST invoice · INR billing · prepaid wallet',
-  'Credits valid 12 months — no subscription, no lock-in',
+  'Credits valid 12 months , no subscription, no lock-in',
 ];
 
 
@@ -163,7 +163,7 @@ export default async function LandingPage() {
     <>
       {/* The hero collage's first four frames, fetched while the HTML is still
           parsing. landing.js runs `afterInteractive`, so without these nothing
-          is even requested until hydration finishes — and the collage is the
+          is even requested until hydration finishes , and the collage is the
           first thing on the page. React hoists these into <head>.
           They are the only filenames this page hardcodes; if s1-1…s1-4 are ever
           renamed these 404 harmlessly and the collage simply loads as before. */}
@@ -183,10 +183,10 @@ export default async function LandingPage() {
 
       <header className="nav" id="nav">
         <div className="wrap nav-in">
-          <a className="logo" href="#top" data-c="" aria-label="AImageGen home">
+          <a className="logo" href="#top" data-c="" aria-label="Faishon Studio home">
             {/* eslint-disable @next/next/no-img-element */}
-            <img className="logo-img logo-light" src="/logo-black.png" alt="AImageGen" />
-            <img className="logo-img logo-dark" src="/logo-white.png" alt="AImageGen" />
+            <img className="logo-img logo-light" src="/logo-black.png" alt="Faishon Studio" />
+            <img className="logo-img logo-dark" src="/logo-white.png" alt="Faishon Studio" />
             {/* eslint-enable @next/next/no-img-element */}
           </a>
           <nav className="nav-links">
@@ -203,7 +203,7 @@ export default async function LandingPage() {
               Register <span className="arw">→</span>
             </a>
 
-            {/* Below 960px the links and CTAs move into the sheet — the three
+            {/* Below 960px the links and CTAs move into the sheet , the three
                 bars are the only nav on a phone, so they must never be hidden. */}
             <button
               className="burger"
@@ -303,12 +303,12 @@ export default async function LandingPage() {
           <div className="create-head rv">
             <span className="eyebrow">What do you want to create?</span>
             <h2 className="sec-h2">Photos, models, video</h2>
-            <span>On-model photography, custom AI models, reel-ready video — start where you need to.</span>
+            <span>On-model photography, custom AI models, reel-ready video , start where you need to.</span>
           </div>
           {/* The row sits in a pin zone on a phone: the section sticks while the
               scroll steps through the cards, so arriving at speed cannot skip
-              past them. Both wrappers are inert above 860px — the zone gets no
-              height and the pin no stickiness — so the desktop fan is
+              past them. Both wrappers are inert above 860px , the zone gets no
+              height and the pin no stickiness , so the desktop fan is
               untouched. Sized and driven by landing.js. */}
           <div className="create-pinzone" id="createZone">
             <div className="create-pin">
@@ -332,7 +332,7 @@ export default async function LandingPage() {
             <div className="scene sol" id="sc2" style={{ opacity: 0 }}>
               <div className="tag">The solution</div>
               <h2>
-                A photo-real model, dressed in your garment, <b>generated on demand</b> — in every
+                A photo-real model, dressed in your garment, <b>generated on demand</b> , in every
                 pose you direct
               </h2>
             </div>
@@ -358,7 +358,7 @@ export default async function LandingPage() {
           <div className="hiw-card">
             <div className='hiw-center'>
               {/* Womenswear / Menswear. Each carries its own garments, cast and
-                  poses, so everything below is rebuilt when this changes —
+                  poses, so everything below is rebuilt when this changes ,
                   which is why it sits above the rest of the controls. */}
               <div className='hiw-flex'>
                 <div className="hiw-group">
@@ -404,7 +404,7 @@ export default async function LandingPage() {
           <h2 className="sec-h2">Watch the film develop.</h2>
           <p className="sec-p">
             Frames enter as raw negatives and develop into finished photographs as they cross the
-            developer beam — the way a garment enters AImageGen and leaves as a shoot. Drag the
+            developer beam , the way a garment enters Faishon Studio and leaves as a shoot. Drag the
             film. Scroll the page and the reel speeds with you.
           </p>
         </div>
@@ -418,14 +418,14 @@ export default async function LandingPage() {
         </div>
 
         <div className="wrap strip-foot">
-          <span className="slbl">Raw negative → developed · AImageGen reel 01</span>
+          <span className="slbl">Raw negative → developed · Faishon Studio reel 01</span>
           <span className="slbl">Drag to scrub · scroll to speed up</span>
         </div>
       </section> */}
 
       {/* ── casting matrix ── */}
       {/* Follows the darkroom: that panel proves one garment becomes a finished
-          photograph, this one proves it becomes ANY of them — five models, six
+          photograph, this one proves it becomes ANY of them , five models, six
           setups, identity held down each row. Built by landing.js from
           /webassets/m{row}p{col}. */}
           <section className="ens" id="ensemble">
@@ -435,7 +435,7 @@ export default async function LandingPage() {
             Not just one garment.<br></br> <em>Style the whole outfit.</em>
           </h2>
           <p className="sec-p">
-            Upload the pieces — the dress, the heels, the eyewear, the hat, the bag, the necklace.
+            Upload the pieces , the dress, the heels, the eyewear, the hat, the bag, the necklace.
             Each one is recognised, given its role, and styled onto a single model as one complete
             look. Swap any piece and the rest of the look holds.
           </p>
@@ -455,7 +455,7 @@ export default async function LandingPage() {
       <section className="castworld" id="casting">
         <div className="wrap-1">
           {/* Wrapped so the three lines centre as one block on a shared measure
-              — the same `-head` pattern the reels, create and cats sections
+              , the same `-head` pattern the reels, create and cats sections
               already use. */}
           <div className="castworld-head rv">
             <span className="eyebrow">CAST ANY MODEL IN ANY BACKDROP</span>
@@ -493,7 +493,7 @@ export default async function LandingPage() {
           lands somewhere specific on one model, so the widget SHOWS where. The
           pieces sit beside the figure, a line ties the active one to its pin,
           and the pin marks the exact spot it is styled onto. Built by
-          landing.js — the imagery probes for real renders at runtime. */}
+          landing.js , the imagery probes for real renders at runtime. */}
       
 
       {/* Copy left, sheet right. Full-width the sheet was taller than the
@@ -504,7 +504,7 @@ export default async function LandingPage() {
         <div className="wrap reels-head rv">
           <span className="eyebrow">Fashion video</span>
           <h2>
-            Turn a photoshoot into <em>scroll-stopping video</em>.
+            Turn a photoshoot into <br></br><em>scroll-stopping video.</em>
           </h2>
           <p className="sec-p desktop">
             Turn every shoot into reel-ready video: the same model, the same garment, brought to life for Instagram, product pages and ads. Start from ready-made presets for ultra-realistic Instagram fashion reels, ads and PDP videos. Customize any preset, or direct your own: set the mood, the movement and the camera, and shoot the editorial look you imagined.
@@ -567,7 +567,7 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
       {/* ── the output: stills become reels ── */}
       {/* A fan of frames from one shoot, each holding a clip. Hovering a card
           straightens it out of the arc and plays it; leaving puts it back.
-          Cards, imagery and the arc geometry all come from landing.js — the
+          Cards, imagery and the arc geometry all come from landing.js , the
           angles depend on the rendered card width, so they cannot be static
           CSS. */}
      
@@ -596,7 +596,7 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
             <div className="cnt-cap">
               Catalogue photo cost
               <br />
-              <b>studio shoot → AImageGen</b>
+              <b>studio shoot → Faishon Studio</b>
             </div>
             <div className="big-num">
               <span className="rup">₹</span>
@@ -610,10 +610,10 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
               </div>
               <div className="cbar us">
                 <div className="bar" id="barUs" />
-                <span className="k-label">AImageGen</span>
+                <span className="k-label">Faishon Studio</span>
               </div>
             </div>
-            <div className="cnt-x" id="cntX">COST REDUCED UP TO 10× — AND NO RESHOOT EVER</div>
+            <div className="cnt-x" id="cntX">COST REDUCED UP TO 10× , AND NO RESHOOT EVER</div>
           </div>
         </div>
       </section>
@@ -632,7 +632,7 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
         </div>
         <div className="rail-pinzone" id="railZone">
           <div className="rail-pin">
-            {/* Filled by landing.js — each card's imagery is probed at runtime,
+            {/* Filled by landing.js , each card's imagery is probed at runtime,
                 which is a job for the browser, not the server render. */}
             <div className="rail-track" id="railTrack" />
             <div className="rail-progress">
@@ -646,7 +646,7 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
       {/* ── prompt genie: summoned by the scroll ── */}
       {/* One gesture spread over a pinned zone: the tile rises, bursts into
           smoke at the halfway mark, and the demo modal forms out of the same
-          burst — every step scrubbed from scroll position, so scrolling back
+          burst , every step scrubbed from scroll position, so scrolling back
           up gathers the smoke and puts Genie back. landing.js drives it all
           from zoneProgress(genieWrap); the tile stays clickable and simply
           scrolls you to the point where the modal is open. */}
@@ -657,7 +657,7 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
             <div className="genie-copy" id="genieCopy">
               <span className="eyebrow">PROMPT GENIE · YOUR AI ART DIRECTOR</span>
               <h2>
-                Every shoot comes with an<em> art director.</em>
+                Every shoot comes <br></br><em>with an art director.</em>
               </h2>
               <p className="desktop">
                 Direct it yourself if you like: pick the pose, the backdrop, the light and the mood, down to the last detail. Every frame answers to you.
@@ -687,7 +687,7 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
               </button>
 
               {/* Filled by landing.js: /webassets/genie-demo.mp4 if it is there,
-                  otherwise a still frame — never a broken player. */}
+                  otherwise a still frame , never a broken player. */}
               <div
                 className="genie-modal"
                 id="genieModal"
@@ -733,7 +733,7 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
       {/* ── why brands choose us ── */}
       {/* A dark band between the demos and the price: the page has just spent
           six sections showing what the product does, and this is the summary a
-          visitor scrolls back to before deciding. Static markup — nothing here
+          visitor scrolls back to before deciding. Static markup , nothing here
           needs landing.js. */}
       <section className="why" id="why">
         <div className="wrap">
@@ -757,7 +757,7 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
             <span className="eyebrow use-eyebrow">What&rsquo;s your use case?</span>
             {/* A ticker on every width. Four copies of the list, not two: the
                 track only reads as endless while one copy is at least as wide
-                as the viewport, and six chips are ~1100px — fine on a phone,
+                as the viewport, and six chips are ~1100px , fine on a phone,
                 a visible gap on a 1920 desktop. Four covers both, and the
                 keyframe travels exactly one copy so the seam never shows.
                 Copies after the first are hidden from the accessibility tree
@@ -794,7 +794,7 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
       {/* <section className="assure">
         <div className="wrap">
           <div className="rv" style={{ marginBottom: 34 }}>
-            <span className="eyebrow">The fine print — in your favour</span>
+            <span className="eyebrow">The fine print , in your favour</span>
           </div>
           <div className="agrid rv">
             {ASSURANCES.map((a, i) => (
@@ -821,10 +821,10 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
         <div className="wrap">
           <div className="head rv">
             <span className="eyebrow">Prepaid credit wallet · 1 credit = 1 photo</span>
-            <h2>Load a wallet. Shoot when you like.</h2>
+            <h2>Load a wallet.<br></br><em> Shoot when you like.</em></h2>
             <p>
               Per-photo rate drops the more you load. No subscription, no minimum SKUs, credits
-              valid 12 months. Come back any time — your models and shoots stay saved.
+              valid 12 months. Come back any time , your models and shoots stay saved.
             </p>
           </div>
         </div>
@@ -886,7 +886,7 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
                         </>
                       )}
                     </div>
-                    {/* Keeps the CTA pinned to the bottom so cards align — this
+                    {/* Keeps the CTA pinned to the bottom so cards align , this
                         is what `.plan ul { flex: 1 }` used to do. */}
                     <div style={{ flex: 1 }} />
                     <a
@@ -920,7 +920,7 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
           <div className="rv" style={{ textAlign: 'center', marginBottom: 44 }}>
             <span className="eyebrow">Questions, answered</span>
             <h2 style={{ fontSize: 'clamp(2rem,4.4vw,3.2rem)', marginTop: 14 }}>
-              Everything a studio-shopper asks us.
+              Everything a<br></br><em>studio-shopper asks us.</em>
             </h2>
           </div>
           <div className="rv">
@@ -936,19 +936,19 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
 
       {/* ── contact / lead capture ── */}
       {/* Posts to /api/leads, handled by landing.js. A plain <form> so it is
-          still submittable with JavaScript off — the handler only intercepts
+          still submittable with JavaScript off , the handler only intercepts
           to avoid the page reload. */}
       <section className="contact" id="contact">
         <div className="wrap ct-grid">
           {/* The page's closing pitch, which used to be a full-height band of
               its own directly above this. Beside the form it does the same job
-              in a third of the height, and the two calls to action — start on
-              your own, or ask us — now sit together instead of following one
+              in a third of the height, and the two calls to action , start on
+              your own, or ask us , now sit together instead of following one
               another down the page. */}
           <div className="ct-say rv">
             <span className="eyebrow">Talk to us</span>
             <h2>
-              Your catalogue is <em>closer</em> than you think.
+              Your catalogue is <br></br><em>closer than you think.</em>
             </h2>
             <p className="sec-p">
               Load a wallet, upload a garment, and watch a full on-model shoot come back before the
@@ -1036,8 +1036,8 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
           <div>
             <div className="logo">
               {/* eslint-disable @next/next/no-img-element */}
-              <img className="logo-img logo-light" src="/logo-black.png" alt="AImageGen" />
-              <img className="logo-img logo-dark" src="/logo-white.png" alt="AImageGen" />
+              <img className="logo-img logo-light" src="/logo-black.png" alt="Faishon Studio" />
+              <img className="logo-img logo-dark" src="/logo-white.png" alt="Faishon Studio" />
               {/* eslint-enable @next/next/no-img-element */}
             </div>
             <p style={{ maxWidth: '32ch', fontSize: '.9rem', marginTop: 14 }}>
@@ -1066,7 +1066,7 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
           </div>
         </div>
         <div className="wrap fbot">
-          <span>© 2026 3rd i Visuals Pvt Ltd · AImageGen™</span>
+          <span>© 2026 3rd i Visuals Pvt Ltd · Faishon Studio</span>
           <span>Prices in ₹ (INR) · Prepaid credits · Valid 12 months</span>
         </div>
       </footer>

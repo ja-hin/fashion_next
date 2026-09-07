@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 /**
  * Preview what generating a character sheet will cost and look like.
- * Does NOT generate anything — the UI shows this in a confirm dialog first.
+ * Does NOT generate anything , the UI shows this in a confirm dialog first.
  */
 export const GET = handler(
   async (_req: Request, ctx: { params: Promise<{ mid: string }> }) => {
@@ -18,7 +18,7 @@ export const GET = handler(
 
     const refs = rec.refs ?? [];
     // The anchor must be an ORIGINAL reference, never a previously generated
-    // character-sheet frame — otherwise each new sheet drifts from the last.
+    // character-sheet frame , otherwise each new sheet drifts from the last.
     const originals = refs.filter((r) => !r.charsheet);
     const primary = originals.find((r) => r.primary) ?? originals[0];
     if (!primary) {

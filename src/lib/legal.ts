@@ -4,7 +4,7 @@
  * Those files are the source of truth and stay that way: legal copy is
  * reviewed and signed off as a document, and re-typing 30 KB of it into JSX is
  * how a clause quietly loses a "not". So the body copy is lifted verbatim and
- * rendered as HTML — only the chrome (nav, page head, footer) is rebuilt in
+ * rendered as HTML , only the chrome (nav, page head, footer) is rebuilt in
  * React, so the pages sit inside the site rather than beside it.
  *
  * Read at module scope: the pages are statically rendered, so this runs once at
@@ -18,7 +18,7 @@ export type LegalSlug = 'privacy' | 'terms' | 'acceptable-use';
 
 export interface LegalDoc {
   slug: LegalSlug;
-  /** The <h1> — "Privacy Policy". */
+  /** The <h1> , "Privacy Policy". */
   title: string;
   /** The one-line summary under it. */
   tagline: string;
@@ -31,7 +31,7 @@ export interface LegalDoc {
 
 /*
  * Even though these files are ours, the body is rendered with
- * dangerouslySetInnerHTML — so it goes through an allowlist first. The point is
+ * dangerouslySetInnerHTML , so it goes through an allowlist first. The point is
  * not that today's file is dangerous; it is that a legal page gets edited by
  * hand, occasionally by pasting from a word processor, and an allowlist means
  * the worst case of that is lost formatting rather than injected script.
@@ -39,7 +39,7 @@ export interface LegalDoc {
 const ALLOWED_TAGS = new Set([
   'p', 'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'strong', 'b', 'em', 'i', 'a', 'span', 'br', 'code',
 ]);
-/** Per-tag attribute allowlist. Anything else — `onclick`, `style` — is dropped. */
+/** Per-tag attribute allowlist. Anything else , `onclick`, `style` , is dropped. */
 const ALLOWED_ATTRS: Record<string, Set<string>> = {
   a: new Set(['href', 'target', 'rel']),
   h2: new Set(['id']),
@@ -48,12 +48,12 @@ const ALLOWED_ATTRS: Record<string, Set<string>> = {
   span: new Set(['class', 'aria-hidden']),
 };
 
-/** Only these schemes survive — no `javascript:`, no `data:`. */
+/** Only these schemes survive , no `javascript:`, no `data:`. */
 const SAFE_HREF = /^(https?:\/\/|mailto:|\/|#)/i;
 
 /*
  * The authored files cross-reference each other by absolute URL and by
- * filename, both of which point outside this app — one to a live domain, the
+ * filename, both of which point outside this app , one to a live domain, the
  * other to the raw HTML. All three documents are hosted here now, so the
  * targets are rewritten to the routes that serve them. The wording is not
  * touched; only where the link goes.
@@ -104,7 +104,7 @@ function sanitise(html: string): string {
   return out.trim();
 }
 
-/** Strip every tag — for text that goes into an attribute or a JSON-LD string. */
+/** Strip every tag , for text that goes into an attribute or a JSON-LD string. */
 const text = (html: string): string =>
   html
     .replace(/<[^>]*>/g, '')
@@ -137,7 +137,7 @@ function parse(slug: LegalSlug): LegalDoc {
   const head = between(html, '<div class="pagehead">', '</div>\n\n<div class="shell">') || html;
 
   /* Both dates are authored as `<div>Effective date<b>…</b></div>`, so the label
-     is what tells them apart — the order in the file is not a contract. */
+     is what tells them apart , the order in the file is not a contract. */
   const dates = [...html.matchAll(/<div>([^<]+)<b>([^<]*)<\/b><\/div>/g)];
   const dated = (label: string) =>
     decode(dates.find(([, l]) => l.toLowerCase().includes(label))?.[2] ?? '');

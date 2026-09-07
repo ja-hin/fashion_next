@@ -26,7 +26,7 @@ export const GET = handler(async () => {
  * Save a garment from tagged reference images.
  *
  * Takes the same `refs` + `roles` pair the generate route does, so whatever is
- * already tagged in the setup panel can be kept with no re-tagging — the two
+ * already tagged in the setup panel can be kept with no re-tagging , the two
  * are the same shape by design.
  */
 export const POST = handler(async (req: Request) => {

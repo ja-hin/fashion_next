@@ -76,7 +76,7 @@ export default function ModelFolderModal({
       setModel(j.model);
       onChanged();
     } catch {
-      // A failed tag edit leaves the previous value — nothing destructive.
+      // A failed tag edit leaves the previous value , nothing destructive.
     }
   }
 
@@ -303,7 +303,7 @@ export default function ModelFolderModal({
           </div>
 
           {/* The panel's primary action, so it follows the details rather than
-              sitting at the foot of the column — the bottom edge stays with
+              sitting at the foot of the column , the bottom edge stays with
               Delete, which is where the destructive action belongs. */}
           <button
             onClick={() => onUse(model)}
@@ -384,7 +384,7 @@ export default function ModelFolderModal({
                 </div>
                 <h4 className="mb-1.5 text-[14.5px] font-bold">No character sheet yet</h4>
                 <p className="mx-auto mb-[18px] max-w-[420px] text-[12.5px] leading-[1.5] text-muted">
-                  Generate a multi-angle character sheet from this model&apos;s references — front,
+                  Generate a multi-angle character sheet from this model&apos;s references , front,
                   side, and close-up views in one consistent set. This becomes the model&apos;s
                   identity anchor for future shoots.
                 </p>
@@ -395,7 +395,7 @@ export default function ModelFolderModal({
                   <GridIcon className="h-[15px] w-[15px]" /> Generate character sheet
                 </button>
                 <div className="mt-2.5 text-[11px] text-muted">
-                  Works with as few as 2 reference images — we&apos;ll fill in the missing angles.
+                  Works with as few as 2 reference images , we&apos;ll fill in the missing angles.
                 </div>
               </div>
             )}
@@ -408,9 +408,9 @@ export default function ModelFolderModal({
                 <div className="mb-4 text-xs text-muted">
                   {isKept
                     ? "This character sheet is now part of the model's references."
-                    : "Added to this model's references — your original images are untouched."}
+                    : "Added to this model's references , your original images are untouched."}
                   {olderCount > 0 &&
-                    ` (${olderCount} earlier version${olderCount === 1 ? '' : 's'} kept — manage them in the reference grid above.)`}
+                    ` (${olderCount} earlier version${olderCount === 1 ? '' : 's'} kept , manage them in the reference grid above.)`}
                 </div>
 
                 <CharsheetResult

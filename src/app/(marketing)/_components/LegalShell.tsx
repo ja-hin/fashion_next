@@ -103,7 +103,7 @@ export default function LegalShell({ doc }: { doc: LegalDoc }) {
             <a href="/#pricing">Pricing</a>
           </div>
           <div>
-            {/* Contact sits in this column, matching the landing page's footer —
+            {/* Contact sits in this column, matching the landing page's footer ,
                 it is the address on a legal document, so it belongs with them
                 rather than in a column of its own. */}
             <span className="k-label">Legal</span>
@@ -121,7 +121,7 @@ export default function LegalShell({ doc }: { doc: LegalDoc }) {
         </div>
       </footer>
 
-      {/* Shared with the landing page — the theme toggle and the anchor
+      {/* Shared with the landing page , the theme toggle and the anchor
           smooth-scroll live there, and both apply here. */}
       <Script src="/landing.js" strategy="afterInteractive" />
     </>

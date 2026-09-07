@@ -76,7 +76,7 @@ export async function leads(): Promise<Collection<LeadDoc>> {
 }
 
 /**
- * Create every index the app relies on. Idempotent — safe to call on each boot.
+ * Create every index the app relies on. Idempotent , safe to call on each boot.
  * Called once from ensureBootstrapped() in bootstrap.ts.
  */
 export async function ensureIndexes(): Promise<void> {
@@ -99,7 +99,7 @@ export async function ensureIndexes(): Promise<void> {
     u.createIndex({ uid: 1 }, { unique: true, sparse: true }),
 
     s.createIndex({ user_id: 1 }),
-    // Sessions self-destruct once `expires` passes — this replaces the old
+    // Sessions self-destruct once `expires` passes , this replaces the old
     // "sessions row lives forever" behaviour of the SQLite table.
     s.createIndex({ expires: 1 }, { expireAfterSeconds: 0 }),
 
@@ -127,7 +127,7 @@ export async function ensureIndexes(): Promise<void> {
     pr.createIndex({ email: 1, created: -1 }),
 
     // The admin list is "newest first", optionally filtered to the ones nobody
-    // has answered yet — which is exactly these two.
+    // has answered yet , which is exactly these two.
     ld.createIndex({ created: -1 }),
     ld.createIndex({ status: 1, created: -1 }),
     // Not unique: the same brand may well write in twice, and rejecting the

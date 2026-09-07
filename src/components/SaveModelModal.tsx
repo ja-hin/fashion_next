@@ -7,7 +7,7 @@ import { useDialog } from './Dialog';
 import type { ResumePayload, SavedModel } from '@/lib/client/types';
 
 /**
- * "Save as model" — pick the shots that best show this person.
+ * "Save as model" , pick the shots that best show this person.
  *
  * The chosen images are copied server-side into the model's own reference set,
  * so the model survives deletion of this shoot.
@@ -123,13 +123,13 @@ export default function SaveModelModal({
         </div>
 
         <div className="mb-4 text-[12.5px] leading-[1.5] text-muted">
-          Pick the shots that best show this model — face, body, a couple of angles. They&apos;re{' '}
+          Pick the shots that best show this model , face, body, a couple of angles. They&apos;re{' '}
           <b>copied</b> into the model&apos;s own reference set, so the model stays even if you later
           delete this shoot.
         </div>
 
         <div className="mb-2.5 text-[10.5px] font-bold uppercase tracking-[0.05em] text-muted">
-          From this shoot — tap to add / remove
+          From this shoot , tap to add / remove
         </div>
 
         <div className="mb-5 flex flex-wrap gap-[11px]">
@@ -184,7 +184,7 @@ export default function SaveModelModal({
               setName(e.target.value);
               setErr('');
             }}
-            placeholder="e.g. Aria — tall, warm Indian"
+            placeholder="e.g. Aria , tall, warm Indian"
           />
         </div>
 

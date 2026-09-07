@@ -4,7 +4,7 @@ import { setPassword, setSessionCookie } from '@/lib/auth';
 
 export const runtime = 'nodejs';
 
-/** Kept in step with the signup rule in auth.ts — a different floor here would
+/** Kept in step with the signup rule in auth.ts , a different floor here would
  *  reject a password the same user could have chosen at signup. */
 const MIN_PASSWORD = 6;
 
@@ -12,7 +12,7 @@ const MIN_PASSWORD = 6;
  * Complete a password reset.
  *
  * The token is consumed atomically before the password is touched, so a link
- * submitted twice — a double-click, or a replay — can only take effect once.
+ * submitted twice , a double-click, or a replay , can only take effect once.
  */
 export const POST = handler(async (req: Request) => {
   const fd = await formData(req);
@@ -39,7 +39,7 @@ export const POST = handler(async (req: Request) => {
   // for this user so a second email in the inbox is dead too.
   await clearResets(doc.user_id);
 
-  // Sign them straight in — they've just proven control of the mailbox, and
+  // Sign them straight in , they've just proven control of the mailbox, and
   // bouncing to a login form after a reset is a pointless extra step.
   await setSessionCookie(doc.user_id);
 

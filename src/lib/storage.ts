@@ -1,7 +1,7 @@
 /**
  * Storage adapter.
  *
- * Every image the app reads or writes goes through this module — nothing else
+ * Every image the app reads or writes goes through this module , nothing else
  * touches the filesystem. That's deliberate: moving to S3 / Cloudflare R2 later
  * means writing one more driver here and flipping STORAGE_DRIVER, with no
  * changes anywhere else in the codebase.

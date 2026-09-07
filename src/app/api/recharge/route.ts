@@ -7,7 +7,7 @@ import { PAYMENTS_ENABLED } from '@/lib/config';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-/** What the Recharge view needs to render — packs, limits and whether we can charge. */
+/** What the Recharge view needs to render , packs, limits and whether we can charge. */
 export const GET = handler(async () => {
   const me = await requireUser();
   const cfg = await getBilling();
@@ -18,7 +18,7 @@ export const GET = handler(async () => {
     custom_enabled: cfg.custom_enabled,
     min_credits: cfg.custom_min_credits,
     max_credits: cfg.custom_max_credits,
-    // Only what's on sale — an inactive pack must not be buyable.
+    // Only what's on sale , an inactive pack must not be buyable.
     packs: activePacks(cfg),
     balance: await getBalance(me._id),
   });
@@ -29,7 +29,7 @@ export const GET = handler(async () => {
  *
  * This used to be open to any signed-in user, which meant anyone could POST
  * themselves unlimited credits. It is now admin-only and exists purely for
- * comping an account or repairing a failed reconciliation — real top-ups go
+ * comping an account or repairing a failed reconciliation , real top-ups go
  * through /api/recharge/order → Razorpay → /api/recharge/verify.
  */
 export const POST = handler(async (req: Request) => {

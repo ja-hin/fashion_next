@@ -7,7 +7,7 @@ import { RAZORPAY_KEY_ID, PAYMENT_BRAND } from '@/lib/config';
 export const runtime = 'nodejs';
 
 /**
- * Start a top-up. The browser sends a pack id OR a credit count — never an
+ * Start a top-up. The browser sends a pack id OR a credit count , never an
  * amount. Pricing is re-derived here so the only prices anyone can pay are the
  * ones lib/pricing.ts sanctions.
  */
@@ -43,7 +43,7 @@ export const POST = handler(async (req: Request) => {
 
   const order = await createOrder(me, q, cfg.gst_rate);
 
-  // key_id is public by design — Razorpay Checkout needs it in the browser.
+  // key_id is public by design , Razorpay Checkout needs it in the browser.
   return json({
     key_id: RAZORPAY_KEY_ID,
     order_id: order._id,

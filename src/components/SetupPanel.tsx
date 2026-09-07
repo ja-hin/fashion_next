@@ -49,7 +49,7 @@ interface Props {
   onSetup: (patch: Partial<SetupState>) => void;
   /** Tagged references for both modes, in upload order. */
   ensemble: EnsembleRef[];
-  /** Files dropped on the panel — the page opens the tagging window for them. */
+  /** Files dropped on the panel , the page opens the tagging window for them. */
   onEnsembleAdd: (files: File[]) => void;
   /** Reopen the tagging window for what is already there. */
   onEnsembleOpen: () => void;
@@ -74,7 +74,7 @@ interface Props {
 }
 
 /**
- * Step 1 — the shoot setup panel.
+ * Step 1 , the shoot setup panel.
  *
  * The front shot generated from here locks the model, lighting and background
  * for every pose that follows, which is why the whole panel is one form.
@@ -128,7 +128,7 @@ export default function SetupPanel({
         </button>
       )}
 
-      {/* Both modes send several tagged references; only the question changes —
+      {/* Both modes send several tagged references; only the question changes ,
           which VIEW of one garment, or which ITEM of a look. The single-photo
           dropzone is gone: one photo is just a same-garment shoot with one
           front image, and it goes through the same path. */}
@@ -195,7 +195,7 @@ export default function SetupPanel({
             value={setup.input_family}
             onChange={(v) => onSetup({ input_family: v })}
             // An ensemble has no single photo that already shows the model, so
-            // "Extend" is not offered there — the rest apply to both modes.
+            // "Extend" is not offered there , the rest apply to both modes.
             options={
               isEnsemble ? INPUT_FAMILIES.filter(([v]) => v !== 'extend') : INPUT_FAMILIES
             }
@@ -345,7 +345,7 @@ export default function SetupPanel({
       </button>
 
       {/* The other door out of the same uploads. Secondary, because a hero is
-          the cheaper first step and the one most shoots want — but a customer
+          the cheaper first step and the one most shoots want , but a customer
           who only came for a reel should not have to buy a photo first.
           Disabled until something has been uploaded: the garment photos ARE the
           reference, so there is nothing to lock onto without them. */}

@@ -14,12 +14,12 @@ import {
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-/** Classification only — the detail that matters is the item's kind, not its texture. */
+/** Classification only , the detail that matters is the item's kind, not its texture. */
 const DETECT_PX = 512;
 
 /**
- * The two modes ask genuinely different questions of the same picture — "which
- * item is this?" versus "which side of this garment am I looking at?" — so each
+ * The two modes ask genuinely different questions of the same picture , "which
+ * item is this?" versus "which side of this garment am I looking at?" , so each
  * gets its own instructions rather than one prompt with a swapped word list.
  */
 const SYSTEM: Record<RefMode, string> = {
@@ -29,11 +29,11 @@ const SYSTEM: Record<RefMode, string> = {
     `classify what it shows using ONLY roles from this list: ${ROLES_FOR.ensemble.join(', ')}.`,
     '"garment" means a dress or one-piece that covers the whole body; use "top" and "bottom"',
     'only for separates.',
-    'Use "back" when an image is clearly the REVERSE VIEW of a garment shown in another image —',
+    'Use "back" when an image is clearly the REVERSE VIEW of a garment shown in another image ,',
     'the same colour and fabric photographed from behind, typically with no front print, a rear',
     'neckline or a back zip. It is a second view, not another item.',
     'If an image shows a person wearing the item, classify the ITEM, not the person.',
-    'Return STRICT JSON only — an array with one object per image, in order:',
+    'Return STRICT JSON only , an array with one object per image, in order:',
     '[{"index":0,"role":"top","confidence":0.0-1.0,"reason":"few words"}]',
     'confidence is your certainty; reason is a short phrase naming what you saw.',
     'No prose, no code fences, JSON only.',
@@ -46,9 +46,9 @@ const SYSTEM: Record<RefMode, string> = {
     '"front" faces the camera; "back" is the reverse; "side" is a profile;',
     '"detail" is a close crop of texture, trims, stitching or hardware; "label" shows printed',
     'text, a care tag or brand artwork.',
-    'Judge the VIEW, not the garment type — every image is the same garment.',
+    'Judge the VIEW, not the garment type , every image is the same garment.',
     'If an image shows a person wearing it, judge which side of them faces the camera.',
-    'Return STRICT JSON only — an array with one object per image, in order:',
+    'Return STRICT JSON only , an array with one object per image, in order:',
     '[{"index":0,"role":"front","confidence":0.0-1.0,"reason":"few words"}]',
     'confidence is your certainty; reason is a short phrase naming what you saw.',
     'No prose, no code fences, JSON only.',
@@ -63,7 +63,7 @@ const client = () => (_client ??= new GoogleGenAI({ apiKey: GEMINI_API_KEY }));
  *
  * Purely a convenience: the roles it returns are pre-selected in the UI and the
  * user can change any of them before generating. Which is why a failure here
- * returns low-confidence defaults rather than an error — a wrong guess the user
+ * returns low-confidence defaults rather than an error , a wrong guess the user
  * can correct beats blocking the upload.
  *
  * Free, and deliberately so: this is one cheap text call, it runs automatically
@@ -92,7 +92,7 @@ export const POST = handler(async (req: Request) => {
       results: files.map((_, i) => ({
         role: ROLES_FOR[mode][i % ROLES_FOR[mode].length],
         confidence: 0.55,
-        reason: 'demo mode — no AI key set',
+        reason: 'demo mode , no AI key set',
       })),
     });
   }
@@ -109,7 +109,7 @@ export const POST = handler(async (req: Request) => {
       ),
     );
   } catch {
-    throw new HttpError(400, 'One of those images could not be read — use JPG, PNG or WebP.');
+    throw new HttpError(400, 'One of those images could not be read , use JPG, PNG or WebP.');
   }
 
   // Each image is labelled inline so "in the order given" is unambiguous to the
@@ -132,7 +132,7 @@ export const POST = handler(async (req: Request) => {
     const arr: unknown = JSON.parse(raw);
     if (!Array.isArray(arr)) throw new Error('not an array');
 
-    // Indexed positionally, never by the model's own "index" field — a wrong
+    // Indexed positionally, never by the model's own "index" field , a wrong
     // index there would silently retag the wrong image.
     const results = files.map((_, i) => {
       const row = (arr[i] ?? {}) as Record<string, unknown>;
@@ -148,7 +148,7 @@ export const POST = handler(async (req: Request) => {
 
     return json({ results });
   } catch (e) {
-    console.error('[ensemble] auto-detect failed — falling back to manual tagging', e);
+    console.error('[ensemble] auto-detect failed , falling back to manual tagging', e);
     return json({ results: fallback.map((r) => ({ ...r, unsure: true })) });
   }
 });

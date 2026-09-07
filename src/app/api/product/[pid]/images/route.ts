@@ -34,7 +34,7 @@ export const GET = handler(
      * The garment photos the shoot was built from.
      *
      * A shoot generated straight to video has no stills at all, but it does
-     * have these — so "make another video" is still possible from them, which
+     * have these , so "make another video" is still possible from them, which
      * is why they are listed rather than left as an internal detail.
      */
     const refs = (shoot.refs ?? []).map((r) => ({

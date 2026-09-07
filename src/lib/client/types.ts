@@ -5,7 +5,7 @@
 export interface Me {
   authed: boolean;
   admin?: boolean;
-  /** Public user id — "U0007". */
+  /** Public user id , "U0007". */
   uid?: string;
   provider?: 'gemini' | 'mock';
   version?: string;
@@ -18,7 +18,7 @@ export interface Me {
   genie?: { free: number; price: number; max: number };
   /** Credits for one 10-second video. */
   video_price?: number;
-  /** On the free credits — generated images are served with the watermark. */
+  /** On the free credits , generated images are served with the watermark. */
   watermark?: boolean;
 }
 
@@ -82,12 +82,12 @@ export interface GalleryItem {
   created: string;
   date: string;
   count: number;
-  /** How many clips this shoot has — separate from `count`, which is images. */
+  /** How many clips this shoot has , separate from `count`, which is images. */
   videos?: number;
   thumb: string;
   category: string;
   model: string;
-  /** Admin-only — the server omits these for regular users. */
+  /** Admin-only , the server omits these for regular users. */
   owner_uid?: string;
   owner_email?: string;
 }
@@ -118,13 +118,13 @@ export interface SavedModel {
   has_character_sheet: boolean;
   kept_batch: string;
   refs: ModelRefPublic[];
-  /** Admin-only — the server omits these for regular users. */
+  /** Admin-only , the server omits these for regular users. */
   owner_uid?: string;
   owner_email?: string;
 }
 
 export interface ShootImage {
-  /** Filename inside the shoot folder — what the video route locks onto. */
+  /** Filename inside the shoot folder , what the video route locks onto. */
   file: string;
   pose: string;
   url: string;
@@ -177,7 +177,7 @@ export interface ResumePayload {
 
 export interface LogRow {
   ts: string;
-  /** Public user id of whoever generated this row — resolved server-side. */
+  /** Public user id of whoever generated this row , resolved server-side. */
   uid?: string;
   /** Owner email. Present for admins; a user's own rows are all their own. */
   user?: string;
@@ -214,7 +214,7 @@ export interface LogsPayload {
 
 export interface AdminUser {
   id: string;
-  /** Public user id shown in the UI — "U0007". Blank on un-backfilled rows. */
+  /** Public user id shown in the UI , "U0007". Blank on un-backfilled rows. */
   uid: string;
   email: string;
   name: string;

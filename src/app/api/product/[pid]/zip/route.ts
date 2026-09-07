@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic';
  * Download the whole shoot as a ZIP, with every image named after its pose.
  * Streamed rather than buffered, so a large shoot doesn't sit in memory.
  *
- * Free-tier archives are watermarked per entry — this is the bulk path, so it
+ * Free-tier archives are watermarked per entry , this is the bulk path, so it
  * is the one that matters most if the mark is meant to hold.
  */
 export const GET = handler(
@@ -25,7 +25,7 @@ export const GET = handler(
     const prefix = shootFilePrefix(shoot);
     const archive = archiver('zip', { zlib: { level: 9 } });
 
-    // Two poses can share a name ("side profile" twice) — suffix duplicates so
+    // Two poses can share a name ("side profile" twice) , suffix duplicates so
     // no entry silently overwrites another inside the archive.
     const used = new Map<string, number>();
 
@@ -43,7 +43,7 @@ export const GET = handler(
 
         // Clips go in the same download. "Download all" that quietly omitted
         // the thing that cost 35 credits would be the wrong kind of surprise.
-        // No watermark pass — that is an image operation.
+        // No watermark pass , that is an image operation.
         for (const v of shoot.videos ?? []) {
           const stored = await storage.get(shootKey(pid, v.file));
           if (!stored) continue;

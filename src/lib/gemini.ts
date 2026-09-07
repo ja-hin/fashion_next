@@ -8,7 +8,7 @@
  * Note on concurrency: the Python original stashed the requested output
  * resolution and the last call's token usage in `threading.local()`. Node runs
  * many generations on one event loop, where that pattern would leak state
- * between concurrent shoots — so both are passed and returned explicitly here.
+ * between concurrent shoots , so both are passed and returned explicitly here.
  */
 import 'server-only';
 import { GoogleGenAI } from '@google/genai';
@@ -96,9 +96,9 @@ function logPrompt(
       '',
       '─── AI PROMPT ' + '─'.repeat(56),
       `engine   ${PROVIDER === 'mock' ? 'mock (DEMO)' : resolveModel(opts.modelId, opts.imageSize)}`,
-      `pose     ${opts.pose ?? '—'}`,
-      `seed     ${opts.seed ?? '—'}   attempt ${attempt}/${tries}`,
-      `ar       ${opts.ar ?? '—'}   size ${opts.imageSize ?? '1K'}`,
+      `pose     ${opts.pose ?? ','}`,
+      `seed     ${opts.seed ?? ','}   attempt ${attempt}/${tries}`,
+      `ar       ${opts.ar ?? ','}   size ${opts.imageSize ?? '1K'}`,
       `images   ${refs.length ? refs.join(' + ') : 'none (text only)'}`,
       '',
       opts.prompt,
@@ -145,7 +145,7 @@ async function geminiGenerate(opts: {
   if (opts.seed) config.seed = opts.seed;
   if (opts.allowRevealing) {
     // Relaxed only when the caller explicitly opts in. gen.ts forces this off
-    // for the kidswear category — child-safety filters are never relaxed.
+    // for the kidswear category , child-safety filters are never relaxed.
     config.safetySettings = [
       { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
     ];
@@ -190,7 +190,7 @@ export async function produce(opts: {
   prompt: string;
   garment?: Buffer | null;
   hero?: Buffer | null;
-  /** Ordered ensemble references — see geminiGenerate. */
+  /** Ordered ensemble references , see geminiGenerate. */
   refs?: Buffer[] | null;
   seed?: number | null;
   ar?: string | null;

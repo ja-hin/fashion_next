@@ -17,7 +17,7 @@ export function Field({
   dim?: boolean;
   /**
    * Sit the label astride the control's top border instead of above it. Only
-   * for a field whose child is a single bordered input — over a filled block
+   * for a field whose child is a single bordered input , over a filled block
    * like a segmented control it notches nothing and just overlaps.
    */
   float?: boolean;
@@ -30,7 +30,7 @@ export function Field({
           className={
             float
               ? // Painted with the panel's own background so it cuts a notch in
-                // the border rather than overprinting it — `bg-bg` rather than a
+                // the border rather than overprinting it , `bg-bg` rather than a
                 // literal white, or the notch is a white bar in the dark theme.
                 'lbl absolute -top-[5px] left-3 z-[1] mb-0 bg-bg px-1'
               : 'lbl'
@@ -180,7 +180,7 @@ export function Td({
 }) {
   return (
     <td
-      // Mono cells hold ids, timestamps, model names and numbers — wrapping
+      // Mono cells hold ids, timestamps, model names and numbers , wrapping
       // those turns one row into five lines. The table scrolls horizontally
       // instead (see TableWrap).
       className={`border-b border-line px-[14px] py-[11px] ${
