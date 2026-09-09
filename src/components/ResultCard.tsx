@@ -1,7 +1,7 @@
 'use client';
 
 import { imgSrc } from '@/lib/client/api';
-import { CopyIcon, RegenIcon, DownloadIcon, TrashIcon } from './icons';
+import { CopyIcon, RegenIcon, DownloadIcon, TrashIcon, AlertIcon } from './icons';
 import type { CardItem } from '@/lib/client/types';
 
 /** One generated image, with copy / regenerate / download / delete actions. */
@@ -18,6 +18,27 @@ export default function ResultCard({
   onRetry: () => void;
   onDelete?: () => void;
 }) {
+  /*
+   * A refusal, not a failure. The image model was asked three times and blocked
+   * every time, so a Retry button would only invite someone to spend attempts
+   * discovering that the answer does not change. Muted rather than brand-red as
+   * well: red reads as "something went wrong", and nothing did , the request
+   * was understood and declined.
+   */
+  if (card.policy) {
+    return (
+      <div className="w-[212px] overflow-hidden rounded-card border border-line bg-surface2 shadow-card">
+        <div className="p-[14px]">
+          <div className="mb-1.5 flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-[0.06em] text-muted">
+            <AlertIcon className="h-3.5 w-3.5" />
+            Not permitted
+          </div>
+          <p className="text-xs leading-[1.55] text-muted">{card.error}</p>
+        </div>
+      </div>
+    );
+  }
+
   if (card.error) {
     return (
       <div className="w-[212px] overflow-hidden rounded-card border border-line bg-surface shadow-card">

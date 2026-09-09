@@ -141,7 +141,7 @@ header.nav.nav-onlight{background:var(--nav-bg);backdrop-filter:blur(12px);
   border-color:rgba(237,231,218,.12)}
 .nav-in{display:flex;align-items:center;justify-content:space-between;height:74px;gap:18px}
 .logo{display:inline-flex;align-items:center}
-.logo-img{height:45px;width:auto;display:block}
+.logo-img{height:116px;width:auto;display:block}
 .logo-dark{display:none}
 [data-theme="dark"] .logo-light{display:none}
 [data-theme="dark"] .logo-dark{display:block}

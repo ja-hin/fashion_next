@@ -26,4 +26,11 @@ export interface EnsembleRef {
   confidence?: number;
   /** What the detector says it saw , shown under the role so a wrong guess is obvious. */
   reason?: string;
+  /**
+   * The classifier read this as intimate apparel.
+   *
+   * The image model refuses to dress a figure in it, so the shoot is stopped
+   * here instead , before a credit is spent on a frame that comes back unusable.
+   */
+  restricted?: boolean;
 }

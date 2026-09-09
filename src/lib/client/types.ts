@@ -58,6 +58,8 @@ export interface CardItem {
   cost?: number;
   warn?: string;
   error?: string;
+  /** Refused on content grounds , see JobResult.policy. No Retry is offered. */
+  policy?: boolean;
   isHero: boolean;
   file: string;
   settings: PoseSettings;

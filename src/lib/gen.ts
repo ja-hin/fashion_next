@@ -55,8 +55,18 @@ const uniq = () => crypto.randomBytes(3).toString('hex');
 const randSeed = () => 1 + Math.floor(Math.random() * 2_000_000_000);
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-const ANCHOR_FAIL_MSG =
-  "Couldn't place this garment on your saved model , try a different garment photo or retry.";
+/**
+ * Shown when the image model refuses the request outright.
+ *
+ * Three attempts have already been made and all three came back blocked, so a
+ * fourth would too , which is why the card this produces carries no Retry. It
+ * names the likely cause rather than apologising, because the only thing that
+ * changes the outcome is changing the upload.
+ */
+const POLICY_MSG =
+  'This garment cannot be generated on a model. Underwear, lingerie and other ' +
+  'revealing pieces are refused by the image model, and retrying will not ' +
+  'change that. Try a flat-lay or ghost-mannequin shot of the piece instead.';
 
 export interface PerImageSettings {
   backdrop?: string;
@@ -400,7 +410,7 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
 
         const r = await produceAnchored(heroPrompt(true), null, frontFrame, refBytes);
         if (!r) {
-          pushResult(o.jobId, { pose: o.pose, error: ANCHOR_FAIL_MSG });
+          pushResult(o.jobId, { pose: o.pose, error: POLICY_MSG, policy: true });
         } else {
           await saveAndCharge(r.raw, {
             seedUsed: r.seed,
@@ -441,7 +451,7 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
         frontFrame,
       );
       if (!r) {
-        pushResult(o.jobId, { pose: o.pose, error: ANCHOR_FAIL_MSG });
+        pushResult(o.jobId, { pose: o.pose, error: POLICY_MSG, policy: true });
       } else {
         await saveAndCharge(r.raw, {
           seedUsed: r.seed,
@@ -487,7 +497,7 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
         poseRefs,
       );
       if (!r) {
-        pushResult(o.jobId, { pose: o.pose, error: ANCHOR_FAIL_MSG });
+        pushResult(o.jobId, { pose: o.pose, error: POLICY_MSG, policy: true });
       } else {
         await saveAndCharge(r.raw, {
           seedUsed: r.seed,
@@ -536,7 +546,10 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
           pose: o.pose,
           error:
             "This garment can't be re-cast onto a new model. Try the on-model or Extend option instead.",
-        });
+          // Also a refusal: the same garment through the same path is refused
+            // every time, so Retry would only spend attempts proving it.
+            policy: true,
+          });
         return;
       }
 

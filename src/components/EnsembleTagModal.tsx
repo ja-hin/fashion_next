@@ -18,6 +18,8 @@ interface Detected {
   confidence: number;
   reason?: string;
   unsure?: boolean;
+  /** Intimate apparel , the shoot is refused rather than generated. */
+  restricted?: boolean;
 }
 
 /** Object URLs are created here, so they are revoked here. */
@@ -136,6 +138,7 @@ export default function EnsembleTagModal({
                 unsure: !!hit.unsure,
                 confidence: hit.confidence,
                 reason: hit.reason,
+                restricted: !!hit.restricted,
                 detecting: false,
               }
             : { ...r, detecting: false };

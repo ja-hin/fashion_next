@@ -105,7 +105,27 @@ export default function GeneratePage() {
   const usingSaved = s.modelSource === 'saved' && s.setup.input_family !== 'extend';
   const isEnsemble = s.setup.ref_mode === 'ensemble';
 
+  /*
+   * Intimate apparel, caught on upload by the classifier in
+   * /api/ensemble/detect.
+   *
+   * Stopped here rather than at generation because the image model does not
+   * refuse cleanly: asked to dress a figure in briefs it invents a top and
+   * returns the figure in underwear, which is a frame no catalogue can use and
+   * a credit already spent. This is a guardrail on the way in, not a security
+   * control , the model's own filter is still the hard stop behind it.
+   */
+  const restricted = s.ensemble.filter((r) => r.restricted);
+
   async function generateHero() {
+    if (restricted.length) {
+      await dialog.alert(
+        'This upload cannot be used for an on-model shoot. Underwear, lingerie and ' +
+          'other intimate apparel are outside what the image model will generate on a ' +
+          'person, so no credit has been spent. Swimwear and activewear are fine.',
+      );
+      return;
+    }
     if (!s.ensemble.length) {
       await dialog.alert(
         isEnsemble

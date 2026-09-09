@@ -375,6 +375,15 @@ export interface JobResult {
   cost?: number;
   warn?: string;
   error?: string;
+  /**
+   * The frame was refused on content grounds rather than failing.
+   *
+   * Kept separate from `error` because the two want opposite treatment: a
+   * failure is worth retrying and says so, a refusal is not , the same request
+   * will be refused again, and offering Retry invites someone to burn attempts
+   * discovering that.
+   */
+  policy?: boolean;
 }
 
 export interface Job {

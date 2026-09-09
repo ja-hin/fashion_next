@@ -189,7 +189,7 @@
      a filter , the black mark is invisible on the dark surface. Mirrors the
      .logo-light / .logo-dark pair in public/landing.css. */
   .brand-logo {
-    height: 45px;
+    height: 120px;
     width: auto;
     display: block;
   }

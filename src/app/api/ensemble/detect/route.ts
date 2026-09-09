@@ -18,6 +18,22 @@ export const maxDuration = 60;
 const DETECT_PX = 512;
 
 /**
+ * Asked of every image alongside its role.
+ *
+ * The image model will not dress a figure in underwear, and what it does
+ * instead is worse than refusing: it invents a top and returns someone in
+ * briefs. Catching it here stops the shoot before a credit is spent and says
+ * why, rather than handing back a frame nobody can use and a Retry button that
+ * will never produce a different answer.
+ */
+const RESTRICTED_RULE = [
+  'Also set "restricted": true for an image whose item is underwear, lingerie, briefs,',
+  'a bra, a thong or other intimate apparel worn next to the skin. Swimwear, activewear,',
+  'sports bras and crop tops are NOT restricted , they are ordinary catalogue categories.',
+  'When unsure, set it false.',
+].join(' ');
+
+/**
  * The two modes ask genuinely different questions of the same picture , "which
  * item is this?" versus "which side of this garment am I looking at?" , so each
  * gets its own instructions rather than one prompt with a swapped word list.
@@ -81,10 +97,20 @@ export const POST = handler(async (req: Request) => {
     throw new HttpError(400, `An ensemble takes at most ${MAX_ENSEMBLE_REFS} images.`);
   }
 
-  const fallback = files.map<{ role: RefRole; confidence: number; reason: string }>(() => ({
+  /* `restricted: false` on the fallback deliberately. A classification that did
+     not happen is not evidence of anything, and refusing a shoot because the
+     classifier was unreachable would turn a network blip into a rejected
+     upload. The image model's own filter still sits behind this. */
+  const fallback = files.map<{
+    role: RefRole;
+    confidence: number;
+    reason: string;
+    restricted: boolean;
+  }>(() => ({
     role: asRole(null, mode),
     confidence: 0,
     reason: '',
+    restricted: false,
   }));
 
   if (PROVIDER === 'mock') {
@@ -93,6 +119,7 @@ export const POST = handler(async (req: Request) => {
         role: ROLES_FOR[mode][i % ROLES_FOR[mode].length],
         confidence: 0.55,
         reason: 'demo mode , no AI key set',
+        restricted: false,
       })),
     });
   }
@@ -119,7 +146,9 @@ export const POST = handler(async (req: Request) => {
     parts.push({ text: `Image ${i + 1}:` });
     parts.push({ inlineData: { mimeType: 'image/jpeg', data: b.toString('base64') } });
   });
-  parts.push({ text: SYSTEM[mode] });
+  // Appended to whichever mode prompt applies, rather than written into both,
+  // so the rule cannot drift between them.
+  parts.push({ text: SYSTEM[mode] + ' ' + RESTRICTED_RULE });
 
   try {
     const resp = await client().models.generateContent({
@@ -143,6 +172,8 @@ export const POST = handler(async (req: Request) => {
         reason: String(row.reason ?? '').slice(0, 90),
         // Flag anything the model itself wasn't sure of, so the UI can ask.
         unsure: !isRoleFor(row.role, mode) || (Number.isFinite(conf) && conf < 0.6),
+        // Strict equality: anything but an explicit true is treated as allowed.
+        restricted: row.restricted === true,
       };
     });
 

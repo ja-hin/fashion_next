@@ -106,6 +106,8 @@ export default function SetupPanel({
   const showResHint = (setup.resolution === '2K' || setup.resolution === '4K') && !usingSaved;
 
   const isEnsemble = setup.ref_mode === 'ensemble';
+  /* Flagged by the classifier on upload , see /api/ensemble/detect. */
+  const restricted = ensemble.filter((r) => r.restricted);
 
   return (
     // A plain div: the page already wraps this in the <aside> landmark, and the
@@ -170,6 +172,16 @@ export default function SetupPanel({
         onOpen={onEnsembleOpen}
         onPickSaved={onPickGarment}
       />
+
+      {/* Next to the uploads rather than by the button, so the reason sits
+          beside the thing that caused it. */}
+      {restricted.length > 0 && (
+        <div className="mb-4 -mt-2 rounded-card border border-brand-soft bg-brand-soft p-[11px] text-[11.5px] leading-[1.5] text-brand">
+          <b>Cannot be shot on a model.</b> Underwear, lingerie and other intimate
+          apparel are outside what the image model will generate on a person, so this
+          shoot is blocked before any credit is spent. Swimwear and activewear are fine.
+        </div>
+      )}
 
       {ensemble.length > 0 && (
         <button
@@ -331,12 +343,14 @@ export default function SetupPanel({
 
       <button
         onClick={onGenerate}
-        disabled={busy}
+        disabled={busy || restricted.length > 0}
         className="mt-1.5 flex w-full items-center justify-center gap-2 rounded-[11px] bg-brand p-[13px] text-[14.5px] font-bold text-white transition hover:-translate-y-px hover:shadow-[0_10px_26px_rgba(225,29,42,.3)] disabled:translate-y-0 disabled:opacity-50 disabled:shadow-none"
       >
         {busy
           ? 'Generating…'
-          : ensemble.length
+          : restricted.length
+            ? 'Not permitted for this garment'
+            : ensemble.length
             ? `Generate Hero from ${ensemble.length} image${ensemble.length === 1 ? '' : 's'}`
             : 'Generate Hero image'}
         {/* The hero is one image whatever the reference count, so the quote is
