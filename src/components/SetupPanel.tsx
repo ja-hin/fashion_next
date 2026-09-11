@@ -351,7 +351,7 @@ export default function SetupPanel({
           : restricted.length
             ? 'Not permitted for this garment'
             : ensemble.length
-            ? `Generate Hero from ${ensemble.length} image${ensemble.length === 1 ? '' : 's'}`
+            ? `Generate Hero image${ensemble.length === 1 ? '' : 's'}`
             : 'Generate Hero image'}
         {/* The hero is one image whatever the reference count, so the quote is
             the single-image rate for the chosen resolution × model source. */}

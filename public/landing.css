@@ -1400,7 +1400,9 @@ body.mnav-open .mnav-sheet{transform:none}
    leave from one point and the panel form at another. Transparent to the
    pointer so the copy underneath stays selectable. */
 /* The padding pushes the centre , and so the tile, the burst and the panel
-   that forms out of it , clear of the copy above. */
+   that forms out of it , clear of the copy above. This value is only the
+   starting point: landing.js measures the copy and overwrites it, because a
+   fixed number cannot know how many lines the paragraph wrapped to. */
 .genie-stage{position:absolute;inset:0;z-index:3;pointer-events:none;padding-top:min(120px,14vh);
   display:flex;align-items:center;justify-content:center}
 

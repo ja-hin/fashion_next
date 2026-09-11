@@ -1784,6 +1784,33 @@ const STRIP_ITEMS=[
   const modal=document.getElementById("genieModal");
   const media=document.getElementById("genieMedia");
 
+  /* ---- keep the tile clear of the copy ------------------------------- */
+  /* The stage is an absolute layer over the whole pin that centres the tile in
+     it, because the tile and the panel it becomes must share one centre. Its
+     top padding is what pushes that centre below the copy , and as a fixed
+     `min(120px,14vh)` it was a guess about how tall the copy would be. It has
+     been wrong since the section headings grew and the paragraph gained a
+     second sentence: the tile now sits on the last line of the text.
+     Measured rather than guessed. `offsetTop + offsetHeight` and not a
+     bounding rect, because the scroll writes a translateY onto the copy every
+     frame and a rect would fold that in, so the padding would twitch as you
+     scrolled. */
+  const stage=tile?tile.parentElement:null;
+
+  function fitStage(){
+    if(!stage||!copy)return;
+    /* Below 960 the stage is bottom-aligned with its own padding (landing.css),
+       so an inline top padding here would fight it. */
+    if(innerWidth<=960){stage.style.paddingTop="";return;}
+    const gap=Math.max(28,Math.min(innerHeight*0.05,64));
+    stage.style.paddingTop=Math.round(copy.offsetTop+copy.offsetHeight+gap)+"px";
+  }
+
+  fitStage();
+  addEventListener("resize",fitStage);
+  /* Web fonts change every line height, and they land after first paint. */
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitStage).catch(()=>{});
+
   /* Stops along the zone. The poof is a window rather than a point so the tile
      has room to shrink into its own smoke instead of blinking out. */
   const RISE=0.24, POOF0=0.40, POOF1=0.50, OPEN=0.66;
