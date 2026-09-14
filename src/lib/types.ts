@@ -8,6 +8,7 @@
 
 import type { BillingConfig } from './pricing';
 import type { RefRole, RefMode } from './ensemble';
+import type { ModelTraits } from './model-traits';
 
 export type Resolution = '1K' | '2K' | '4K';
 export type ShootMode = 'imagine' | 'saved';
@@ -123,6 +124,16 @@ export interface ShootOpts {
   ref_mode?: RefMode;
   allow_revealing: boolean;
   model_id: string;
+  /**
+   * Chosen appearance for an IMAGINED model , skin tone, age, hair, build,
+   * height. Absent on every shoot made before the picker existed, and absent
+   * whenever a saved model is used, since then the model is a photograph rather
+   * than a description.
+   *
+   * Stored on the shoot rather than derived at generation time so that resuming
+   * a shoot, or adding a pose to it a week later, describes the same person.
+   */
+  model_traits?: ModelTraits;
   resolution: Resolution;
   owner: string;
   owner_email: string;
@@ -239,6 +250,16 @@ export interface ModelDoc {
   tags: ModelTags;
   refs: ModelRef[];
   kept_batch?: string;
+  /**
+   * Cast but not yet accepted.
+   *
+   * A model created from a description is generated first and looked at second,
+   * so it needs somewhere to exist while the customer decides. A draft is a
+   * real document with real files , which is what lets the preview use the same
+   * URLs, derivatives and folder view as any other model , but it is hidden
+   * from the roster until it is confirmed, and deleted if it is not.
+   */
+  draft?: boolean;
 }
 
 /** A saved model as sent to the browser (adds resolved URLs + counts). */

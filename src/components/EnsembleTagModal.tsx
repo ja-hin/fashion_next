@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { postMultipart } from '@/lib/client/api';
 import { Select } from './ui';
+import { RegenIcon } from './icons';
 import {
   ROLES_FOR,
   LABEL_FOR,
@@ -42,7 +43,7 @@ const COPY: Record<RefMode, { badge: string; blurb: string; hint: string }> = {
   same_garment: {
     badge: 'Same garment',
     blurb:
-      'Every image is the SAME garment from a different angle. Tag which view each one is , the back photo becomes the truth for the back, so it is never invented.',
+    '',
     hint: 'front, back, a detail…',
   },
 };
@@ -205,6 +206,21 @@ export default function EnsembleTagModal({
               each, so keep it tight.
             </p>
           </div>
+          {/* Re-detect sits up here with Close rather than down beside the
+              status line: it acts on the whole window, the same as closing it,
+              and down there it was competing with Continue for the eye. Icon
+              only , the banner below already says what state detection is in,
+              so the button does not have to repeat it. The name is kept as a
+              tooltip and as the accessible label. */}
+          <button
+            onClick={() => detect(refs, refs)}
+            disabled={detecting || !refs.length}
+            title="Re-detect what each image is"
+            aria-label="Re-detect what each image is"
+            className="flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-full bg-surface2 text-muted transition hover:bg-line hover:text-accent disabled:opacity-40"
+          >
+            <RegenIcon className={`h-[15px] w-[15px] ${detecting ? 'animate-spin-cs' : ''}`} />
+          </button>
           <button
             onClick={onClose}
             aria-label="Close"
@@ -318,8 +334,9 @@ export default function EnsembleTagModal({
             )}
           </div>
 
-          <div className="mt-4 flex items-center gap-3 rounded-[12px] bg-accent-soft px-4 py-3">
-            <span className="flex-1 text-[12.5px] font-bold text-accent">
+          {/* The status only , Re-detect moved to the header. */}
+          <div className="mt-4 rounded-[12px] bg-accent-soft px-4 py-3">
+            <span className="text-[12.5px] font-bold text-accent">
               {detecting
                 ? 'Working out what each image is…'
                 : note
@@ -328,13 +345,6 @@ export default function EnsembleTagModal({
                     ? '✓ Roles auto-detected , confirm or correct any above.'
                     : 'Pick what each image is above.'}
             </span>
-            <button
-              onClick={() => detect(refs, refs)}
-              disabled={detecting || !refs.length}
-              className="flex-shrink-0 rounded-[9px] border border-accent/40 bg-surface px-3 py-2 text-[12px] font-bold text-accent hover:border-accent disabled:opacity-40"
-            >
-              ↻ Re-detect
-            </button>
           </div>
         </div>
 

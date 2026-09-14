@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { getJson, ethLabel, titleCase, imgSrc } from '@/lib/client/api';
 import { EmptyState, SearchBox } from './ui';
 import ModelFolderModal from './ModelFolderModal';
+import CreateModelModal from './CreateModelModal';
 import type { SavedModel, LbItem } from '@/lib/client/types';
 
 /** The "My Models" tab , the roster of reusable people. */
@@ -32,6 +33,10 @@ export default function ModelsView({
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [viewing, setViewing] = useState<{ uid: string; email: string } | null>(null);
+  const [creating, setCreating] = useState(false);
+  /* The imagined-model rate at 1K , the same one a shoot quotes, so the modal
+     can price three frames without a second source of truth. */
+  const [price, setPrice] = useState(1);
 
   const load = useCallback(async () => {
     try {
@@ -54,6 +59,19 @@ export default function ModelsView({
     load();
   }, [load, refreshKey]);
 
+  useEffect(() => {
+    void (async () => {
+      try {
+        const me = await getJson<{ prices?: Record<string, Record<string, number>> }>('/api/me');
+        const v = me.prices?.imagine?.['1K'];
+        if (Number.isFinite(v)) setPrice(Number(v));
+      } catch {
+        /* Leave the default , the server prices the run either way, and a
+           failed quote must not stop someone opening the form. */
+      }
+    })();
+  }, []);
+
   // Admins can also search by who made it; a regular user only has their own.
   const needle = q.toLowerCase();
   const list = models.filter(
@@ -67,6 +85,14 @@ export default function ModelsView({
   return (
     <div className="animate-fade-up">
       <div className="mb-[22px] flex flex-wrap items-center gap-3">
+        {/* First, and before the search: casting is the thing you come here to
+            do when the roster is empty, and searching an empty roster is not. */}
+        <button
+          onClick={() => setCreating(true)}
+          className="flex items-center gap-1.5 rounded-[9px] bg-ink px-4 py-2.5 text-[12.5px] font-bold text-surface"
+        >
+          + Create a model
+        </button>
         <SearchBox
           value={q}
           onChange={setQ}
@@ -176,6 +202,25 @@ export default function ModelsView({
           onBalance={onBalance}
           onUse={onUseModel}
           onChanged={load}
+        />
+      )}
+
+      {creating && (
+        <CreateModelModal
+          price={price}
+          onClose={() => setCreating(false)}
+          onBalance={onBalance}
+          onZoom={onZoom}
+          onCreated={(m) => {
+            setCreating(false);
+            // Reload rather than splicing the new model in: the list is
+            // server-filtered and sorted, and guessing where it belongs is how
+            // it ends up in the wrong place until the next refresh.
+            void load();
+            // Straight into the new model's folder , you have just cast someone
+            // and the first thing you want is to see who turned up.
+            setOpenMid(m.id);
+          }}
         />
       )}
     </div>

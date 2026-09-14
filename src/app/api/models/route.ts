@@ -16,6 +16,11 @@ export const GET = handler(async (req: Request) => {
    * model by owner" endpoint and defeat the isolation.
    */
   const filter: Record<string, unknown> = me.is_admin ? {} : { owner: me._id };
+  /* Drafts are models mid-casting , generated, not yet accepted. They are
+     reachable by id (the preview reads them) but never listed, so an abandoned
+     one cannot clutter the roster. `$ne: true` rather than `false`, because
+     every model saved before drafts existed has no such field at all. */
+  filter.draft = { $ne: true };
 
   let filteredUser: { uid: string; email: string } | null = null;
   if (me.is_admin && userFilter) {

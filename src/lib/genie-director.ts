@@ -121,11 +121,13 @@ function anchorLine(shoot: ShootDoc): string {
   const cat = (opts.category ?? '').trim();
 
   // The same helper the image prompts use, so Genie describes the hero exactly
-  // as the generator does , including the per-shoot `look` variety phrase.
+  // as the generator does , including the per-shoot `look` variety phrase and
+  // any model traits the customer chose. Genie writing a different person from
+  // the one being generated is how a brief and its output stop matching.
   const gender = GENDER_BY_CAT[cat] ?? 'female';
   const who = KID_CATS.has(cat)
     ? 'the locked child model (age-appropriate, fully clothed)'
-    : stylePhrase(opts.style ?? '', gender, shoot.look ?? '');
+    : stylePhrase(opts.style ?? '', gender, shoot.look ?? '', opts.model_traits);
 
   const scene = (opts.scene ?? '').trim() || 'as established in the hero image';
 

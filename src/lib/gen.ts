@@ -377,7 +377,7 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
                 ? ''
                 : child
                   ? 'a young child fashion model, age-appropriate and fully clothed'
-                  : stylePhrase(opts.style, gender, look),
+                  : stylePhrase(opts.style, gender, look, opts.model_traits),
               scene: opts.scene ?? '',
               framing: FRAMING[fr] ?? FRAMING.three_quarter,
               anchored,
@@ -389,7 +389,7 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
                 ? ''
                 : child
                   ? 'a young child fashion model, age-appropriate and fully clothed'
-                  : stylePhrase(opts.style, gender, look),
+                  : stylePhrase(opts.style, gender, look, opts.model_traits),
               scene: opts.scene ?? '',
               framing: FRAMING[fr] ?? FRAMING.three_quarter,
               anchored,
@@ -474,6 +474,7 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
           category,
           recast,
           look,
+          traits: opts.model_traits,
           fromOnModel: true,
         }),
         garment: garmentBytes,
@@ -564,6 +565,7 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
           category,
           recast,
           look,
+          traits: opts.model_traits,
           fromOnModel: true,
         }),
         garment: garmentBytes,

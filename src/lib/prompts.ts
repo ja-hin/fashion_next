@@ -7,6 +7,8 @@
  * not refactors.
  */
 
+import { traitPhrase, traitOption, type ModelTraits } from './model-traits';
+
 export const FRAMING: Record<string, string> = {
   full_body: 'full body head to toe',
   three_quarter: 'three-quarter, head to mid-thigh',
@@ -43,6 +45,30 @@ export const STYLES: Record<string, string> = {
     'a Middle-Eastern woman with olive skin, dark hair and Middle-Eastern features',
   african: 'a Black African woman with deep brown skin and African features',
   latina: 'a Latina/Hispanic woman with tan-to-brown skin and Latin-American features',
+  diverse: 'a naturally diverse woman',
+};
+
+/**
+ * The same ethnicities with their skin clause removed.
+ *
+ * Used ONLY when the customer has chosen a skin tone. Every phrase in STYLES
+ * names a complexion, so appending a chosen tone produced two contradictory
+ * descriptions in one prompt , "an Indian woman with a fair, light wheatish
+ * complexion … deep brown skin" , and which one the model honoured was a
+ * coin toss.
+ *
+ * Kept as a parallel map rather than by rewriting STYLES, because those strings
+ * are tuned and the default path must stay byte-identical. Ethnicity here means
+ * features, hair and eyes; the tone comes from the picker.
+ */
+const STYLES_NO_SKIN: Record<string, string> = {
+  european: 'a European/Western woman with Caucasian features',
+  indian: 'an Indian woman with dark brown eyes, dark hair and clearly Indian facial features',
+  east_asian: 'an East Asian woman with East-Asian features',
+  southeast_asian: 'a Southeast Asian woman with Southeast-Asian features',
+  middle_eastern: 'a Middle-Eastern woman with dark hair and Middle-Eastern features',
+  african: 'a Black African woman with African features',
+  latina: 'a Latina/Hispanic woman with Latin-American features',
   diverse: 'a naturally diverse woman',
 };
 
@@ -89,12 +115,31 @@ export const GENDER_BY_CAT: Record<string, string> = {
   accessory: 'female',
 };
 
-/** Strong, positive ethnic anchor; degrades gracefully for male/child. */
-export function stylePhrase(style: string, gender: string, look: string): string {
-  let base = STYLES[style] ?? STYLES.diverse;
+/**
+ * Strong, positive ethnic anchor; degrades gracefully for male/child.
+ *
+ * `traits` are the customer's own choices , skin tone, age, hair, build,
+ * height. When any are set they REPLACE the random LOOKS phrase rather than
+ * being appended to it: LOOKS exists to vary the person between shoots, and
+ * varying someone who has just been specified is the opposite of what was
+ * asked for. With no traits set, nothing changes.
+ */
+export function stylePhrase(
+  style: string,
+  gender: string,
+  look: string,
+  traits?: ModelTraits,
+): string {
+  // A chosen tone replaces the ethnicity's own, rather than arguing with it.
+  const table = traits?.skin && traitOption('skin', traits.skin) ? STYLES_NO_SKIN : STYLES;
+  let base = table[style] ?? table.diverse;
   if (gender === 'male') {
     base = base.replace(' woman ', ' man ').replace('Latina/Hispanic', 'Latino/Hispanic');
   }
+
+  const chosen = traitPhrase(traits, gender);
+  if (chosen) return `${base}, ${chosen}`;
+
   return look && gender !== 'child' ? `${base}, ${look}` : base;
 }
 
@@ -213,13 +258,15 @@ export function buildPrompt(opts: {
   category: string;
   recast: boolean;
   look?: string;
+  /** The customer's own choice of model. Overrides `look` when set. */
+  traits?: ModelTraits;
   fromOnModel?: boolean;
 }): string {
   const gender = GENDER_BY_CAT[opts.category] ?? 'female';
   const who =
     gender === 'child'
       ? 'a young child fashion model, age-appropriate and fully clothed'
-      : stylePhrase(opts.style, gender, opts.look ?? '');
+      : stylePhrase(opts.style, gender, opts.look ?? '', opts.traits);
   const frame = FRAMING[opts.framing] ?? FRAMING.three_quarter;
 
   const garment = opts.recast
@@ -473,6 +520,188 @@ export function buildCharsheetSinglePrompt(
     childNote +
     `Pose and framing: ${poseDesc}. ` +
     'Plain light grey or white studio background, consistent soft commercial lighting. ' +
+    'CRITICAL: absolutely no text, letters, words, labels, numbers or captions anywhere in the image. ' +
+    'Ultra-photorealistic, 4k, e-commerce ready.'
+  );
+}
+
+/**
+ * The three frames a model is created from, before any garment exists.
+ *
+ * Front first and deliberately: it becomes the model's PRIMARY reference, and
+ * every shoot afterwards anchors identity to that one frame. The other two are
+ * what make the identity hold when a shoot asks for an angle , a single front
+ * shot leaves the model inventing a profile.
+ */
+export const MODEL_CREATE_FRAMES: Array<[string, string]> = [
+  ['standing front', 'standing squarely facing the camera, full body head to toe, arms relaxed at the sides'],
+  ['three quarter', 'turned about 45 degrees to their left, full body head to toe, weight on one leg'],
+  ['close up', 'head-and-shoulders close-up, facing the camera, neutral expression'],
+];
+
+/**
+ * A model built from a description rather than from a shoot.
+ *
+ * Nothing is anchored here , there is no reference image, which is the whole
+ * point: this call is what CREATES the person. So the description has to carry
+ * the identity on its own, and the clothing is deliberately plain and neutral:
+ * these frames exist to be an identity anchor for later shoots, and a
+ * distinctive outfit in the reference bleeds into every garment shot taken
+ * against it.
+ */
+/**
+ * A casting shot, composed from the picks plus whatever the customer typed.
+ *
+ * Waist-up rather than full length, and one frame rather than three: this is a
+ * casting card , the decision being made is "is this the right face", and a
+ * full-length figure at candidate size shows almost none of it. The chosen
+ * frame becomes the model's primary reference, and shoots generate the body
+ * from the garment anyway.
+ *
+ * The free text goes in AFTER the picks, so an explicit sentence can override
+ * a chip rather than arguing with it from behind.
+ */
+/* "a athletic build" is the kind of thing a reader forgives and a prompt does
+   not , it is a sentence being handed to a language model, so it should read
+   like one. */
+const article = (w: string) => (/^[aeiou]/i.test(w) ? 'an' : 'a');
+
+/*
+ * The hair lists are UI labels, not English, and colour and style have to
+ * compose into ONE noun phrase.
+ *
+ * Colours become adjectives ("black hair"); styles become post-modifiers
+ * ("tied back in a bun", "worn long and wavy"). That way either alone reads,
+ * and both together read , "black hair tied back in a bun" , where joining
+ * two noun phrases gave "black hair in hair tied back in a bun".
+ */
+const HAIR_COLOUR_WORD: Record<string, string> = {
+  Highlights: 'highlighted',
+  'Salt-pepper': 'salt-and-pepper',
+};
+
+const HAIR_STYLE_PHRASE: Record<string, string> = {
+  'Long wavy': 'worn long and wavy',
+  'Long straight': 'worn long and straight',
+  'Mid length': 'worn mid-length',
+  Short: 'worn short',
+  'Tied / bun': 'tied back in a bun',
+  'Short crop': 'in a short crop',
+  Buzz: 'in a buzz cut',
+  Textured: 'in a short textured cut',
+  Medium: 'worn medium length',
+  'Man-bun': 'tied back in a bun',
+};
+
+/* "one a European/Western man" , `one` already quantifies, so the phrase's own
+   article has to go. */
+const dropArticle = (p: string) => p.replace(/^(an?|the)\s+/i, '');
+
+export function buildCastPrompt(opts: {
+  gender: string;
+  /** An id from STYLES. The skin clause is dropped when a tone is chosen. */
+  ethnicity?: string;
+  age?: string;
+  /** A phrase from the skin picker, e.g. "deep brown skin". */
+  skinPhrase?: string;
+  body?: string;
+  hairstyle?: string;
+  haircolour?: string;
+  vibe?: string;
+  free?: string;
+}): string {
+  const genderWord = opts.gender === 'man' ? 'man' : 'woman';
+
+  /*
+   * Ethnicity and skin tone are one clause, not two.
+   *
+   * Every STYLES phrase names a complexion, so putting a chosen tone beside it
+   * produced two contradictory descriptions in the same sentence , the same
+   * bug the shoot path had, and the reason STYLES_NO_SKIN exists. Here the
+   * ethnicity opens the description of the person and the chosen tone replaces
+   * whatever skin it would have asserted.
+   */
+  const ethTable = opts.skinPhrase ? STYLES_NO_SKIN : STYLES;
+  let eth = opts.ethnicity ? (ethTable[opts.ethnicity] ?? '') : '';
+  if (eth && genderWord === 'man') {
+    eth = eth.replace(' woman ', ' man ').replace('Latina/Hispanic', 'Latino/Hispanic');
+  }
+
+  // With an ethnicity the subject is already "Indian woman"; without one it has
+  // to say "woman" itself.
+  const subject = [eth ? dropArticle(eth) : genderWord, opts.age && `aged ${opts.age}`]
+    .filter(Boolean)
+    .join(', ');
+
+  const colourWord = opts.haircolour
+    ? (HAIR_COLOUR_WORD[opts.haircolour] ?? opts.haircolour.toLowerCase())
+    : '';
+  const stylePart = opts.hairstyle
+    ? (HAIR_STYLE_PHRASE[opts.hairstyle] ?? `worn ${opts.hairstyle.toLowerCase()}`)
+    : '';
+  const hair =
+    colourWord || stylePart
+      ? [colourWord ? `${colourWord} hair` : 'hair', stylePart].filter(Boolean).join(' ')
+      : '';
+
+  const look = [
+    opts.skinPhrase,
+    opts.body && `${article(opts.body)} ${opts.body.toLowerCase()} build`,
+    hair,
+  ]
+    .filter(Boolean)
+    .join(', ');
+
+  const free = (opts.free ?? '').trim().slice(0, 400);
+
+  return (
+    `Ultra-photorealistic studio fashion-model photograph of one ${subject}` +
+    (look ? `, ${look}` : '') +
+    (free ? `. ${free}` : '') +
+    `. ${(opts.vibe || 'clean commercial').toLowerCase()} mood, neutral seamless studio backdrop, ` +
+    'soft even lighting, natural confident expression, facing camera, waist-up framing. ' +
+    'Single person only. No text, no watermark, no logo.'
+  );
+}
+
+/**
+ * A nudge pass: edit the face that is already there.
+ *
+ * This is image-to-image with the candidate as the input, which is the whole
+ * reason refining is not the same as casting again. Re-describing the person
+ * from scratch would roll a new face every time and there would be no way to
+ * converge on one , here the identity is held and only the named changes are
+ * applied.
+ */
+export function buildCastRefinePrompt(nudges: string[]): string {
+  const changes = nudges.filter(Boolean).join('; ') || 'subtle refinement';
+  return (
+    'Edit this exact same person , keep the identity, face structure and hairstyle consistent. ' +
+    `Apply only these changes: ${changes}. Keep everything else the same. ` +
+    'Photorealistic, same studio lighting and framing. Single person only. ' +
+    'No text, no watermark, no logo.'
+  );
+}
+
+export function buildModelPortraitPrompt(opts: {
+  style: string;
+  gender: string;
+  traits?: ModelTraits;
+  poseDesc: string;
+}): string {
+  const who =
+    opts.gender === 'child'
+      ? 'a young child fashion model, age-appropriate and fully clothed'
+      : stylePhrase(opts.style, opts.gender, '', opts.traits);
+
+  return (
+    `A professional full-colour studio photograph of ${who}. ` +
+    'They are a fashion model being photographed for a casting card. ' +
+    `Pose and framing: ${opts.poseDesc}. ` +
+    'Dress them in a simple neutral outfit , a plain fitted top and neutral trousers , ' +
+    'with no prints, no logos and no accessories. ' +
+    'Plain light grey studio background, soft even commercial lighting, natural skin texture. ' +
+    'One person only, looking healthy and natural, no retouching artefacts. ' +
     'CRITICAL: absolutely no text, letters, words, labels, numbers or captions anywhere in the image. ' +
     'Ultra-photorealistic, 4k, e-commerce ready.'
   );

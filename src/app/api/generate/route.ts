@@ -10,6 +10,7 @@ import {
   HttpError,
 } from '@/lib/api';
 import { resizeInput, BadImageError } from '@/lib/images';
+import { parseTraits } from '@/lib/model-traits';
 import { storage, shootKey } from '@/lib/storage';
 import { insertShoot } from '@/lib/shoots';
 import { loadModel } from '@/lib/saved-models';
@@ -23,6 +24,18 @@ import type { ShootDoc, ShootOpts } from '@/lib/types';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
+
+/** The traits blob, or null. Malformed JSON is treated as "not specified". */
+function readTraits(fd: FormData): Record<string, unknown> | null {
+  const raw = fd.get('model_traits');
+  if (typeof raw !== 'string' || !raw) return null;
+  try {
+    const v: unknown = JSON.parse(raw);
+    return v && typeof v === 'object' ? (v as Record<string, unknown>) : null;
+  } catch {
+    return null;
+  }
+}
 
 export const POST = handler(async (req: Request) => {
   const me = await requireUser();
@@ -113,6 +126,10 @@ export const POST = handler(async (req: Request) => {
     ref_mode: refMode,
     allow_revealing: bool(fd, 'allow_revealing'),
     model_id: modelId,
+    /* One JSON field rather than five form fields: these are one choice about
+       one person. parseTraits keeps only known keys with known values, so a
+       hand-rolled request cannot push arbitrary text into the prompt. */
+    model_traits: parseTraits(readTraits(fd)),
     resolution,
     owner: me._id,
     owner_email: me.email,
