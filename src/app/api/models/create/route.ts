@@ -10,7 +10,7 @@ import { logEvent } from '@/lib/logs';
 import { PROVIDER } from '@/lib/config';
 import { buildCastPrompt, STYLES } from '@/lib/prompts';
 import { traitOption, castSummary, type CastPicks } from '@/lib/model-traits';
-import type { ModelDoc, ModelRef } from '@/lib/types';
+import type { ModelDoc, ModelRef, Resolution } from '@/lib/types';
 
 export const runtime = 'nodejs';
 /** Up to four sequential image calls. */
@@ -39,7 +39,15 @@ export const POST = handler(async (req: Request) => {
   }
 
   const fd = await formData(req);
-  const count = Math.max(1, Math.min(MAX_CANDIDATES, num(fd, 'count', 4) ?? 4));
+  // Two or four. Two is for when you already know roughly who you want and are
+  // only checking; four is for casting cold.
+  const count = num(fd, 'count', 4) === 2 ? 2 : MAX_CANDIDATES;
+  // Cast at whatever tier the customer chose , the point of offering 1K is to
+  // find out whether it holds up before paying 2K rates for a face you may
+  // discard anyway.
+  const res: Resolution = (['1K', '2K', '4K'] as const).includes(str(fd, 'res') as Resolution)
+    ? (str(fd, 'res') as Resolution)
+    : '1K';
 
   const picks: CastPicks = {
     gender: str(fd, 'gender') === 'man' ? 'man' : 'woman',
@@ -56,6 +64,23 @@ export const POST = handler(async (req: Request) => {
   const free = str(fd, 'text');
   const style = STYLES[str(fd, 'style')] ? str(fd, 'style') : '';
 
+  /*
+   * An optional mood reference.
+   *
+   * Passed in the `refs` slot, never as `hero`. `hero` is the identity anchor ,
+   * putting a reference photo there is precisely how you would clone the face in
+   * it, which is the one thing this must not do. In `refs` it is an unlabelled
+   * input, and the prompt names it as mood-only (see buildCastPrompt).
+   */
+  const lookFile = fd.get('look');
+  let look: Buffer | null = null;
+  if (lookFile && typeof lookFile !== 'string' && lookFile.size > 0) {
+    if (!lookFile.type.startsWith('image/')) {
+      throw new HttpError(400, 'The reference must be an image.');
+    }
+    look = Buffer.from(await lookFile.arrayBuffer());
+  }
+
   const prompt = buildCastPrompt({
     gender: picks.gender,
     ethnicity: style,
@@ -66,10 +91,11 @@ export const POST = handler(async (req: Request) => {
     haircolour: picks.haircolour,
     vibe: picks.vibe,
     free,
+    look: !!look,
   });
 
   const settings = await getSettings();
-  const perImage = shootCost(settings, { model_id: '' }, '1K');
+  const perImage = shootCost(settings, { model_id: '' }, res);
   if ((await getBalance(me._id)) < perImage * count) {
     throw new HttpError(402, `Casting ${count} candidates costs ${perImage * count} credits.`);
   }
@@ -88,10 +114,12 @@ export const POST = handler(async (req: Request) => {
         prompt,
         garment: null,
         hero: null,
+        refs: look ? [look] : null,
         seed: 1000 + i,
         ar: '4:5',
         allowRevealing: false,
         pose: `candidate ${i + 1}`,
+        imageSize: res,
       });
     } catch (e) {
       const msg = String((e as Error)?.message ?? e);

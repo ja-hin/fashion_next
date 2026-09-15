@@ -609,6 +609,8 @@ export function buildCastPrompt(opts: {
   haircolour?: string;
   vibe?: string;
   free?: string;
+  /** True when a mood reference image is attached , see the clause below. */
+  look?: boolean;
 }): string {
   const genderWord = opts.gender === 'man' ? 'man' : 'woman';
 
@@ -652,9 +654,29 @@ export function buildCastPrompt(opts: {
     .filter(Boolean)
     .join(', ');
 
-  const free = (opts.free ?? '').trim().slice(0, 400);
+  // Trailing punctuation is stripped because this is spliced in as a sentence
+  // , a description that already ends in a full stop produced "… hair..".
+  const free = (opts.free ?? '')
+    .trim()
+    .slice(0, 400)
+    .replace(/[.\s]+$/, '');
+
+  /*
+   * The attached image is a MOOD reference, and the prompt has to say so.
+   *
+   * Nothing about an image in the parts list tells the model what it is for;
+   * silence would read as "make this person". Naming it as mood-only is what
+   * keeps the feature on the right side of the line the UI promises , and it
+   * goes first because it describes an input the rest of the prompt assumes.
+   */
+  const lookClause = opts.look
+    ? 'The attached image is a MOOD and STYLING reference only. Match its overall ' +
+      'mood, styling and lighting. Do NOT copy the face, features or identity of ' +
+      'any person in it , invent a new person. '
+    : '';
 
   return (
+    lookClause +
     `Ultra-photorealistic studio fashion-model photograph of one ${subject}` +
     (look ? `, ${look}` : '') +
     (free ? `. ${free}` : '') +
@@ -712,3 +734,15 @@ export const GENIE_SYSTEM =
   "Rewrite the user's text into a single vivid fashion pose/scene description for a photo. " +
   'Only describe pose, framing, mood, lighting and setting. Keep the SAME model and SAME garment. ' +
   "Never add other people, never change the person's identity. One or two sentences, no preamble.";
+
+/*
+ * Casting is the one place where the ordinary Genie is exactly wrong: it is
+ * told to keep the person's identity and describe only pose and light, and here
+ * the person's identity IS the thing being written. Hence a second system
+ * prompt rather than a shared one.
+ */
+export const CAST_GENIE_SYSTEM =
+  "Rewrite the user's text into a single casting brief describing ONE fashion model's appearance. " +
+  'Only describe the person: apparent age, skin tone, hair, build, face and overall mood. ' +
+  'Never describe clothing, pose, background or lighting. Never add other people. ' +
+  'One or two sentences, no preamble.';

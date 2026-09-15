@@ -34,9 +34,10 @@ export default function ModelsView({
   const [isAdmin, setIsAdmin] = useState(false);
   const [viewing, setViewing] = useState<{ uid: string; email: string } | null>(null);
   const [creating, setCreating] = useState(false);
-  /* The imagined-model rate at 1K , the same one a shoot quotes, so the modal
-     can price three frames without a second source of truth. */
-  const [price, setPrice] = useState(1);
+  /* The whole imagined-model price grid , the same one a shoot quotes, so the
+     creator can price a run at whichever resolution is picked without a second
+     source of truth. */
+  const [prices, setPrices] = useState<Record<string, number>>({ '1K': 1 });
 
   const load = useCallback(async () => {
     try {
@@ -63,8 +64,8 @@ export default function ModelsView({
     void (async () => {
       try {
         const me = await getJson<{ prices?: Record<string, Record<string, number>> }>('/api/me');
-        const v = me.prices?.imagine?.['1K'];
-        if (Number.isFinite(v)) setPrice(Number(v));
+        const grid = me.prices?.imagine;
+        if (grid && Number.isFinite(grid['1K'])) setPrices(grid);
       } catch {
         /* Leave the default , the server prices the run either way, and a
            failed quote must not stop someone opening the form. */
@@ -207,7 +208,7 @@ export default function ModelsView({
 
       {creating && (
         <CreateModelModal
-          price={price}
+          prices={prices}
           onClose={() => setCreating(false)}
           onBalance={onBalance}
           onZoom={onZoom}

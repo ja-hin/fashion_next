@@ -233,13 +233,20 @@ export async function produce(opts: {
  * Prompt Genie: sharpen a pose/scene description. Constrained by GENIE_SYSTEM
  * so it can never change the model's identity or the garment.
  */
-export async function genieText(userText: string): Promise<{ text: string; usage: Usage | null }> {
+export async function genieText(
+  userText: string,
+  /** Which brief to write. Casting needs its own , it describes the person. */
+  system: string = GENIE_SYSTEM,
+): Promise<{ text: string; usage: Usage | null }> {
   const input = userText ?? '';
 
   if (PROVIDER === 'mock') {
     const base = input.trim().replace(/[.\s]+$/, '') || 'a natural pose';
     return {
-      text: `${base}, cinematic soft light, sharp focus on the garment, editorial composition, natural confident expression.`,
+      text:
+        system === GENIE_SYSTEM
+          ? `${base}, cinematic soft light, sharp focus on the garment, editorial composition, natural confident expression.`
+          : `${base}, calm confident expression, natural skin texture, relaxed shoulders.`,
       usage: null,
     };
   }
@@ -247,7 +254,7 @@ export async function genieText(userText: string): Promise<{ text: string; usage
   const model = BASE_MODEL_ID;
   const resp = await client().models.generateContent({
     model,
-    contents: [{ role: 'user', parts: [{ text: `${GENIE_SYSTEM}\n\nUser: ${input}` }] }],
+    contents: [{ role: 'user', parts: [{ text: `${system}\n\nUser: ${input}` }] }],
   } as Parameters<GoogleGenAI['models']['generateContent']>[0]);
 
   const usage = readUsage(model, resp);

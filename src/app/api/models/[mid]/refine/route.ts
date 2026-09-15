@@ -8,7 +8,7 @@ import { produce } from '@/lib/gemini';
 import { logEvent } from '@/lib/logs';
 import { PROVIDER } from '@/lib/config';
 import { buildCastRefinePrompt } from '@/lib/prompts';
-import type { ModelRef } from '@/lib/types';
+import type { ModelRef, Resolution } from '@/lib/types';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
@@ -61,8 +61,14 @@ export const POST = handler(async (req: Request, ctx: { params: Promise<{ mid: s
   const bytes = await storage.get(modelKey(mid, from));
   if (!bytes) throw new HttpError(404, 'That frame is no longer on disk.');
 
+  // Refine at the tier the draft was cast at , dropping to 1K here would make
+  // every nudge quietly degrade the frame it is meant to improve.
+  const res: Resolution = (['1K', '2K', '4K'] as const).includes(str(fd, 'res') as Resolution)
+    ? (str(fd, 'res') as Resolution)
+    : '1K';
+
   const settings = await getSettings();
-  const perImage = shootCost(settings, { model_id: '' }, '1K');
+  const perImage = shootCost(settings, { model_id: '' }, res);
   if ((await getBalance(user._id)) < perImage) {
     throw new HttpError(402, `A refine costs ${perImage} credit${perImage === 1 ? '' : 's'}.`);
   }
@@ -81,6 +87,7 @@ export const POST = handler(async (req: Request, ctx: { params: Promise<{ mid: s
       ar: '4:5',
       allowRevealing: false,
       pose: 'refine',
+      imageSize: res,
     });
   } catch (e) {
     const msg = String((e as Error)?.message ?? e);

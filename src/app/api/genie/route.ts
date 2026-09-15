@@ -2,6 +2,7 @@ import { handler, json, requireUser, formData, str, HttpError } from '@/lib/api'
 import { adjustBalance, getBalance } from '@/lib/auth';
 import { getSettings } from '@/lib/settings';
 import { genieText } from '@/lib/gemini';
+import { CAST_GENIE_SYSTEM } from '@/lib/prompts';
 import { logEvent } from '@/lib/logs';
 
 export const runtime = 'nodejs';
@@ -18,6 +19,10 @@ export const POST = handler(async (req: Request) => {
   const me = await requireUser();
   const fd = await formData(req);
   const prompt = str(fd, 'prompt');
+  // 'cast' writes a casting brief about a PERSON; the default rewrites a
+  // pose/scene and is told to leave the person alone. Same charge, same log,
+  // opposite instruction , see CAST_GENIE_SYSTEM.
+  const cast = str(fd, 'mode') === 'cast';
 
   const s = await getSettings();
   const per = Number(s.genie_price ?? 0);
@@ -34,20 +39,22 @@ export const POST = handler(async (req: Request) => {
   let improved: string;
   let usage: Record<string, unknown> = {};
   try {
-    const out = await genieText(prompt);
+    const out = await genieText(prompt, cast ? CAST_GENIE_SYSTEM : undefined);
     improved = out.text;
     if (out.usage) usage = { ...out.usage };
   } catch {
     // Never leave the user with nothing after a charge , fall back to a light
     // local embellishment.
-    improved = `${(prompt ?? '').replace(/[.\s]+$/, '')}, editorial composition, soft cinematic light.`;
+    improved = cast
+      ? `${(prompt ?? '').replace(/[.\s]+$/, '')}, natural skin texture, calm confident expression.`
+      : `${(prompt ?? '').replace(/[.\s]+$/, '')}, editorial composition, soft cinematic light.`;
   }
 
   await logEvent({
     type: 'genie',
     pid: '-',
     seed: '-',
-    pose: '(prompt improve)',
+    pose: cast ? '(casting brief)' : '(prompt improve)',
     category: '-',
     model: '-',
     status: charged ? 'paid' : 'free',
