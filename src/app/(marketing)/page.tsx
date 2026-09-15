@@ -22,11 +22,38 @@ export const runtime = 'nodejs';
  */
 export const dynamic = 'force-dynamic';
 
+const OG_TITLE = 'AI Fashion Photo & Video in minutes | Faishon Studio';
+const OG_DESC =
+  'Create full on-model AI photoshoots and videos from one garment photo. Consistent AI models, marketplace-ready for Amazon, Flipkart and Myntra. No subscription. No lock in. Start free.';
+const OG_ALT =
+  'Faishon Studio: AI fashion photoshoots and videos for your brand in minutes';
+
 export const metadata: Metadata = {
-  title: 'AI Fashion Photo & Video in minutes | Faishon Studio',
-  description:
-    'Create full on-model AI photoshoots and videos from one garment photo. Consistent AI models, marketplace-ready for Amazon, Flipkart and Myntra. No subscription. No lock in. Start free.',
+  title: OG_TITLE,
+  description: OG_DESC,
   alternates: { canonical: 'https://faishon.studio/' },
+  /*
+   * Restated in full rather than inherited: `openGraph` is replaced wholesale by
+   * a page that declares one, so leaving the images to the root layout would
+   * ship this page with a title and no card.
+   */
+  openGraph: {
+    type: 'website',
+    siteName: 'Faishon Studio',
+    url: 'https://faishon.studio/',
+    title: OG_TITLE,
+    description: OG_DESC,
+    images: [
+      { url: '/og/home.jpg', width: 1200, height: 630, alt: OG_ALT },
+      { url: '/og/home-square.jpg', width: 1200, height: 1200, alt: OG_ALT },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: OG_TITLE,
+    description: OG_DESC,
+    images: ['/og/home.jpg'],
+  },
 };
 
 const ORG_LD = {
