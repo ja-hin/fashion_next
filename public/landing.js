@@ -1797,13 +1797,21 @@ const STRIP_ITEMS=[
      scrolled. */
   const stage=tile?tile.parentElement:null;
 
+  /* How far the panel rises as it opens. The padding below centres the tile in
+     the space UNDER the copy, which is right for the tile , but by the time the
+     panel has formed the veil has put the copy out of play, and a panel still
+     centred under it sits low with its bottom off the screen. Half the padding
+     is exactly the distance from that centre to the viewport's. */
+  let genieLift=0;
   function fitStage(){
     if(!stage||!copy)return;
     /* Below 960 the stage is bottom-aligned with its own padding (landing.css),
        so an inline top padding here would fight it. */
-    if(innerWidth<=960){stage.style.paddingTop="";return;}
+    if(innerWidth<=960){stage.style.paddingTop="";genieLift=0;return;}
     const gap=Math.max(28,Math.min(innerHeight*0.05,64));
-    stage.style.paddingTop=Math.round(copy.offsetTop+copy.offsetHeight+gap)+"px";
+    const pad=Math.round(copy.offsetTop+copy.offsetHeight+gap);
+    stage.style.paddingTop=pad+"px";
+    genieLift=pad/2;
   }
 
   fitStage();
@@ -1947,7 +1955,9 @@ const STRIP_ITEMS=[
 
     veil.style.opacity=em;
     modal.style.opacity=m;
-    modal.style.transform=`scale(${.72+.28*em})`;
+    /* Rises with the same easing it scales with, so it forms out of the smoke
+       where the tile was and settles at the centre of the screen. */
+    modal.style.transform=`translateY(${-genieLift*em}px) scale(${.72+.28*em})`;
     modal.style.filter=`blur(${(1-m)*10}px)`;
     modal.style.pointerEvents=m>.9?"auto":"none";
     modal.setAttribute("aria-hidden",String(m<.5));
