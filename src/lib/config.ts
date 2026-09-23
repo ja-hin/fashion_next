@@ -38,7 +38,7 @@ export const LOG_PROMPTS =
 // ── Image engines ───────────────────────────────────────────────────
 // BASE = everything (poses, edits, imagined-model heroes).
 // HERO = the saved-model hero only , the one call where identity is decided.
-export const BASE_MODEL_ID = env('BASE_MODEL_ID', 'gemini-3.1-flash-lite-image');
+export const BASE_MODEL_ID = env('BASE_MODEL_ID', 'gemini-3.1-flash-image');
 export const HERO_MODEL_ID = env('HERO_MODEL_ID', 'gemini-3.1-flash-image');
 
 /**
@@ -46,7 +46,7 @@ export const HERO_MODEL_ID = env('HERO_MODEL_ID', 'gemini-3.1-flash-image');
  * than pixels. The *-image models above reject `responseMimeType: application/
  * json` with INVALID_ARGUMENT, so this deliberately is NOT one of them.
  */
-export const TEXT_MODEL_ID = env('TEXT_MODEL_ID', 'gemini-2.5-flash');
+export const TEXT_MODEL_ID = env('TEXT_MODEL_ID', 'gemini-3.1-flash-image');
 
 /**
  * The video model. Overridable because this one is a preview id that Google
@@ -148,12 +148,28 @@ export const GENIE_PRICE_PER_IMPROVE = 0.1;
 export const GENIE_MAX_PER_PROMPT = 5;
 
 /**
- * Credits for one 10-second video. Set against a measured API cost of ~₹101.5
- * a clip (≈20 credits at the base ₹5/credit), so this is roughly the same
- * margin a 1K photo carries. Admin-editable in Settings , the model is preview
- * and its price will move.
+ * Credits for one 10-second video.
+ *
+ * Measured API cost is ~₹101.5 a clip, which is ≈20 credits at the base
+ * ₹5/credit, so this carries roughly a 3× margin. Only the fallback: once an
+ * admin saves a figure in Settings the stored value wins, and this applies to a
+ * fresh install or a settings document written before the field existed.
  */
-export const VIDEO_PRICE = 35;
+export const VIDEO_PRICE = 60;
+
+/**
+ * Credits for pulling the garments out of one uploaded photo , the Special
+ * Category desk's extraction step.
+ *
+ * Per PHOTO, not per garment: however many pieces the person is wearing, they
+ * come back in one packshot from one image generation, so there is one thing to
+ * charge for. Default matches an imagine-1K hero, which is the same class of
+ * call on the same model.
+ *
+ * Only the fallback , the live figure is `extract_price` in app settings, set
+ * by an admin on the Settings page.
+ */
+export const EXTRACT_PRICE = 5;
 
 // ── What a call costs US, in USD per 1,000,000 tokens ───────────────
 // Purely for the "Cost (USD)" column in the Logs tab , this is our own spend

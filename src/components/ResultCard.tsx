@@ -66,8 +66,16 @@ export default function ResultCard({
             🔒 locked
           </div>
         )}
-        {!card.isHero && card.warn && (
-          <div className="absolute inset-x-[9px] top-[9px] z-[2] rounded-md bg-amber-soft px-[7px] py-1 text-[9.5px] font-bold text-amber">
+        {/* Heroes carry a warning too now , a saved model whose face the image
+            model refused is generated from their description instead, and that
+            is a hero-only outcome. Dropped below the locked pill rather than
+            over it, since both sit in the same corner. */}
+        {card.warn && (
+          <div
+            className={`absolute inset-x-[9px] z-[2] rounded-md bg-amber-soft px-[7px] py-1 text-[9.5px] font-bold leading-[1.35] text-amber ${
+              card.isHero ? 'top-[34px]' : 'top-[9px]'
+            }`}
+          >
             ⚠ {card.warn}
           </div>
         )}

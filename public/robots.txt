@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+Disallow: /login
+Disallow: /register
+Disallow: /api/
+Disallow: /dashboard
+
+Sitemap: https://faishon.studio/sitemap.xml

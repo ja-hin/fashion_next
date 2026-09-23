@@ -454,6 +454,89 @@ export const HEAD_COMPLETE_PROMPT =
   'lighting and pose, with natural space above the hair. If the head is already fully visible, return the ' +
   'image unchanged. Keep the garment, body, pose and background exactly the same. Photorealistic, seamless at the neck.';
 
+/**
+ * Pull the garments out of a photo of someone wearing them , all of them, into
+ * ONE packshot.
+ *
+ * Used by /api/ensemble/extract, from the Special Category desk: detection
+ * reports `has_person`, the customer asks for the garment on its own, and this
+ * is what turns their photo into a usable reference.
+ *
+ * `items` is why this is a function and not a constant, and it has been through
+ * two corrections worth keeping:
+ *
+ * 1. The first version asked for "the clothing item". A photo of someone in a
+ *    crop top and briefs came back with the briefs alone , with nothing naming
+ *    a target the model picks the most prominent thing and drops the rest.
+ * 2. The fix for that ran one extraction PER item, which caught everything but
+ *    billed one photo as two image generations and split a bra-and-briefs SET
+ *    into two references the shoot then had to reassemble. On this desk a set
+ *    is one product, so the pieces now come back in one frame, laid out the way
+ *    they are worn , one call, one reference, one product.
+ *
+ * The rest is defence against two failure modes:
+ *
+ * a. Leaving traces of the person. "Remove the background" reliably returns a
+ *    hand still gripping the hem, or a strip of forearm inside a sleeve. Every
+ *    body part is named rather than implied.
+ * b. Redesigning the garment. Asked for a packshot, the model happily
+ *    "improves" the cut, straightens a print or shifts a colour , which makes
+ *    the extraction worse than useless, because the reference no longer matches
+ *    the product. Hence the explicit hold on colour, print placement, texture,
+ *    trims and cut, and the instruction to close occluded areas from fabric
+ *    VISIBLE ELSEWHERE IN THE SAME PHOTO rather than to invent any.
+ *
+ * Says "item" as often as "garment" on purpose: a set may mix a bra with
+ * briefs, and neither has the other's neckline to preserve.
+ */
+export function buildGarmentExtractPrompt(items?: readonly string[] | null): string {
+  const named = (items ?? []).map((i) => i?.trim()).filter((i): i is string => !!i);
+
+  // Unnamed is the fallback for a photo the lister could not read. It keeps the
+  // original behaviour rather than failing the extraction outright.
+  const target =
+    named.length === 0
+      ? 'the clothing worn in it'
+      : named.length === 1
+        ? `the ${named[0]}`
+        : `these ${named.length} items together: ${named.map((n) => `the ${n}`).join(', ')}`;
+
+  // Only said when there IS more than one piece , told to "lay out the set"
+  // with a single garment, the model invents a second piece to pair it with.
+  const layout =
+    named.length > 1
+      ? 'Show ALL of them in this one image, arranged as a coordinated set the way they are worn ' +
+        'relative to each other , the upper piece above the lower piece, centred, with a clear gap ' +
+        'between them. They must not overlap, cover or hide one another, and none may be cropped ' +
+        'or left out. Every piece fully visible in the same frame. '
+      : '';
+
+  return (
+    `From this photograph, return ONLY ${target}, as a clean e-commerce packshot. ` +
+    'Remove the person completely: no face, no head, no hair, no neck, no hands, no fingers, ' +
+    'no arms, no legs, no feet, no skin and no body parts anywhere in the frame, including ' +
+    'inside sleeves, necklines and openings. ' +
+    'Remove everything else worn or held in the photograph , any other clothing, footwear, bag, ' +
+    'jewellery, bangles, watch, eyewear or headwear that is not listed above. ' +
+    'Remove the background, the floor, any room, props, furniture, other people, hangers, ' +
+    'mannequins, text and watermarks. ' +
+    layout +
+    'Keep each item EXACTLY as photographed: the same colour and shade, the same print and its ' +
+    'placement on the fabric, the same fabric texture and weave, the same trims, buttons, zips, ' +
+    'stitching and hardware, the same neckline, sleeve length, hem, straps and overall cut. ' +
+    'Do not restyle anything, do not clean it up, do not change any colour, do not add detail ' +
+    'that is not visible in the photograph. ' +
+    'Where the body or another item covered part of something , an arm across the front, a hand ' +
+    'in a pocket, a hem tucked in, a strap passing under something , close that area using the ' +
+    'fabric, print and seam lines already visible elsewhere in this same photograph, keeping it ' +
+    'plain and consistent rather than inventing new detail. ' +
+    'Present it as a ghost-mannequin product shot: each piece filled out to the natural shape it ' +
+    'has when worn, upright, on a pure white background, lit with soft even studio light, with no ' +
+    'cast shadow and no reflection, and a small even margin around everything. ' +
+    'Output the clothing only , no person, no body, no scene.'
+  );
+}
+
 // ── Character sheet ─────────────────────────────────────────────────
 
 /**

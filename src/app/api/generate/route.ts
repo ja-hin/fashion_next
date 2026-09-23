@@ -125,6 +125,8 @@ export const POST = handler(async (req: Request) => {
     input_family: family,
     ref_mode: refMode,
     allow_revealing: bool(fd, 'allow_revealing'),
+    // Sent only by /special , decides which price grid the shoot bills from.
+    special: bool(fd, 'special'),
     model_id: modelId,
     /* One JSON field rather than five form fields: these are one choice about
        one person. parseTraits keeps only known keys with known values, so a

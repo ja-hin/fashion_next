@@ -123,6 +123,14 @@ export interface ShootOpts {
    */
   ref_mode?: RefMode;
   allow_revealing: boolean;
+  /**
+   * Shot on the Special Category desk (/special) rather than /generate.
+   *
+   * Priced from its own grid , see `special_prices`. Stored on the shoot rather
+   * than inferred from allow_revealing, which is about what the image model may
+   * render and would tie the bill to a content setting.
+   */
+  special?: boolean;
   model_id: string;
   /**
    * Chosen appearance for an IMAGINED model , skin tone, age, hair, build,
@@ -319,6 +327,30 @@ export interface PriceGrid {
   saved: Record<Resolution, number>;
 }
 
+/**
+ * Which AI engine runs each job, chosen by an admin.
+ *
+ * Every field is a model id or '' , and '' means "whatever the environment
+ * says", which is the behaviour that existed before this was configurable.
+ * That matters: a blank box must never be read as a choice, or upgrading would
+ * silently re-point every generation in the app at one engine.
+ *
+ * Set here rather than only in env because these ids change , Google renames
+ * the preview models , and an owner should not need a redeploy to follow one.
+ */
+export interface EngineConfig {
+  /** Ordinary shoots on an imagined model. */
+  imagine: string;
+  /** Ordinary shoots anchored to a saved model. */
+  saved: string;
+  /** Special Category shoots on an imagined model. */
+  special_imagine: string;
+  /** Special Category shoots anchored to a saved model. */
+  special_saved: string;
+  /** Garment extraction packshots , /api/ensemble/extract. */
+  extract: string;
+}
+
 export interface SettingsDoc {
   _id: 'app';
   price_per_image: number;
@@ -326,6 +358,18 @@ export interface SettingsDoc {
   genie_price: number;
   /** Credits for one 10-second video. */
   video_price: number;
+  /** Credits for extracting the garments out of one uploaded photo. */
+  extract_price: number;
+  /**
+   * Per-image credits for Special Category shoots, replacing `prices` there.
+   *
+   * Its own grid rather than a multiplier on the main one: an admin setting a
+   * number wants to see the number they are charging, and a multiplier turns
+   * every change into arithmetic done twice.
+   */
+  special_prices: PriceGrid;
+  /** Per-job engine overrides. Optional: documents written before it exist. */
+  engines?: EngineConfig;
   genie_max: number;
   shoot_seq: number;
   /** Counter behind the sequential user ids (U0001…). */

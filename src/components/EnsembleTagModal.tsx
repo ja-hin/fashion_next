@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { postMultipart } from '@/lib/client/api';
 import { Select } from './ui';
-import { RegenIcon } from './icons';
+import { RegenIcon, AlertIcon } from './icons';
 import {
   ROLES_FOR,
   LABEL_FOR,
@@ -19,8 +19,16 @@ interface Detected {
   confidence: number;
   reason?: string;
   unsure?: boolean;
-  /** Intimate apparel , the shoot is refused rather than generated. */
+  /** A special category , handed to the Special Category panel, not shot here. */
   restricted?: boolean;
+  /** Names the item when `restricted`, so the handover can say what it saw. */
+  restricted_reason?: string;
+  /** Someone is wearing or holding the item , /special asks what to do about it. */
+  has_person?: boolean;
+  /** Flat or on a ghost mannequin, nobody in frame. */
+  is_flat_lay?: boolean;
+  /** The specific item in 1-3 words , used to name it back to the user. */
+  garment_type?: string;
 }
 
 /** Object URLs are created here, so they are revoked here. */
@@ -70,19 +78,49 @@ export default function EnsembleTagModal({
   refs,
   onRefs,
   onClose,
+  onSpecial,
+  extractPrice = 0,
 }: {
   /** Which question this window is asking: which item, or which view. */
   mode: RefMode;
   refs: EnsembleRef[];
-  onRefs: (next: EnsembleRef[]) => void;
+  /**
+   * Takes an updater as well as a value: every write in here lays a patch over
+   * the refs as they are NOW. See detect() for why that matters , this window
+   * stays open over a running extraction on the Special desk.
+   */
+  onRefs: Dispatch<SetStateAction<EnsembleRef[]>>;
   /** Continue just closes , framing, aspect and resolution live in the panel. */
   onClose: () => void;
+  /**
+   * The classifier read one or more uploads as a special category.
+   *
+   * Handing them up rather than dealing with them here: this window's job ends
+   * at "what is each image", and a special-category upload leaves the shoot
+   * path entirely , the page moves them out of the ensemble and navigates to
+   * the Special Category panel.
+   *
+   * Optional, and omitted by /special on purpose. That panel IS where flagged
+   * images live, so routing them again would hand them to the screen they are
+   * already on , the window just tags them like any other.
+   */
+  onSpecial?: (flagged: EnsembleRef[]) => void;
+  /**
+   * Credits per photo extracted , `extract_price` from app settings.
+   *
+   * Passed by the Special desk only; /generate never extracts, so it leaves
+   * this at 0 and nothing about money is shown.
+   */
+  extractPrice?: number;
 }) {
   const copy = COPY[mode];
   const inputRef = useRef<HTMLInputElement>(null);
   const [detecting, setDetecting] = useState(false);
   const [note, setNote] = useState('');
   const [dragging, setDragging] = useState(false);
+  /* Non-null once detection has flagged something: the window stops being a
+     tagging window and becomes the handover notice. */
+  const [handoff, setHandoff] = useState<EnsembleRef[] | null>(null);
 
   const room = MAX_ENSEMBLE_REFS - refs.length;
   const detected = refs.some((r) => r.confidence !== undefined);
@@ -102,16 +140,28 @@ export default function EnsembleTagModal({
     if (kicked.current) return;
     kicked.current = true;
     const untagged = refs.filter((r) => r.confidence === undefined);
-    if (untagged.length) void detect(untagged, refs);
+    if (untagged.length) void detect(untagged);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /** Classify a set of refs and merge the answers back in by identity. */
-  async function detect(targets: EnsembleRef[], all: EnsembleRef[]) {
+  /**
+   * Classify a set of refs and merge the answers back in.
+   *
+   * Merged through an UPDATER keyed by object URL, never by writing back the
+   * array this call started with. On the Special desk this window stays open
+   * while an extraction runs underneath it, and extraction replaces a ref's
+   * file and url when it lands , a snapshot written back here would undo that
+   * and hand the shoot the person-photo it had just paid to remove.
+   *
+   * URL rather than index for the older reason too: the customer can remove a
+   * tile mid-request, which shifts every position after it.
+   */
+  async function detect(targets: EnsembleRef[]) {
     if (!targets.length) return;
     setDetecting(true);
     setNote('');
-    onRefs(all.map((r) => (targets.includes(r) ? { ...r, detecting: true } : r)));
+    const aimed = new Set(targets.map((r) => r.url));
+    onRefs((cur) => cur.map((r) => (aimed.has(r.url) ? { ...r, detecting: true } : r)));
 
     let results: Detected[] | null = null;
     try {
@@ -125,27 +175,64 @@ export default function EnsembleTagModal({
       // One merge point for both outcomes, so a failed call can never leave a
       // tile spinning forever , it just falls back to being tagged by hand.
       //
-      // Matched on object identity rather than index: the user can remove a
-      // tile while the request is in flight, which would shift every position.
-      onRefs(
-        all.map((r) => {
-          const at = targets.indexOf(r);
-          if (at < 0) return r;
-          const hit = results?.[at];
-          return hit
+      // Built as url -> patch so the write below can be an updater: what this
+      // call decided, laid over whatever the ref looks like by the time it
+      // lands, rather than over what it looked like when the call went out.
+      const patches = new Map<string, Partial<EnsembleRef>>();
+      targets.forEach((r, at) => {
+        const hit = results?.[at];
+        patches.set(
+          r.url,
+          hit
             ? {
-                ...r,
-                role: hit.role,
-                unsure: !!hit.unsure,
-                confidence: hit.confidence,
-                reason: hit.reason,
-                restricted: !!hit.restricted,
-                detecting: false,
-              }
-            : { ...r, detecting: false };
+              role: hit.role,
+              unsure: !!hit.unsure,
+              confidence: hit.confidence,
+              reason: hit.reason,
+              restricted: !!hit.restricted,
+              restricted_reason: hit.restricted_reason ?? '',
+              // The detect route has always returned these; they were being
+              // dropped here. /special needs has_person to know whether to ask
+              // about extraction at all.
+              has_person: hit.has_person,
+              is_flat_lay: hit.is_flat_lay,
+              garment_type: hit.garment_type ?? '',
+              detecting: false,
+            }
+            : { detecting: false },
+        );
+      });
+
+      onRefs((cur) =>
+        cur.map((r) => {
+          const patch = patches.get(r.url);
+          if (!patch) return r;
+          return {
+            ...r,
+            ...patch,
+            /* A fresh verdict re-opens the question on an image the customer
+               swapped in AS garment-only: if there is still a person in it,
+               'own' was not actually answered. 'extract' is left alone , that
+               choice is about this photo and re-detecting it changes nothing.
+               Needs the ref as it is NOW, so it is applied here rather than
+               baked into the patch above. */
+            garment_plan:
+              patch.has_person && r.garment_plan === 'own' ? undefined : r.garment_plan,
+          };
         }),
       );
       setDetecting(false);
+
+      /* A special category anywhere in the set takes over the window. Checked
+         on `next` rather than on `refs`, which is still last render's value at
+         this point , reading it here would miss a flag set by this very call.
+
+         Only the images that were actually flagged go up. The rest stay in the
+         ensemble and are still a perfectly ordinary shoot. */
+      const flagged = targets
+        .map((r) => ({ ...r, ...patches.get(r.url) }))
+        .filter((r) => r.restricted);
+      if (onSpecial && flagged.length) setHandoff(flagged);
     }
   }
 
@@ -161,9 +248,8 @@ export default function EnsembleTagModal({
     if (!taken.length) return;
 
     const fresh = taken.map((f) => toRef(f, mode));
-    const all = [...refs, ...fresh];
-    onRefs(all);
-    void detect(fresh, all);
+    onRefs([...refs, ...fresh]);
+    void detect(fresh);
     if (inputRef.current) inputRef.current.value = '';
   }
 
@@ -180,6 +266,114 @@ export default function EnsembleTagModal({
       refs.map((r, n) =>
         n === i ? { ...r, role, unsure: false, confidence: undefined, reason: undefined } : r,
       ),
+    );
+  }
+
+
+  /*
+   * The handover , asked, not announced.
+   *
+   * A full takeover of the window rather than a banner inside it: the images
+   * may be leaving this screen, so carrying on tagging them underneath would be
+   * a lie. No click-away, because moving someone's uploads to another panel is
+   * not something to trigger by missing a target.
+   *
+   * It used to move you itself after a couple of seconds. That is the wrong
+   * shape for this: a redirect that happens whether or not you agreed is not a
+   * notice, it is a decision taken on your behalf, and the one thing you cannot
+   * do about it is nothing. Both answers are now buttons, and neither is
+   * default.
+   */
+  if (handoff) {
+    const staying = refs.length - handoff.length;
+    const named = handoff
+      .map((r) => r.restricted_reason?.trim())
+      .filter((x): x is string => !!x);
+
+    return (
+      <div className="fixed inset-0 z-[55] flex items-center justify-center bg-black/50 p-[30px]">
+        <div className="animate-fade-up w-full max-w-[540px] rounded-[18px] bg-surface p-8 text-center shadow-pop">
+          <div className="mx-auto mb-4 flex h-[54px] w-[54px] items-center justify-center rounded-full bg-brand-soft">
+            <AlertIcon className="h-[26px] w-[26px] text-brand" />
+          </div>
+
+          <h2 className="text-[20px] font-bold">This is a special category</h2>
+
+          <p className="mx-auto mt-2.5 max-w-[420px] text-[13px] leading-[1.65] text-muted">
+            {handoff.length === 1 ? 'This item' : `These ${handoff.length} items`}
+            {named.length ? ` , ${named.join(', ')} , ` : ' '}
+            {handoff.length === 1 ? 'is' : 'are'} not part of an ordinary on-model
+            shoot. The Special Category panel handles{' '}
+            {handoff.length === 1 ? 'it' : 'them'}, with its own setup and its own
+            shoot. Move {handoff.length === 1 ? 'it' : 'them'} there?
+          </p>
+
+          <div className="mt-5 flex flex-wrap justify-center gap-2">
+            {handoff.map((r) => (
+              <span key={r.url} className="w-[74px]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={r.url}
+                  alt=""
+                  className="h-[74px] w-[74px] rounded-[10px] border border-brand/40 bg-surface2 object-cover"
+                />
+                {r.restricted_reason && (
+                  <span className="mt-1 block truncate text-[9px] font-semibold text-muted">
+                    {r.restricted_reason}
+                  </span>
+                )}
+              </span>
+            ))}
+          </div>
+
+          {staying > 0 && (
+            <p className="mt-5 text-[11.5px] font-semibold text-muted">
+              Your other {staying} {staying === 1 ? 'image stays' : 'images stay'} in this shoot.
+            </p>
+          )}
+
+          <div className="mt-6 flex gap-2.5">
+            {/*
+              "Not now" REMOVES , it does not dismiss.
+              There is no third outcome here. A special-category item either
+              goes to the panel built for it or it leaves the upload set: the
+              one thing it must not do is stay in an ordinary on-model shoot,
+              which is the shoot the image model refuses. Leaving it in place
+              would just move the refusal to the Generate button, after a credit
+              had been spent finding out.
+            */}
+            <button
+              onClick={() => {
+                const dropped = new Set(handoff);
+                for (const r of handoff) URL.revokeObjectURL(r.url);
+                const kept = refs.filter((r) => !dropped.has(r));
+                onRefs(kept);
+                setHandoff(null);
+                // Everything was flagged, so there is nothing left to tag and
+                // no reason to sit on an empty window.
+                if (!kept.length) onClose();
+              }}
+              className="flex-1 rounded-[11px] border border-line p-[12px] text-[13.5px] font-bold text-ink transition hover:border-ink"
+            >
+              Not now
+            </button>
+            <button
+              onClick={() => onSpecial?.(handoff)}
+              className="flex-1 rounded-[11px] bg-brand p-[12px] text-[13.5px] font-bold text-white transition hover:brightness-110"
+            >
+              Move to Special Category
+            </button>
+          </div>
+
+          {/* Said plainly, because "Not now" on its own sounds like a snooze and
+              this one throws the upload away. */}
+          <p className="mt-3 text-[11px] leading-[1.5] text-muted">
+            Not now removes {handoff.length === 1 ? 'this image' : 'these images'} from
+            the shoot , you can upload {handoff.length === 1 ? 'it' : 'them'} again any
+            time.
+          </p>
+        </div>
+      </div>
     );
   }
 
@@ -213,7 +407,7 @@ export default function EnsembleTagModal({
               so the button does not have to repeat it. The name is kept as a
               tooltip and as the accessible label. */}
           <button
-            onClick={() => detect(refs, refs)}
+            onClick={() => detect(refs)}
             disabled={detecting || !refs.length}
             title="Re-detect what each image is"
             aria-label="Re-detect what each image is"
@@ -237,7 +431,11 @@ export default function EnsembleTagModal({
               <div
                 key={r.url}
                 className={`relative flex w-[196px] flex-col overflow-hidden rounded-[14px] border ${
-                  r.detecting ? 'border-line' : r.unsure ? 'border-amber/60' : 'border-line'
+                  r.extracting
+                    ? 'border-accent/60'
+                    : r.unsure && !r.detecting
+                      ? 'border-amber/60'
+                      : 'border-line'
                 } bg-surface`}
               >
                 {r.detecting && (
@@ -255,30 +453,60 @@ export default function EnsembleTagModal({
                     {Math.round(r.confidence * 100)}%
                   </span>
                 )}
-                <button
-                  onClick={() => remove(i)}
-                  aria-label={`Remove image ${i + 1}`}
-                  className="absolute right-2 top-2 z-[2] flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/55 text-[14px] text-white hover:bg-black"
-                >
-                  ×
-                </button>
+                {/* Hidden mid-extraction: a close button over a spinner reads
+                    as "cancel", and there is nothing here to cancel. */}
+                {!r.extracting && (
+                  <button
+                    onClick={() => remove(i)}
+                    aria-label={`Remove image ${i + 1}`}
+                    className="absolute right-2 top-2 z-[2] flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/55 text-[14px] text-white hover:bg-black"
+                  >
+                    ×
+                  </button>
+                )}
 
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={r.url}
-                  alt=""
-                  className="h-[196px] w-full bg-surface2 object-contain"
-                />
+                {/* A shimmer IN PLACE OF the photo, not a veil over it. What is
+                    being worked on is the picture itself, and the one underneath
+                    is about to be thrown away , leaving it showing through reads
+                    as "still loading this one", which is the opposite of what
+                    happens next. */}
+                {r.extracting ? (
+                  <div className="skeleton flex h-[196px] w-full flex-col items-center justify-center gap-2">
+                    <span className="animate-spin-cs inline-block h-6 w-6 rounded-full border-2 border-surface/70 border-t-accent" />
+                    <span className="text-[11px] font-bold text-accent">
+                      Extracting the garment…
+                    </span>
+                    <span className="px-4 text-center text-[10px] leading-[1.4] text-muted">
+                      This takes a few seconds
+                    </span>
+                    {extractPrice > 0 && (
+                      <span className="rounded-full bg-surface px-2 py-[2px] text-[10px] font-bold text-ink">
+                        {extractPrice} credits
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={r.url}
+                      alt=""
+                      className="h-[196px] w-full bg-surface2 object-contain"
+                    />
+                  </>
+                )}
 
                 <div className="border-t border-line p-2.5">
-                  {r.detecting ? (
+                  {r.detecting || r.extracting ? (
                     // No role is shown until one has actually been worked out ,
                     // the stored 'garment' is a placeholder, and rendering it
                     // would put words in the classifier's mouth.
                     <>
                       <div className="skeleton h-[34px] w-full rounded-[9px]" />
                       <p className="mt-1.5 text-[10.5px] font-semibold text-muted">
-                        Identifying this item…
+                        {r.extracting
+                          ? 'Taking the garment out of your photo…'
+                          : 'Identifying this item…'}
                       </p>
                     </>
                   ) : (
@@ -337,7 +565,11 @@ export default function EnsembleTagModal({
           {/* The status only , Re-detect moved to the header. */}
           <div className="mt-4 rounded-[12px] bg-accent-soft px-4 py-3">
             <span className="text-[12.5px] font-bold text-accent">
-              {detecting
+              {refs.some((r) => r.extracting)
+                ? `Taking the garment out of your photo , a few seconds per image${
+                    extractPrice > 0 ? `, ${extractPrice} credits each` : ''
+                  }.`
+                : detecting
                 ? 'Working out what each image is…'
                 : note
                   ? note
@@ -356,7 +588,9 @@ export default function EnsembleTagModal({
 
           <button
             onClick={onClose}
-            disabled={!refs.length || refs.some((r) => r.detecting)}
+            // Continuing mid-extraction would carry the person-photo into the
+            // shoot , the reference it is about to be replaced by is the point.
+            disabled={!refs.length || refs.some((r) => r.detecting || r.extracting)}
             className="ml-auto flex-shrink-0 rounded-[11px] bg-accent px-6 py-3 text-[13.5px] font-bold text-white transition hover:-translate-y-px disabled:translate-y-0 disabled:opacity-50"
           >
             Continue

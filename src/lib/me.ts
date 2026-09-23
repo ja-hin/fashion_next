@@ -7,7 +7,7 @@ import 'server-only';
 import { currentUser } from './auth';
 import { shouldWatermark } from './watermark';
 import { getSettings } from './settings';
-import { PROVIDER, VERSION } from './config';
+import { PROVIDER, VERSION, BASE_MODEL_ID, HERO_MODEL_ID } from './config';
 import { STYLES } from './prompts';
 
 export interface MePayload {
@@ -26,6 +26,12 @@ export interface MePayload {
   genie?: { free: number; price: number; max: number };
   /** Credits for one 10-second video. */
   video_price?: number;
+  extract_price?: number;
+  special_prices?: { imagine: Record<string, number>; saved: Record<string, number> };
+  /** Admin-chosen engine per job. Model names, not secrets. */
+  engines?: { imagine: string; saved: string; special_imagine: string; special_saved: string; extract: string };
+  /** What each blank engine box falls back to, so the admin can see it. */
+  engine_defaults?: { base: string; hero: string };
   /**
    * True while this account is on the free credits, so its images are served
    * with the brand watermark. Flips to false permanently on the first payment.
@@ -52,6 +58,10 @@ export async function getMePayload(): Promise<MePayload> {
     prices: s.prices,
     genie: { free: s.genie_free, price: s.genie_price, max: s.genie_max },
     video_price: s.video_price,
+    extract_price: s.extract_price,
+    special_prices: s.special_prices,
+    engines: s.engines,
+    engine_defaults: { base: BASE_MODEL_ID, hero: HERO_MODEL_ID },
     watermark: shouldWatermark(u),
   };
 }

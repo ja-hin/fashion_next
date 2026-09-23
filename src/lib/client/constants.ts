@@ -229,3 +229,19 @@ export type ViewSlug = (typeof VIEW_SLUGS)[number];
 
 /** Views only an admin may open. */
 export const ADMIN_VIEWS: ViewSlug[] = ['logs', 'admin'];
+/**
+ * TEMPORARILY OFF , the intimate-apparel upload gate.
+ *
+ * When true, an image the classifier marks `restricted` shows a banner, disables
+ * Generate and refuses the click (SetupPanel + generate/page). Turned off at the
+ * owner's request so restricted uploads can be pushed through to the image model
+ * during testing.
+ *
+ * What this does NOT change: Gemini still applies its own filter. A refusal there
+ * comes back as the "Not permitted" result card and costs nothing , this gate only
+ * decided whether to spend the call at all. See the note at generate/page.tsx on
+ * why the gate exists (the model answers a briefs prompt by inventing a top).
+ *
+ * Set back to `true` to restore it , nothing else has to change.
+ */
+export const BLOCK_RESTRICTED_GARMENTS = false;

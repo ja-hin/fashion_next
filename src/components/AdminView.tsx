@@ -36,7 +36,11 @@ export default function AdminView({
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [topups, setTopups] = useState<Record<string, string>>({});
   const [prices, setPrices] = useState<PriceGrid>({ imagine: {}, saved: {} });
+  const [specialPrices, setSpecialPrices] = useState<PriceGrid>({ imagine: {}, saved: {} });
   const [geniePrice, setGeniePrice] = useState(String(me.genie?.price ?? 0));
+  const [videoPrice, setVideoPrice] = useState(String(me.video_price ?? 0));
+  const [extractPrice, setExtractPrice] = useState(String(me.extract_price ?? 0));
+  const [engines, setEngines] = useState<Record<string, string>>({});
   const [flash, setFlash] = useState('');
 
   const loadUsers = useCallback(async () => {
@@ -55,15 +59,24 @@ export default function AdminView({
   // Seed the grid inputs from the settings /api/me already returned.
   useEffect(() => {
     const grid: PriceGrid = { imagine: {}, saved: {} };
+    const special: PriceGrid = { imagine: {}, saved: {} };
     for (const m of MODES) {
       for (const r of RES) {
         const v = me.prices?.[m]?.[r];
         grid[m][r] = v == null ? '' : String(v);
+        // Falls back to the ordinary rate so the Special grid opens showing
+        // what is actually being charged, not a row of blanks.
+        const sv = me.special_prices?.[m]?.[r] ?? v;
+        special[m][r] = sv == null ? '' : String(sv);
       }
     }
     setPrices(grid);
+    setSpecialPrices(special);
+    setEngines({ ...(me.engines ?? {}) });
     setGeniePrice(String(me.genie?.price ?? 0));
-  }, [me.prices, me.genie]);
+    setVideoPrice(String(me.video_price ?? 0));
+    setExtractPrice(String(me.extract_price ?? 0));
+  }, [me.prices, me.special_prices, me.genie, me.video_price, me.extract_price, me.engines]);
 
   async function act(fn: () => Promise<unknown>, failMsg: string) {
     try {
@@ -96,24 +109,41 @@ export default function AdminView({
   }
 
   async function saveSettings() {
-    const payload: { imagine: Record<string, number>; saved: Record<string, number> } = {
-      imagine: {},
-      saved: {},
-    };
-    for (const m of MODES) {
-      for (const r of RES) {
-        const v = prices[m]?.[r];
-        if (v !== '' && v !== undefined) payload[m][r] = Number(v);
+    /* Blank cells are left OUT of the payload entirely , the route reads a
+       missing cell as "leave it alone". Sending '' would be a number the
+       server has to guess at. */
+    const numbers = (grid: PriceGrid) => {
+      const out: { imagine: Record<string, number>; saved: Record<string, number> } = {
+        imagine: {},
+        saved: {},
+      };
+      for (const m of MODES) {
+        for (const r of RES) {
+          const v = grid[m]?.[r];
+          if (v !== '' && v !== undefined) out[m][r] = Number(v);
+        }
       }
-    }
+      return out;
+    };
+
+    const payload = numbers(prices);
+    const specialPayload = numbers(specialPrices);
     try {
       await postForm('/api/admin/settings', {
         genie_price: Number(geniePrice),
+        video_price: videoPrice,
+        extract_price: extractPrice,
         prices: JSON.stringify(payload),
+        special_prices: JSON.stringify(specialPayload),
+        engines: JSON.stringify(engines),
       });
       onMe({
         prices: payload,
+        special_prices: specialPayload,
+        engines: engines as Me['engines'],
         genie: { ...(me.genie ?? { free: 0, max: 5 }), price: Number(geniePrice) },
+        video_price: Number(videoPrice),
+        extract_price: Number(extractPrice),
       });
       setFlash('Saved.');
       setTimeout(() => setFlash(''), 2500);
@@ -264,6 +294,73 @@ export default function AdminView({
 
       <AdminPacks />
 
+      {/* Engines before pricing: which model runs a job decides what it costs
+          us and how good it is, so it is the first thing an owner tunes. */}
+      <div className="mb-[18px] max-w-[880px] rounded-card border border-line bg-surface p-[22px] shadow-card">
+        <h3 className="mb-[5px] text-[15px] font-bold">AI engines</h3>
+        <p className="mb-4 text-[12.5px] leading-[1.5] text-muted">
+          Which model runs each job. Leave a box empty to use the server default shown
+          under it , that is the behaviour with nothing set here, so an empty form changes
+          nothing. Ids are typed rather than picked from a list because Google renames
+          these; a wrong id fails the generation and shows up in Logs.
+        </p>
+
+        <div className="flex flex-wrap gap-[14px]">
+          {(
+            [
+              ['imagine', 'Generate , Imagine a model', 'base'],
+              ['saved', 'Generate , Saved model', 'hero'],
+              ['special_imagine', 'Special Category , Imagine', 'base'],
+              ['special_saved', 'Special Category , Saved model', 'hero'],
+              ['extract', 'Garment extraction', 'base'],
+            ] as const
+          ).map(([key, label, fallback]) => (
+            <div key={key} className="min-w-[240px] flex-1">
+              <label className="lbl">{label}</label>
+              <input
+                type="text"
+                list="engine-ids"
+                spellCheck={false}
+                placeholder="server default"
+                value={engines[key] ?? ''}
+                onChange={(e) => setEngines((g) => ({ ...g, [key]: e.target.value }))}
+              />
+              <div className="mt-1 text-[10.5px] leading-[1.4] text-muted">
+                default:{' '}
+                <span className="font-semibold">
+                  {fallback === 'hero'
+                    ? (me.engine_defaults?.hero ?? ',')
+                    : (me.engine_defaults?.base ?? ',')}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Suggestions, not a whitelist , the field still takes anything. */}
+        <datalist id="engine-ids">
+          {[me.engine_defaults?.base, me.engine_defaults?.hero]
+            .filter((v): v is string => !!v)
+            .map((v) => (
+              <option key={v} value={v} />
+            ))}
+        </datalist>
+
+        <p className="mt-3 text-[11.5px] leading-[1.45] text-muted">
+          The lite engines only render 1K. A shoot set to 2K or 4K normally upgrades itself
+          to the heavier one , naming an engine here turns that off, so pick one that can
+          produce the sizes you sell.
+        </p>
+
+        <button
+          onClick={saveSettings}
+          className="mt-3.5 rounded-[9px] bg-ink px-[18px] py-2.5 text-[13px] font-bold text-surface"
+        >
+          Save engines
+        </button>
+        {flash && <div className="mt-2.5 text-[12.5px] font-semibold text-green">{flash}</div>}
+      </div>
+
       <div className="flex max-w-[880px] flex-wrap gap-[18px]">
         <div className="min-w-[300px] flex-1 rounded-card border border-line bg-surface p-[22px] shadow-card">
           <h3 className="mb-[5px] text-[15px] font-bold">Credits &amp; pricing</h3>
@@ -336,6 +433,113 @@ export default function AdminView({
             className="mt-3.5 rounded-[9px] bg-ink px-[18px] py-2.5 text-[13px] font-bold text-surface"
           >
             Save Genie settings
+          </button>
+          {flash && <div className="mt-2.5 text-[12.5px] font-semibold text-green">{flash}</div>}
+        </div>
+
+        <div className="min-w-[300px] flex-1 rounded-card border border-line bg-surface p-[22px] shadow-card">
+          <h3 className="mb-[5px] text-[15px] font-bold">Video</h3>
+          <p className="mb-4 text-[12.5px] leading-[1.5] text-muted">
+            Credits charged for one 10-second video. Shown on the Generate button and charged
+            only if the clip comes back.
+          </p>
+
+          <label className="lbl">Video cost (cr per clip)</label>
+          <input
+            type="number"
+            step="1"
+            min="0"
+            value={videoPrice}
+            onChange={(e) => setVideoPrice(e.target.value)}
+          />
+
+          <button
+            onClick={saveSettings}
+            className="mt-3.5 rounded-[9px] bg-ink px-[18px] py-2.5 text-[13px] font-bold text-surface"
+          >
+            Save video settings
+          </button>
+          {flash && <div className="mt-2.5 text-[12.5px] font-semibold text-green">{flash}</div>}
+        </div>
+
+        {/* One card, because these are one question , what the Special Category
+            desk costs. Splitting the per-image rate from the extraction rate
+            meant an admin pricing that desk had to find two boxes in two
+            places and remember both were involved. */}
+        <div className="min-w-[300px] flex-1 rounded-card border border-line bg-surface p-[22px] shadow-card">
+          <h3 className="mb-[5px] flex items-center gap-2 text-[15px] font-bold">
+            Special Category
+            <span className="rounded-full border border-brand/40 px-1.5 py-[1px] text-[8px] font-bold uppercase tracking-[0.06em] text-brand">
+              beta
+            </span>
+          </h3>
+          <p className="mb-4 text-[12.5px] leading-[1.5] text-muted">
+            Pricing for the Special Category desk , intimate apparel and anything else
+            detection routes off the ordinary shoot path. These rates replace the ones
+            above for those shoots only.
+          </p>
+
+          <label className="lbl">Credits per image</label>
+          <table className="mb-3 mt-1 w-full border-collapse">
+            <thead>
+              <tr>
+                <th />
+                {RES.map((r) => (
+                  <th key={r} className="px-1.5 py-1 text-[11px] font-bold text-muted">
+                    {r}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {MODES.map((m) => (
+                <tr key={m}>
+                  <td className="whitespace-nowrap py-[5px] pr-1.5 text-[13px] font-semibold">
+                    {m === 'imagine' ? 'Imagine a model' : 'Saved model'}
+                  </td>
+                  {RES.map((r) => (
+                    <td key={r} className="px-1.5 py-[5px] text-center">
+                      <input
+                        type="number"
+                        step="0.5"
+                        min="0"
+                        value={specialPrices[m]?.[r] ?? ''}
+                        onChange={(e) =>
+                          setSpecialPrices((p) => ({ ...p, [m]: { ...p[m], [r]: e.target.value } }))
+                        }
+                        className="w-16 text-center"
+                      />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {/* Worth saying, or the row reads as a rate that is quietly in use. */}
+          <p className="mb-4 text-[11.5px] leading-[1.45] text-muted">
+            Saved models are disabled on that desk for now, so the second row is set up
+            ready rather than in use.
+          </p>
+
+          <label className="lbl">Garment extraction (cr per photo)</label>
+          <input
+            type="number"
+            step="1"
+            min="0"
+            value={extractPrice}
+            onChange={(e) => setExtractPrice(e.target.value)}
+          />
+          <p className="mt-1.5 text-[11.5px] leading-[1.45] text-muted">
+            Charged when a customer asks us to pull the garment out of a photo of someone
+            wearing it. Per photo, not per garment , every piece in one photo comes back in
+            a single packshot from one generation. Charged only for photos that come back.
+          </p>
+
+          <button
+            onClick={saveSettings}
+            className="mt-3.5 rounded-[9px] bg-ink px-[18px] py-2.5 text-[13px] font-bold text-surface"
+          >
+            Save Special Category
           </button>
           {flash && <div className="mt-2.5 text-[12.5px] font-semibold text-green">{flash}</div>}
         </div>

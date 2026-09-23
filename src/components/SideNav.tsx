@@ -17,6 +17,7 @@ import {
   SlidersIcon,
   CoinsIcon,
   ChevronLeftIcon,
+  ShieldCheckIcon,
 } from './icons';
 import type { Me } from '@/lib/client/types';
 
@@ -28,6 +29,10 @@ const MAIN: Item[] = [
   { href: '/gallery', label: 'Gallery', Icon: ImagesIcon },
   { href: '/garments', label: 'My Garments', Icon: ShirtIcon },
   { href: '/models', label: 'My Models', Icon: PersonPlusIcon },
+  // Where detection routes a special-category upload. Always listed rather than
+  // appearing only when something is in it: a panel the app can drop you into
+  // needs a way back that does not depend on browser history.
+  { href: '/special', label: 'Special', Icon: ShieldCheckIcon },
 ];
 
 /** Account and money , visited occasionally, so they sit below a divider. */

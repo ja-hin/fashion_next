@@ -1,9 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { getJson, postMultipart, ApiError } from '@/lib/client/api';
 import type { PublicGarment } from '@/lib/types';
+import type { EnsembleRef } from '@/lib/client/ensemble-types';
 import { useStudio } from '@/lib/client/StudioContext';
 import { useDialog } from '@/components/Dialog';
 import SetupPanel from '@/components/SetupPanel';
@@ -13,12 +14,14 @@ import EnsembleTagModal from '@/components/EnsembleTagModal';
 import GarmentPickerModal from '@/components/GarmentPickerModal';
 import VideoModal from '@/components/VideoModal';
 import { garmentToRefs } from '@/lib/client/garment-refs';
+import { BLOCK_RESTRICTED_GARMENTS } from '@/lib/client/constants';
 import Link from 'next/link';
 import { ChevronLeftIcon, DesktopIcon } from '@/components/icons';
 
 export default function GeneratePage() {
   const s = useStudio();
   const dialog = useDialog();
+  const router = useRouter();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [tagOpen, setTagOpen] = useState(false);
   const [garmentPickerOpen, setGarmentPickerOpen] = useState(false);
@@ -79,6 +82,42 @@ export default function GeneratePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [garmentId]);
 
+  /**
+   * A special category came back from detection , move it off the shoot path.
+   *
+   * The flagged images are taken OUT of the ensemble and put in their own place
+   * on the studio state, then the Special Category panel is opened on them.
+   * Both halves matter: leaving them in `ensemble` would mean the Generate
+   * panel still quietly carries an item that has been routed somewhere else.
+   *
+   * Object URLs are deliberately NOT revoked here , the panel renders these
+   * same refs, and revoking would leave it with dead thumbnails.
+   */
+  const handSpecial = useCallback(
+    (flagged: EnsembleRef[]) => {
+      /* Matched by object URL, NOT identity. The tagging window rebuilds these
+         objects when it merges a detection result, so the ones handed up here
+         are equal to the refs in state without being the same objects , an
+         identity check silently matches nothing and moves no images. */
+      const flaggedUrls = new Set(flagged.map((r) => r.url));
+      s.setEnsemble(s.ensemble.filter((r) => !flaggedUrls.has(r.url)));
+      // Appended, so two separate uploads both land there rather than the
+      // second quietly replacing the first.
+      s.specialDesk.setRefs([...s.specialDesk.refs, ...flagged]);
+      // The desk starts on the defaults, so carry over the one setting that
+      // describes the images themselves , whether they are angles of one
+      // garment or separate items. The rest of the shoot is its own to set.
+      s.specialDesk.patchSetup({
+        ref_mode: s.setup.ref_mode,
+        category: s.setup.category,
+      });
+      setTagOpen(false);
+      router.push('/special');
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [s.ensemble, s.specialDesk, s.setup.ref_mode, s.setup.category, router],
+  );
+
   async function saveGarment() {
     if (!s.ensemble.length) return;
     const name = await dialog.prompt('Name this garment', '');
@@ -115,7 +154,9 @@ export default function GeneratePage() {
    * a credit already spent. This is a guardrail on the way in, not a security
    * control , the model's own filter is still the hard stop behind it.
    */
-  const restricted = s.ensemble.filter((r) => r.restricted);
+  const restricted = BLOCK_RESTRICTED_GARMENTS
+    ? s.ensemble.filter((r) => r.restricted)
+    : [];
 
   async function generateHero() {
     if (restricted.length) {
@@ -336,6 +377,7 @@ export default function GeneratePage() {
           refs={s.ensemble}
           onRefs={s.setEnsemble}
           onClose={() => setTagOpen(false)}
+          onSpecial={handSpecial}
         />
       )}
 

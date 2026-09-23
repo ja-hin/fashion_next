@@ -17,9 +17,17 @@ import { storage, shootKey, shootUrl } from './storage';
 import { writeDerivatives } from './derivatives';
 import { produce } from './gemini';
 import { getShoot, updateShoot, pushManifest, shootFilePrefix } from './shoots';
-import { latestCharsheetFrontFrame } from './saved-models';
+import { latestCharsheetFrontFrame, loadModel } from './saved-models';
 import { adjustBalance, getBalance } from './auth';
-import { getSettings, shootCost, normaliseResolution, shootNoStr, safeName } from './settings';
+import {
+  getSettings,
+  shootCost,
+  normaliseResolution,
+  shootNoStr,
+  safeName,
+  engineFor,
+  engineKey,
+} from './settings';
 import { logEvent } from './logs';
 import { pushResult, patchJob, finishJob } from './jobs';
 import { BASE_MODEL_ID, HERO_MODEL_ID } from './config';
@@ -63,6 +71,37 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
  * names the likely cause rather than apologising, because the only thing that
  * changes the outcome is changing the upload.
  */
+/**
+ * Shown when a saved model's FACE could not be used, but their look could.
+ *
+ * A warning rather than an error: the customer got an image, and it is of a
+ * person matching the model they picked , but it is not the same face, and
+ * saying so is the difference between a limitation and a bug report.
+ */
+const DESCRIBED_MODEL_WARN =
+  "Generated from this model's description , their exact face cannot be used for this category.";
+
+/**
+ * A saved model written out in words: what Imagine would have been told.
+ *
+ * `tags.vibe` is a display string ("Fair · Mid 20s · Long wavy · Average ·
+ * Tall"), so the separators are turned back into a list before it reaches a
+ * prompt , a prompt is prose, and the dots read as punctuation nobody wrote.
+ *
+ * Returns '' when the model has no ethnicity recorded, which is the one field
+ * stylePhrase cannot work without.
+ */
+async function savedModelWho(mid: string): Promise<string> {
+  const rec = await loadModel(mid);
+  const tags = rec?.tags;
+  if (!tags?.ethnicity) return '';
+  const look = String(tags.vibe ?? '')
+    .replace(/\s*·\s*/g, ', ')
+    .trim()
+    .toLowerCase();
+  return stylePhrase(tags.ethnicity, tags.gender ?? 'female', look);
+}
+
 const POLICY_MSG =
   'This garment cannot be generated on a model. Underwear, lingerie and other ' +
   'revealing pieces are refused by the image model, and retrying will not ' +
@@ -108,6 +147,15 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
 
   const appSettings = await getSettings();
   const cost = shootCost(appSettings, opts, res);
+  /*
+   * The engine an admin picked for this kind of shoot, or '' to leave the
+   * environment's own choice alone.
+   *
+   * Applied to every image on the path, hero and poses alike. Setting "Imagine
+   * = flash-image" and getting it on the hero only would be the surprising
+   * reading , the admin named a shoot type, not a frame.
+   */
+  const engine = engineFor(appSettings, engineKey(opts));
   const category = opts.category;
   // Child safety filters are NEVER relaxed, whatever the shoot was set to.
   const allowRev = !!opts.allow_revealing && !KID_CATS.has(category);
@@ -244,8 +292,9 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
   ): Promise<{ raw: Buffer; seed: number; attempt: number; usage: Record<string, unknown> } | null> => {
     const mid = opts.model_id || '-';
     // The hero shot uses the stronger flash-image model; extra poses use the
-    // lighter flash-lite model to keep cost down.
-    const aiModel = o.isHero ? HERO_MODEL_ID : BASE_MODEL_ID;
+    // lighter flash-lite model to keep cost down , unless an admin has named an
+    // engine for this kind of shoot, which overrides both.
+    const aiModel = engine || (o.isHero ? HERO_MODEL_ID : BASE_MODEL_ID);
     let currentSeed = shoot.seed;
 
     for (let att = 1; att <= 3; att++) {
@@ -323,6 +372,8 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
         ar,
         allowRevealing: allowRev,
         pose: o.pose,
+        // Admin's engine for this shoot type, or the environment's default.
+        modelId: engine || undefined,
         imageSize: res,
       });
       await saveAndCharge(out.image, { usage: { ...out.usage } });
@@ -368,32 +419,44 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
       const gender = GENDER_BY_CAT[category] ?? 'female';
       const child = gender === 'child';
 
-      /** Same shape either way; only the wording and the role list differ. */
-      const heroPrompt = (anchored: boolean) =>
+      /**
+       * Same shape either way; only the wording and the role list differ.
+       *
+       * `whoOverride` is how a saved model is DESCRIBED rather than shown , see
+       * the fallback below. Passing it implies `anchored: false`, because there
+       * is no model photograph for the prompt to point at.
+       */
+      const heroPrompt = (anchored: boolean, whoOverride?: string) =>
         refMode === 'ensemble'
           ? buildEnsemblePrompt({
               roles: roles as EnsembleRole[],
-              who: anchored
-                ? ''
-                : child
-                  ? 'a young child fashion model, age-appropriate and fully clothed'
-                  : stylePhrase(opts.style, gender, look, opts.model_traits),
+              who:
+                whoOverride ||
+                (anchored
+                  ? ''
+                  : child
+                    ? 'a young child fashion model, age-appropriate and fully clothed'
+                    : stylePhrase(opts.style, gender, look, opts.model_traits)),
               scene: opts.scene ?? '',
               framing: FRAMING[fr] ?? FRAMING.three_quarter,
               anchored,
               child,
+              revealing: allowRev,
             })
           : buildSameGarmentPrompt({
               roles: roles as GarmentRole[],
-              who: anchored
-                ? ''
-                : child
-                  ? 'a young child fashion model, age-appropriate and fully clothed'
-                  : stylePhrase(opts.style, gender, look, opts.model_traits),
+              who:
+                whoOverride ||
+                (anchored
+                  ? ''
+                  : child
+                    ? 'a young child fashion model, age-appropriate and fully clothed'
+                    : stylePhrase(opts.style, gender, look, opts.model_traits)),
               scene: opts.scene ?? '',
               framing: FRAMING[fr] ?? FRAMING.three_quarter,
               anchored,
               child,
+              revealing: allowRev,
             });
 
       // A saved model anchors the face: its character-sheet frame goes in after
@@ -408,17 +471,72 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
           return;
         }
 
-        const r = await produceAnchored(heroPrompt(true), null, frontFrame, refBytes);
-        if (!r) {
-          pushResult(o.jobId, { pose: o.pose, error: POLICY_MSG, policy: true });
-        } else {
+        let r: Awaited<ReturnType<typeof produceAnchored>> = null;
+        try {
+          r = await produceAnchored(heroPrompt(true), null, frontFrame, refBytes);
+        } catch (e) {
+          // produceAnchored only swallows IMAGE_OTHER; IMAGE_SAFETY is thrown.
+          // Both are refusals and both belong in the fallback below , anything
+          // else is a real failure and must not be dressed up as one.
+          const msg = String((e as Error)?.message ?? e);
+          if (!msg.includes('SAFETY') && !msg.includes('IMAGE_OTHER')) throw e;
+        }
+
+        if (r) {
           await saveAndCharge(r.raw, {
             seedUsed: r.seed,
             attempt: r.attempt,
             modelOverride: opts.model_id,
             usage: r.usage,
           });
+          return;
         }
+
+        /*
+         * The model's photograph was refused. Describe them instead.
+         *
+         * Measured, not guessed: across ten runs of the same garments, every
+         * shoot that named a saved model came back IMAGE_SAFETY and every
+         * shoot that described an imagined one succeeded , on the same image
+         * model, with allow_revealing set and the same references. What the
+         * filter objects to is being handed a photograph of an identifiable
+         * person together with intimate apparel, not the clothes themselves.
+         *
+         * So the identity photo is dropped and the model's own tags are written
+         * into the prompt in its place: same ethnicity, same gender, same vibe,
+         * no face to match against. The customer gets their shoot and a warning
+         * that the face is not exact , which beats the alternative, which is
+         * nothing at all.
+         *
+         * Confined to allow_revealing shoots on purpose. Everywhere else the
+         * anchored path works, and a silent swap to a described model would
+         * break the one promise a saved model makes.
+         */
+        if (allowRev) {
+          const described = await savedModelWho(opts.model_id);
+          if (described) {
+            const out = await produce({
+              prompt: heroPrompt(false, described),
+              refs: refBytes,
+              seed: shoot.seed,
+              ar,
+              allowRevealing: allowRev,
+              pose: o.pose,
+              // Admin's engine for this shoot type, or the environment's default.
+              modelId: engine || undefined,
+              imageSize: res,
+            });
+            await saveAndCharge(out.image, {
+              warn: DESCRIBED_MODEL_WARN,
+              status: 'described_model',
+              modelOverride: opts.model_id,
+              usage: { ...out.usage },
+            });
+            return;
+          }
+        }
+
+        pushResult(o.jobId, { pose: o.pose, error: POLICY_MSG, policy: true });
         return;
       }
 
@@ -429,6 +547,8 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
         ar,
         allowRevealing: allowRev,
         pose: o.pose,
+        // Admin's engine for this shoot type, or the environment's default.
+        modelId: engine || undefined,
         imageSize: res,
       });
       await saveAndCharge(out.image, { usage: { ...out.usage } });
@@ -483,6 +603,8 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
         ar,
         allowRevealing: allowRev,
         pose: o.pose,
+        // Admin's engine for this shoot type, or the environment's default.
+        modelId: engine || undefined,
         imageSize: res,
       });
       await saveAndCharge(out.image, { usage: { ...out.usage } });
@@ -522,6 +644,8 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
         allowRevealing: allowRev,
         pose: o.pose,
         tries: 3,
+        // Admin's engine for this shoot type, or the environment's default.
+        modelId: engine || undefined,
         imageSize: res,
       });
       await saveAndCharge(out.image, { usage: { ...out.usage } });
@@ -574,6 +698,8 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
         ar,
         allowRevealing: allowRev,
         pose: o.pose,
+        // Admin's engine for this shoot type, or the environment's default.
+        modelId: engine || undefined,
         imageSize: res,
       });
       await saveAndCharge(out.image, {
@@ -583,9 +709,20 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
     }
   } catch (e) {
     const msg = String((e as Error)?.message ?? e);
-    const nice = msg.includes('blocked')
-      ? "This pose couldn't be generated right now , tap Retry."
-      : msg;
+    /*
+     * A content refusal reaching this far is still a refusal.
+     *
+     * The saved-model branches catch IMAGE_OTHER themselves and push the policy
+     * card, but the imagined-model hero , by far the most common shoot , has no
+     * catch of its own, and the consistency fallback can throw one too. Both
+     * used to land on the generic "tap Retry", which is the one thing that will
+     * never work: three attempts have already been refused inside produce(), so
+     * every press spends three more calls proving it again.
+     *
+     * SAFETY is included deliberately. It is the HARD block , produce() does not
+     * even retry it , so offering Retry there was wronger still.
+     */
+    const refused = msg.includes('IMAGE_OTHER') || msg.includes('SAFETY');
     await logEvent({
       type: 'image',
       pid: o.pid,
@@ -593,13 +730,24 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
       pose: o.pose,
       category,
       model: opts.model_id || opts.style || '-',
-      status: 'error',
+      status: refused ? 'blocked' : 'error',
       cost: 0,
       file: '-',
       error: msg,
       user: opts.owner_email ?? '-',
     });
-    pushResult(o.jobId, { pose: o.pose, error: nice });
+    if (refused) {
+      pushResult(o.jobId, { pose: o.pose, error: POLICY_MSG, policy: true });
+      return;
+    }
+    pushResult(o.jobId, {
+      pose: o.pose,
+      // Still generic for a genuine failure , a timeout or a rate limit really
+      // can come good on a second press.
+      error: msg.includes('blocked')
+        ? "This pose couldn't be generated right now , tap Retry."
+        : msg,
+    });
   }
 }
 

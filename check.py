@@ -43,7 +43,7 @@ except Exception:
 GEMINI_KEY = GEMINI_KEY or os.environ.get("GEMINI_API_KEY", "").strip()
 PROVIDER = "gemini" if GEMINI_KEY else "mock"
 
-TEXT_MODEL = "gemini-2.5-flash"     # text + vision in one call
+TEXT_MODEL = "gemini-3.1-flash-image"     # text + vision in one call
 MAX_IMG_PX = 1024
 CHARGE_PER_TURN = 1                 # credits per Genie usage
 DEFAULT_SET_SIZE = 4               # only used if the model returns series w/o a count

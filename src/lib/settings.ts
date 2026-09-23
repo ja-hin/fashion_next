@@ -12,15 +12,37 @@ import {
   GENIE_FREE_PER_PROMPT,
   GENIE_PRICE_PER_IMPROVE,
   VIDEO_PRICE,
+  EXTRACT_PRICE,
   GENIE_MAX_PER_PROMPT,
 } from './config';
 import { financialYear } from './invoice';
 import { DEFAULT_BILLING, type BillingConfig } from './pricing';
-import type { SettingsDoc, PriceGrid, Resolution, ShootOpts } from './types';
+import type { SettingsDoc, PriceGrid, Resolution, ShootOpts, EngineConfig } from './types';
 
 const DEFAULT_PRICES: PriceGrid = {
   imagine: { '1K': 5, '2K': 10, '4K': 20 },
   saved: { '1K': 8, '2K': 16, '4K': 32 },
+};
+
+/**
+ * Special Category starts at the ordinary rate.
+ *
+ * Deliberately not dearer out of the box: the desk costs the same to run, and a
+ * markup nobody asked for is the kind of thing that is noticed on an invoice
+ * long after whoever set it has forgotten. The admin can raise it in one place.
+ */
+const DEFAULT_SPECIAL_PRICES: PriceGrid = {
+  imagine: { ...DEFAULT_PRICES.imagine },
+  saved: { ...DEFAULT_PRICES.saved },
+};
+
+/** All blank , every job keeps the engine its environment variable names. */
+const DEFAULT_ENGINES: EngineConfig = {
+  imagine: '',
+  saved: '',
+  special_imagine: '',
+  special_saved: '',
+  extract: '',
 };
 
 const DEFAULTS: SettingsDoc = {
@@ -29,10 +51,13 @@ const DEFAULTS: SettingsDoc = {
   genie_free: GENIE_FREE_PER_PROMPT,
   genie_price: GENIE_PRICE_PER_IMPROVE,
   video_price: VIDEO_PRICE,
+  extract_price: EXTRACT_PRICE,
   genie_max: GENIE_MAX_PER_PROMPT,
   shoot_seq: 0,
   user_seq: 0,
   prices: DEFAULT_PRICES,
+  special_prices: DEFAULT_SPECIAL_PRICES,
+  engines: DEFAULT_ENGINES,
   billing: DEFAULT_BILLING,
 };
 
@@ -76,6 +101,21 @@ export async function getSettings(): Promise<SettingsDoc> {
       prices: {
         imagine: { ...DEFAULT_PRICES.imagine, ...(doc.prices?.imagine ?? {}) },
         saved: { ...DEFAULT_PRICES.saved, ...(doc.prices?.saved ?? {}) },
+      },
+      /* Falls back to the MAIN grid, not to DEFAULT_SPECIAL_PRICES: a settings
+         document written before this existed was charging the ordinary rate,
+         and the upgrade must not quietly re-price anyone's shoots. */
+      special_prices: {
+        imagine: {
+          ...DEFAULT_PRICES.imagine,
+          ...(doc.prices?.imagine ?? {}),
+          ...(doc.special_prices?.imagine ?? {}),
+        },
+        saved: {
+          ...DEFAULT_PRICES.saved,
+          ...(doc.prices?.saved ?? {}),
+          ...(doc.special_prices?.saved ?? {}),
+        },
       },
     };
   }
@@ -181,13 +221,36 @@ export function normaliseResolution(v: string | null | undefined): Resolution {
  */
 export function shootCost(
   s: SettingsDoc,
-  opts: Pick<ShootOpts, 'model_id'> | null | undefined,
+  opts: Pick<ShootOpts, 'model_id' | 'special'> | null | undefined,
   res: string = '1K',
 ): number {
   const mode = opts?.model_id ? 'saved' : 'imagine';
   const r = normaliseResolution(res);
-  const v = s.prices?.[mode]?.[r];
+  // The Special Category desk bills from its own grid; everything else, and
+  // anything that does not say, bills from the ordinary one.
+  const grid = opts?.special ? (s.special_prices ?? s.prices) : s.prices;
+  const v = grid?.[mode]?.[r];
   return Number.isFinite(v) ? Number(v) : Number(s.price_per_image ?? 1);
+}
+
+/**
+ * The engine an admin has chosen for one kind of job, or '' for the default.
+ *
+ * Trimmed, because a stray space in a settings box would be sent to Google as
+ * part of a model id and come back as a flat 404 on every generation.
+ */
+export function engineFor(
+  s: SettingsDoc,
+  job: keyof EngineConfig,
+): string {
+  return String(s.engines?.[job] ?? '').trim();
+}
+
+/** Which engine key a shoot falls under. */
+export function engineKey(opts: Pick<ShootOpts, 'model_id' | 'special'> | null | undefined) {
+  const saved = !!opts?.model_id;
+  if (opts?.special) return saved ? 'special_saved' : 'special_imagine';
+  return saved ? 'saved' : 'imagine';
 }
 
 // ── formatting helpers shared by the API + migration ────────────────

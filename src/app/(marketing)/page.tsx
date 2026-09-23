@@ -90,7 +90,7 @@ const appLd = (packs: Pack[]) => ({
     name: `${p.name} , ${packCredits(p)} photo credits`,
     price: String(p.paise / 100),
     priceCurrency: 'INR',
-    url: 'https://faishon.studio/pricing',
+    url: 'https://faishon.studio/',
   })),
 });
 
@@ -847,7 +847,7 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
       <section className="pricing" id="pricing">
         <div className="wrap">
           <div className="head rv">
-            <span className="eyebrow">Prepaid credit wallet · 1 credit = 1 photo</span>
+            <span className="eyebrow">Prepaid credit wallet</span>
             <h2>Load a wallet.<br></br><em> Shoot when you like.</em></h2>
             <p>
               Per-photo rate drops the more you load. No subscription, no minimum SKUs, credits
@@ -873,7 +873,6 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
                     {p.popular && <div className="badge">Most popular</div>}
                     <div className="p-name">{p.name}</div>
                     <div className="p-price">{rupees(p.paise)}</div>
-                    <div className="p-per">{rupees(Math.round(p.paise / total))} / PHOTO</div>
                     <div className="p-cap">
                       <b style={{ color: 'var(--text)', fontSize: '1rem' }}>
                         {total.toLocaleString('en-IN')} credits
@@ -917,7 +916,7 @@ Catalogue-ready for Amazon, Flipkart, Myntra and Meesho.
                         is what `.plan ul { flex: 1 }` used to do. */}
                     <div style={{ flex: 1 }} />
                     <a
-                      href="/pricing"
+                      href="/register"
                       className={`btn ${p.popular ? 'btn-cta' : 'btn-line'}`}
                       data-c=""
                     >

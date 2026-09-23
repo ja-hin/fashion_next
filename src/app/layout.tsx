@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 
 /**
- * Root layout , deliberately renders nothing but the document shell.
+ * Root layout, deliberately renders nothing but the document shell.
  *
  * The marketing page and the studio have their OWN design systems that both
  * define `--bg`, `--muted`, `--line` and `--shadow` with different values, so
@@ -10,13 +10,11 @@ import type { Metadata, Viewport } from 'next';
  */
 
 /**
- * `metadataBase` is what every relative URL in the tree resolves against , the
- * legal pages' canonicals are written as '/privacy' and would otherwise resolve
- * to localhost in the built output.
+ * `metadataBase` is what every relative URL in the tree resolves against.
  */
 const SITE = 'https://faishon.studio';
 
-/** The share card. 1.91:1 for Facebook/LinkedIn/X, square for WhatsApp. */
+/** The share card. */
 const OG_IMAGES = [
   {
     url: '/og/home.jpg',
@@ -32,16 +30,37 @@ const OG_IMAGES = [
   },
 ];
 
+/**
+ * Organization structured data.
+ * Helps search engines understand the identity of Faishon Studio.
+ */
+const ORGANIZATION_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Faishon Studio',
+  legalName: '3rd i Visuals Pvt. Ltd.',
+  alternateName: 'Faishon Studio by 3rd i Visuals',
+  url: SITE,
+  logo: `${SITE}/logo-black.png`,
+  description:
+    'AI on-model fashion photography and video for D2C brands and ecommerce sellers in India.',
+  email: 'studio.support@faishon.studio',
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Bangalore',
+    addressRegion: 'Karnataka',
+    addressCountry: 'IN',
+  },
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
+
   title: 'Faishon.studio',
+
   description:
     'AI on-model fashion photography. One garment photo becomes a full photoshoot.',
-  /*
-   * Site-wide defaults. Next does NOT merge `openGraph` field by field , a page
-   * that declares its own replaces this whole object , so any page wanting a
-   * different title has to restate the images too (see (marketing)/page.tsx).
-   */
+
   openGraph: {
     type: 'website',
     siteName: 'Faishon Studio',
@@ -51,6 +70,7 @@ export const metadata: Metadata = {
       'AI on-model fashion photography. One garment photo becomes a full photoshoot.',
     images: OG_IMAGES,
   },
+
   twitter: {
     card: 'summary_large_image',
     title: 'Faishon.studio',
@@ -65,10 +85,23 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>{children}</body>
+      <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(ORGANIZATION_SCHEMA),
+          }}
+        />
+
+        {children}
+      </body>
     </html>
   );
 }

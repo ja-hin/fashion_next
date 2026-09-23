@@ -73,7 +73,12 @@ export default function EnsembleUploader({
             <span className="text-[11.5px] font-bold">
               {refs.length} {mode === 'ensemble' ? 'item' : 'photo'}{refs.length === 1 ? '' : 's'}
             </span>
-            {refs.some((r) => r.detecting) ? (
+            {refs.some((r) => r.extracting) ? (
+              <span className="flex items-center gap-1 text-[9.5px] font-bold text-accent">
+                <span className="animate-spin-cs inline-block h-[9px] w-[9px] rounded-full border-[1.5px] border-line border-t-accent" />
+                extracting…
+              </span>
+            ) : refs.some((r) => r.detecting) ? (
               <span className="flex items-center gap-1 text-[9.5px] font-bold text-muted">
                 <span className="animate-spin-cs inline-block h-[9px] w-[9px] rounded-full border-[1.5px] border-line border-t-brand" />
                 identifying…
@@ -89,14 +94,22 @@ export default function EnsembleUploader({
           <div className="flex flex-wrap gap-1.5">
             {refs.map((r) => (
               <span key={r.url} className="w-[52px]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={r.url}
-                  alt=""
-                  className="h-[52px] w-[52px] rounded-lg bg-surface object-cover"
-                />
+                {/* Mirrors the tagging window: while the garment is being pulled
+                    out, this thumbnail is of a photo that is about to be
+                    replaced, so it shimmers rather than sitting there looking
+                    settled. */}
+                {r.extracting ? (
+                  <span className="skeleton block h-[52px] w-[52px] rounded-lg" />
+                ) : (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={r.url}
+                    alt=""
+                    className="h-[52px] w-[52px] rounded-lg bg-surface object-cover"
+                  />
+                )}
                 <span className="mt-0.5 block truncate text-[8.5px] font-semibold text-muted">
-                  {r.detecting ? '…' : LABEL_FOR[mode][r.role]}
+                  {r.extracting ? 'extracting' : r.detecting ? '…' : LABEL_FOR[mode][r.role]}
                 </span>
               </span>
             ))}
@@ -144,7 +157,7 @@ export default function EnsembleUploader({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="rounded-l-[9px] bg-brand px-5 py-2.5 text-[12.5px] font-bold text-white transition hover:brightness-110"
+          className="bg-brand px-5 py-2.5 text-[12.5px] font-bold text-white transition hover:brightness-110"
         >
           Select File
         </button>
@@ -155,7 +168,7 @@ export default function EnsembleUploader({
           aria-haspopup="menu"
           aria-expanded={menu}
           onClick={() => setMenu((v) => !v)}
-          className="rounded-r-[9px] border-l border-white/25 bg-brand px-2.5 py-2.5 text-white transition hover:brightness-110"
+          className="border-white/25 bg-brand px-2.5 py-2.5 text-white transition hover:brightness-110"
         >
           <span className={`block text-[9px] leading-none transition ${menu ? '' : 'rotate-180'}`}>
             ▲

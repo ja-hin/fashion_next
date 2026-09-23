@@ -167,6 +167,51 @@ export const asRole = (v: unknown, mode: RefMode = 'ensemble'): RefRole =>
  * , the numbered manifest is positional, and a mismatch silently puts the shoes
  * on the model's head.
  */
+/**
+ * The dressing rule, in its two forms.
+ *
+ * COVER is the default and exists for a real reason: an ensemble of "top + bag
+ * + shoes" asks for a model with nothing on her legs, which reads as a
+ * partially-clothed person and gets the whole generation refused with
+ * IMAGE_SAFETY. Filling the gap explicitly is what stops that.
+ *
+ * It is also exactly wrong for intimate apparel. Told to cover "anything the
+ * garment does not cover", the model dresses a bra-and-briefs shoot in a plain
+ * white vest , which is not a styling quirk, it is the product hidden behind an
+ * invented one. REVEAL replaces it for those shoots, and is reached only when
+ * the shoot sets allow_revealing (never for kidswear , see gen.ts).
+ */
+const DRESS_COVER_ENSEMBLE = [
+  'The model must be FULLY and appropriately dressed in every shot. Any part of the outfit not',
+  'supplied by a reference image , trousers or a skirt when only a top is given, a top when only',
+  'a bottom is given, plain shoes when no footwear is given , must be added as a simple, plain,',
+  'neutral garment in a colour that complements the supplied items without competing with them.',
+  'Never leave any part of the body unclothed.',
+].join(' ');
+
+/* Shorter, because a same-garment shoot has exactly one product and no gaps to
+   enumerate. Kept as its own string rather than folded into the one above: the
+   two are not the same sentence today, and unifying them would quietly reword
+   every ordinary shoot to fix a problem that only exists on this desk. */
+const DRESS_COVER_SAME_GARMENT = [
+  'The model must be FULLY and appropriately dressed. Anything the garment does not cover must',
+  'be a simple, plain, neutral piece that complements it without competing.',
+].join(' ');
+
+const DRESS_REVEAL = [
+  'This is an intimate-apparel product shoot. The model wears ONLY the items supplied in the',
+  'reference images and NOTHING ELSE. Do NOT add a vest, tank top, camisole, singlet, t-shirt,',
+  'shirt, shorts, leggings, tights, a robe or any other covering layer that is not in the',
+  'references, and do not cover, tuck, overlap or partly hide any supplied item behind anything.',
+  'Every supplied product must be fully visible and unobstructed , that is the entire point of',
+  'the photograph. Shoot it the way a mainstream lingerie catalogue does: upright, still,',
+  'straightforward commercial posing, neutral expression, nothing suggestive.',
+].join(' ');
+
+/** Which rule applies. One place, so the two hero prompts cannot disagree on it. */
+const dressRule = (revealing: boolean | undefined, cover: string): string =>
+  revealing ? DRESS_REVEAL : cover;
+
 export function buildEnsemblePrompt(opts: {
   roles: EnsembleRole[];
   /** Who the model is , from stylePhrase(). Ignored when `anchored` is set. */
@@ -183,8 +228,14 @@ export function buildEnsemblePrompt(opts: {
   anchored?: boolean;
   /** Adds the child-appropriate proportions guard, for kidswear. */
   child?: boolean;
+  /**
+   * Intimate apparel , the model wears the supplied items and nothing else.
+   * Comes from the shoot's allow_revealing, which gen.ts forces off for
+   * kidswear before it ever reaches here.
+   */
+  revealing?: boolean;
 }): string {
-  const { roles, who, scene, framing, anchored, child } = opts;
+  const { roles, who, scene, framing, anchored, child, revealing } = opts;
 
   const manifest = roles
     .map((r, i) => `Image ${i + 1} = ${ROLE_LABEL[r]}`)
@@ -240,15 +291,7 @@ export function buildEnsemblePrompt(opts: {
     'If any reference image shows a person wearing or holding the item, IGNORE that person',
     "completely , their face, body, skin tone and hair carry zero weight; only the item itself",
     'matters.',
-    // Without this, an ensemble of "top + bag + shoes" asks for a model with
-    // nothing on her legs. That reads as a partially-clothed person and the
-    // image model refuses the whole generation with IMAGE_SAFETY , so the
-    // gap has to be filled explicitly rather than left to inference.
-    'The model must be FULLY and appropriately dressed in every shot. Any part of the outfit not',
-    'supplied by a reference image , trousers or a skirt when only a top is given, a top when only',
-    'a bottom is given, plain shoes when no footwear is given , must be added as a simple, plain,',
-    'neutral garment in a colour that complements the supplied items without competing with them.',
-    'Never leave any part of the body unclothed.',
+    dressRule(revealing, DRESS_COVER_ENSEMBLE),
     `Framing: ${framing}. The model's whole head and hair inside the frame with margin above.`,
     scene ? `${scene}.` : 'Clean seamless studio background, soft bright commercial lighting.',
     'Ultra-photorealistic, catalogue-ready, natural anatomy, no text or watermarks.',
@@ -275,8 +318,10 @@ export function buildSameGarmentPrompt(opts: {
   /** A saved model's frame follows the references, so it is Image N+1. */
   anchored?: boolean;
   child?: boolean;
+  /** Intimate apparel , see buildEnsemblePrompt. */
+  revealing?: boolean;
 }): string {
-  const { roles, who, scene, framing, anchored, child } = opts;
+  const { roles, who, scene, framing, anchored, child, revealing } = opts;
 
   const manifest = roles.map((r, i) => `Image ${i + 1} = ${GARMENT_ROLE_LABEL[r]}`).join('; ');
   const truth = roles
@@ -307,10 +352,7 @@ export function buildSameGarmentPrompt(opts: {
     'back , if no back photo is supplied, keep the back plain and consistent with the fabric.',
     'If a reference image shows a person wearing the garment, IGNORE that person entirely , their',
     'face, body, skin tone and hair carry zero weight; only the garment matters.',
-    // Same lesson as the ensemble prompt: a top-only reference asks for a model
-    // with nothing on her legs, which the image model refuses outright.
-    'The model must be FULLY and appropriately dressed. Anything the garment does not cover must',
-    'be a simple, plain, neutral piece that complements it without competing.',
+    dressRule(revealing, DRESS_COVER_SAME_GARMENT),
     `Framing: ${framing}. The model's whole head and hair inside the frame with margin above.`,
     scene ? `${scene}.` : 'Clean seamless studio background, soft bright commercial lighting.',
     'Ultra-photorealistic, catalogue-ready, natural anatomy, no text or watermarks.',

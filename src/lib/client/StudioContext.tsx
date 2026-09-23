@@ -7,9 +7,19 @@ const SETUP_KEY = 'studio.setupCollapsed';
 
 import type { EnsembleRef } from './ensemble-types';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 import { getJson } from './api';
 import { useShoot, type ShootApi } from './useShoot';
+import { useShootDesk, type ShootDesk } from './useShootDesk';
 import { useDialog } from '@/components/Dialog';
 import type { Me, SavedModel, LbItem } from './types';
 import type { SetupState } from '@/components/SetupPanel';
@@ -40,7 +50,23 @@ interface StudioValue {
   setFile: (f: File | null) => void;
   /** Ensemble mode's tagged product references, in upload order. */
   ensemble: EnsembleRef[];
-  setEnsemble: (refs: EnsembleRef[]) => void;
+  /** Takes an updater as well as a value , see EnsembleTagModal's onRefs. */
+  setEnsemble: Dispatch<SetStateAction<EnsembleRef[]>>;
+  /**
+   * The Special Category panel's own Generate desk , its references, settings,
+   * model and shoot, all separate from the ones above.
+   *
+   * Uploads the classifier reads as a special category (see
+   * /api/ensemble/detect and the `restricted` flag) are moved OUT of `ensemble`
+   * and into `specialDesk.refs`, and /special generates from them on its own.
+   *
+   * Lives in the provider rather than on the page because the handover is a
+   * real navigation: the tagging window is on /generate and the desk is on
+   * /special, and a File has no URL to be re-fetched from , as page state the
+   * images would be gone on arrival. It is also what lets a special shoot keep
+   * running while you go back to /generate, and vice versa.
+   */
+  specialDesk: ShootDesk;
   modelSource: 'imagine' | 'saved';
   setModelSource: (s: 'imagine' | 'saved') => void;
   selectedModel: SavedModel | null;
@@ -136,6 +162,7 @@ export function StudioProvider({
 
   const onError = useCallback((msg: string) => void dialog.alert(msg), [dialog]);
   const shoot = useShoot(onError);
+  const specialDesk = useShootDesk(me, onError);
 
   const patchMe = useCallback((patch: Partial<Me>) => {
     setMe((m) => ({ ...m, ...patch }));
@@ -184,6 +211,7 @@ export function StudioProvider({
       setFile,
       ensemble,
       setEnsemble,
+      specialDesk,
       modelSource,
       setModelSource,
       selectedModel,
@@ -217,6 +245,7 @@ export function StudioProvider({
       patchSetup,
       file,
       ensemble,
+      specialDesk,
       modelSource,
       selectedModel,
       noModelError,

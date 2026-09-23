@@ -18,6 +18,13 @@ export interface Me {
   genie?: { free: number; price: number; max: number };
   /** Credits for one 10-second video. */
   video_price?: number;
+  /** Credits to extract the garments out of one photo , Special Category desk. */
+  extract_price?: number;
+  /** Per-image credits on the Special Category desk, in place of `prices`. */
+  special_prices?: { imagine: Record<string, number>; saved: Record<string, number> };
+  /** Admin-chosen AI engine per job , blank means the server default. */
+  engines?: { imagine: string; saved: string; special_imagine: string; special_saved: string; extract: string };
+  engine_defaults?: { base: string; hero: string };
   /** On the free credits , generated images are served with the watermark. */
   watermark?: boolean;
 }
@@ -28,6 +35,13 @@ export interface JobResult {
   cost?: number;
   warn?: string;
   error?: string;
+  /**
+   * Refused on content grounds rather than failed , mirrors JobResult.policy in
+   * lib/types.ts. Missing here is why every refusal rendered as a retryable
+   * failure: the server set the flag, the card read it, and this mirror in
+   * between silently dropped it.
+   */
+  policy?: boolean;
 }
 
 export interface JobState {

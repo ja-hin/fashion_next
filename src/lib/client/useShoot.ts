@@ -29,6 +29,9 @@ function toCard(res: JobResult, isHero: boolean, settings: PoseSettings = {}): C
     cost: res.cost,
     warn: res.warn,
     error: res.error,
+    // Carried through, or ResultCard can never see a refusal and every blocked
+    // frame renders as a retryable failure.
+    policy: res.policy,
     isHero,
     file: img ? (img.split('?')[0].split('/').pop() ?? '') : '',
     settings,

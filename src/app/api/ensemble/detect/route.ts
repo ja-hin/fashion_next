@@ -38,6 +38,41 @@ const RESTRICTED_RULE = [
  * item is this?" versus "which side of this garment am I looking at?" , so each
  * gets its own instructions rather than one prompt with a swapped word list.
  */
+/**
+ * The attribute block, asked of every image in BOTH modes.
+ *
+ * Appended rather than written into each prompt, for the same reason
+ * RESTRICTED_RULE is: one copy cannot drift out of step with the other.
+ *
+ * Nearly free. The image tokens dominate the cost of this call and these add a
+ * few dozen output tokens, so the marginal price of asking is close to zero ,
+ * which is what makes it worth asking for things we do not use yet.
+ *
+ * `""` for anything not visible is stated explicitly. Without it the model
+ * invents a plausible answer rather than admitting the photo does not show it,
+ * and a confident guess is worse than a blank.
+ */
+const ATTRIBUTES_RULE = [
+  'For EVERY image also return these fields. Use "" (empty string) for anything you cannot',
+  'actually see , never guess:',
+  '"category": one of womenswear, menswear, kidswear, footwear, accessory, or "" if unclear.',
+  '"gender": one of female, male, child, unisex, or "" if unclear.',
+  '"garment_type": the specific item in 1-3 words, e.g. "banarasi saree", "linen shirt", "bra".',
+  '"colour": the dominant colour in plain words. "colour_secondary": a second colour, or "".',
+  '"fabric": the apparent material, e.g. cotton, linen, denim, silk, knit.',
+  '"pattern": one of solid, striped, checked, floral, printed, embroidered, or "".',
+  '"sleeve_length": full, three-quarter, half, short, sleeveless, or "".',
+  '"neckline": e.g. round, v-neck, collar, square, halter, or "".',
+  '"fit": slim, regular, relaxed, oversized, or "".',
+  '"length": e.g. cropped, hip, knee, midi, ankle, floor, or "".',
+  '"occasion": casual, formal, festive, party, sports, or "".',
+  '"has_person": true if a person is wearing or holding the item, else false.',
+  '"is_flat_lay": true if the item is laid flat or on a ghost mannequin with no person, else false.',
+  '"quality_issue": name ONE visible problem , blurry, low resolution, harsh shadow, watermark,',
+  'cropped , or "" if the photo is clean.',
+  '"restricted_reason": when restricted is true, name the item in 2-4 words, else "".',
+].join(' ');
+
 const SYSTEM: Record<RefMode, string> = {
   ensemble: [
     'You are a fashion catalogue assistant. You are given several product images that belong to',
@@ -70,6 +105,69 @@ const SYSTEM: Record<RefMode, string> = {
     'No prose, no code fences, JSON only.',
   ].join(' '),
 };
+
+/*
+ * Every field below is clamped on the way out.
+ *
+ * `role` has gone through asRole() since day one for a reason: an unchecked
+ * string from a model can end up in a prompt, and a prompt is an instruction.
+ * These are metadata today, but "today" is not a guarantee , the cheapest place
+ * to make that safe is here, once, rather than at each future call site.
+ */
+const CATEGORIES = ['womenswear', 'menswear', 'kidswear', 'footwear', 'accessory'] as const;
+const GENDERS = ['female', 'male', 'child', 'unisex'] as const;
+
+/** A short free-text field: a string, trimmed, length-capped, lower-cased. */
+const text = (v: unknown, max = 30): string =>
+  typeof v === 'string' ? v.trim().toLowerCase().slice(0, max) : '';
+
+/** Free text restricted to a known vocabulary , anything else becomes ''. */
+const oneOf = (v: unknown, allowed: readonly string[]): string =>
+  allowed.includes(text(v)) ? text(v) : '';
+
+/** Strict: only a real boolean true counts, so "true" or 1 cannot sneak through. */
+const flag = (v: unknown): boolean => v === true;
+
+/** The attribute half of one row, kept apart so the fallback can reuse it. */
+const EMPTY_ATTRS = {
+  category: '',
+  gender: '',
+  garment_type: '',
+  colour: '',
+  colour_secondary: '',
+  fabric: '',
+  pattern: '',
+  sleeve_length: '',
+  neckline: '',
+  fit: '',
+  length: '',
+  occasion: '',
+  has_person: false,
+  is_flat_lay: false,
+  quality_issue: '',
+  restricted_reason: '',
+};
+
+function attrs(row: Record<string, unknown>) {
+  return {
+    category: oneOf(row.category, CATEGORIES),
+    gender: oneOf(row.gender, GENDERS),
+    garment_type: text(row.garment_type, 40),
+    colour: text(row.colour),
+    colour_secondary: text(row.colour_secondary),
+    fabric: text(row.fabric),
+    pattern: text(row.pattern),
+    sleeve_length: text(row.sleeve_length),
+    neckline: text(row.neckline),
+    fit: text(row.fit),
+    length: text(row.length),
+    occasion: text(row.occasion),
+    has_person: flag(row.has_person),
+    is_flat_lay: flag(row.is_flat_lay),
+    quality_issue: text(row.quality_issue, 60),
+    restricted_reason: text(row.restricted_reason, 80),
+  };
+}
 
 let _client: GoogleGenAI | null = null;
 const client = () => (_client ??= new GoogleGenAI({ apiKey: GEMINI_API_KEY }));
@@ -106,11 +204,12 @@ export const POST = handler(async (req: Request) => {
     confidence: number;
     reason: string;
     restricted: boolean;
-  }>(() => ({
+  } & typeof EMPTY_ATTRS>(() => ({
     role: asRole(null, mode),
     confidence: 0,
     reason: '',
     restricted: false,
+    ...EMPTY_ATTRS,
   }));
 
   if (PROVIDER === 'mock') {
@@ -120,6 +219,7 @@ export const POST = handler(async (req: Request) => {
         confidence: 0.55,
         reason: 'demo mode , no AI key set',
         restricted: false,
+        ...EMPTY_ATTRS,
       })),
     });
   }
@@ -148,7 +248,7 @@ export const POST = handler(async (req: Request) => {
   });
   // Appended to whichever mode prompt applies, rather than written into both,
   // so the rule cannot drift between them.
-  parts.push({ text: SYSTEM[mode] + ' ' + RESTRICTED_RULE });
+  parts.push({ text: SYSTEM[mode] + ' ' + RESTRICTED_RULE + ' ' + ATTRIBUTES_RULE });
 
   try {
     const resp = await client().models.generateContent({
@@ -174,6 +274,7 @@ export const POST = handler(async (req: Request) => {
         unsure: !isRoleFor(row.role, mode) || (Number.isFinite(conf) && conf < 0.6),
         // Strict equality: anything but an explicit true is treated as allowed.
         restricted: row.restricted === true,
+        ...attrs(row),
       };
     });
 
