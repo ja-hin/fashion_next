@@ -692,6 +692,11 @@ export function buildCastPrompt(opts: {
   haircolour?: string;
   vibe?: string;
   free?: string;
+  /**
+   * The description states an eye colour, so the ethnicity phrase must not.
+   * See the clause below , `mentionsEyeColour` in model-traits decides this.
+   */
+  eyesDescribed?: boolean;
   /** True when a mood reference image is attached , see the clause below. */
   look?: boolean;
 }): string {
@@ -710,6 +715,18 @@ export function buildCastPrompt(opts: {
   let eth = opts.ethnicity ? (ethTable[opts.ethnicity] ?? '') : '';
   if (eth && genderWord === 'man') {
     eth = eth.replace(' woman ', ' man ').replace('Latina/Hispanic', 'Latino/Hispanic');
+  }
+
+  /*
+   * A described eye colour beats the one the ethnicity phrase assumes.
+   *
+   * STYLES.indian ends "…dark brown eyes, dark hair…", so "blue eyes" in the
+   * description was not merely outranked, it was argued with inside the same
+   * sentence. The clause is cut rather than the whole phrase: everything else
+   * it says about the face is still wanted.
+   */
+  if (eth && opts.eyesDescribed) {
+    eth = eth.replace(/,\s*[a-z-]+(?:\s+[a-z-]+)?\s+eyes/i, '');
   }
 
   // With an ethnicity the subject is already "Indian woman"; without one it has

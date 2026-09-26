@@ -8,6 +8,7 @@ import {
   castSummary,
   CAST_DEFAULTS,
   CAST_NUDGES,
+  ethnicityInText,
   type CastPicks,
 } from '@/lib/model-traits';
 import type { SavedModel, LbItem } from '@/lib/client/types';
@@ -132,6 +133,16 @@ export default function CreateModelModal({
       setBusy('');
     }
   }
+
+  /*
+   * The description names an origin the picker does not. The server drops the
+   * picker's clause in that case, so the control is dimmed and says why , a
+   * setting that is being quietly overridden is worse than one that is absent.
+   */
+  const describedEthnicity = (() => {
+    const named = ethnicityInText(desc);
+    return named.found && named.style !== style;
+  })();
 
   async function cast() {
     if (!desc.trim() && !castSummary(picks)) {
@@ -336,6 +347,8 @@ export default function CreateModelModal({
               </div>
 
               {/* Collapsed by default , see the note at the top of the file. */}
+              {/* TEMP HIDDEN for live , the "Add details" option grid. Restore by deleting this `{false && (` line and its closing `)}` below. */}
+              {false && (
               <div className="mt-5 rounded-card border border-line">
                 <button
                   type="button"
@@ -373,7 +386,21 @@ export default function CreateModelModal({
                     </Field>
 
                     <Field label="Ethnicity">
-                      <Seg options={ETHNICITIES} value={style} onChange={setStyle} />
+                      {/* Faded, not disabled , the picker still works, it just
+                          is not what decides this while the description names
+                          an origin of its own. */}
+                      <div className={describedEthnicity ? 'opacity-50' : ''}>
+                        <Seg options={ETHNICITIES} value={style} onChange={setStyle} />
+                      </div>
+                      {/* The server does exactly this , see the note on
+                          ethnicityInText , so the picker has to admit it rather
+                          than sit there looking like it is still in charge. */}
+                      {describedEthnicity && (
+                        <div className="mt-1.5 text-[10.5px] leading-[1.4] text-muted">
+                          Your description names an ethnicity, so it decides this one.
+                          Clear it from the description to use the picker instead.
+                        </div>
+                      )}
                     </Field>
 
                     <Field label="Age" note="in years">
@@ -432,7 +459,10 @@ export default function CreateModelModal({
                   </div>
                 )}
               </div>
+              )}
 
+              {/* TEMP HIDDEN for live , look reference. Restore by deleting this `{false && (` line and its closing `)}` below. */}
+              {false && (
               <div className="mt-4">
                 <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-muted">
                   Look reference · optional
@@ -489,6 +519,7 @@ export default function CreateModelModal({
                   </span>
                 </div>
               </div>
+              )}
             </>
           )}
 

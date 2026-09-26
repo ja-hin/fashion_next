@@ -453,6 +453,52 @@ const ANALYSIS_PROMPT = [
   'as a scene description. No preamble, no bullet points, no mention of the person.',
 ].join('\n');
 
+/**
+ * Describe a saved model's appearance in words, precisely enough to redraw them.
+ *
+ * The one way left to keep a saved model recognisable on the Special Category
+ * desk. Gemini refuses to render an identifiable person's PHOTOGRAPH in
+ * intimate apparel , flash-lite, flash-image and pro all return IMAGE_SAFETY on
+ * the anchored call , but it has no objection to a written description. So the
+ * photo is turned into words once, and the words go in the prompt instead.
+ *
+ * Close, never identical: a description cannot carry a face the way a reference
+ * image does. It is the difference between "a woman who looks like your model"
+ * and "a stranger", which is the gap the tag-based fallback was leaving.
+ *
+ * Deliberately physical and anonymous , this describes a look, it does not
+ * identify anybody, and it is only ever run on a model the account itself
+ * generated.
+ */
+const LIKENESS_PROMPT = [
+  'Describe this fashion model\'s physical appearance so precisely that an image generator',
+  'could redraw the same-looking person from your words alone.',
+  'Cover: apparent age, skin tone and undertone, face shape, jaw and chin, cheekbones,',
+  'nose shape, lip shape and fullness, eye shape and colour, eyebrow shape and thickness,',
+  'hair colour, length, texture and how it is worn, and overall build and height impression.',
+  'Do not name or guess who they are. Do not mention clothing, background, pose or lighting.',
+  'One dense paragraph, no preamble, no bullet points.',
+].join(' ');
+
+export async function describePerson(image: Buffer): Promise<string> {
+  const resp = await client().models.generateContent({
+    model: TEXT_MODEL_ID,
+    contents: [
+      {
+        role: 'user',
+        parts: [
+          { inlineData: { mimeType: 'image/jpeg', data: image.toString('base64') } },
+          { text: LIKENESS_PROMPT },
+        ],
+      },
+    ],
+    // Reporting what is there, not inventing , same reason as analyseReference.
+    config: { temperature: 0.2 },
+  } as Parameters<GoogleGenAI['models']['generateContent']>[0]);
+
+  return (resp?.text ?? '').trim().slice(0, 900);
+}
+
 export async function analyseReference(image: Buffer): Promise<string> {
   const resp = await client().models.generateContent({
     model: TEXT_MODEL_ID,

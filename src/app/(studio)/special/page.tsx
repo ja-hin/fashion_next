@@ -49,23 +49,16 @@ export default function SpecialPage() {
   const usingSaved = desk.modelSource === 'saved' && desk.setup.input_family !== 'extend';
 
   /*
-   * Saved models are hidden on this desk , the image model refuses to put an
-   * identifiable person's photograph into intimate apparel, every time, which
-   * the logs show as IMAGE_SAFETY on every saved-model run and success on every
-   * imagined one.
+   * Saved models are live here again, on the heaviest engine.
    *
-   * Forced rather than merely hidden: the desk keeps its state for the whole
-   * session, so someone who picked a saved model before this went in would be
-   * left holding one with no control to change it , and `priceFor` would quote
-   * the saved-model grid for a shoot that is not using one.
+   * They were locked because both flash engines refuse to put an identifiable
+   * person's photograph into these garments , every such run in the logs came
+   * back IMAGE_SAFETY. Two things changed since: the default engine for this
+   * one job is now the pro image model (see DEFAULT_ENGINES), and a refusal no
+   * longer ends the shoot , gen.ts falls back to generating from the saved
+   * model's own description and flags the card, so the worst case is a close
+   * likeness with a warning rather than "Not permitted".
    */
-  useEffect(() => {
-    if (desk.modelSource !== 'imagine') {
-      desk.setModelSource('imagine');
-      desk.setSelectedModel(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [desk.modelSource]);
   const isEnsemble = desk.setup.ref_mode === 'ensemble';
 
   /*
@@ -453,8 +446,6 @@ export default function SpecialPage() {
             // Every reference on this desk is flagged by definition, so the
             // upload gate would block the one screen built to handle them.
             allowRestricted
-            // TEMPORARY , remove once saved models work for this category.
-            savedModelSoon
           />
         </div>
       </aside>

@@ -49,6 +49,37 @@ export const HERO_MODEL_ID = env('HERO_MODEL_ID', 'gemini-3.1-flash-image');
 export const TEXT_MODEL_ID = env('TEXT_MODEL_ID', 'gemini-3.1-flash-image');
 
 /**
+ * The heaviest image engine , used by default for a saved model on the Special
+ * Category desk, where the lighter two are refused outright.
+ *
+ * NOT verified against the API from here: it is the id the owner named, and
+ * Google renames these. If it 404s, every such shoot fails and says so in Logs
+ * with this exact string , correct it in one place, either this variable or the
+ * Special Category / Saved model box on the admin Settings page.
+ */
+export const PRO_MODEL_ID = env('PRO_MODEL_ID', 'gemini-3-pro-image');
+
+/**
+ * FASHN , the fashion-specific API behind the intimate-apparel path.
+ *
+ * Optional. Without a key the Special Category desk behaves exactly as it did
+ * before: Gemini, and a described model when the photograph is refused.
+ */
+export const FASHN_API_KEY = env('FASHN_API_KEY', '').trim();
+
+/**
+ * The value an admin types into an engine box to route that job to FASHN
+ * instead of a Gemini model id.
+ *
+ * A sentinel rather than a separate setting because it IS the same decision ,
+ * which engine runs this job , and splitting it across two controls would let
+ * them disagree. Also what a blank `special_saved` hero resolves to when a key
+ * is present: FASHN is the only path that keeps a saved model recognisable in
+ * this category, so it is the default rather than something to discover.
+ */
+export const FASHN_ENGINE = 'fashn';
+
+/**
  * The video model. Overridable because this one is a preview id that Google
  * renames, and because the Veo family is the obvious alternative if Omni's
  * per-token pricing ever stops making sense for a 10-second clip.

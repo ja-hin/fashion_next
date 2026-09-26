@@ -17,7 +17,14 @@ import {
 } from './config';
 import { financialYear } from './invoice';
 import { DEFAULT_BILLING, type BillingConfig } from './pricing';
-import type { SettingsDoc, PriceGrid, Resolution, ShootOpts, EngineConfig } from './types';
+import type {
+  SettingsDoc,
+  PriceGrid,
+  Resolution,
+  ShootOpts,
+  EngineConfig,
+  EnginePair,
+} from './types';
 
 const DEFAULT_PRICES: PriceGrid = {
   imagine: { '1K': 5, '2K': 10, '4K': 20 },
@@ -37,12 +44,38 @@ const DEFAULT_SPECIAL_PRICES: PriceGrid = {
 };
 
 /** All blank , every job keeps the engine its environment variable names. */
+const EMPTY_PAIR: EnginePair = { hero: '', pose: '' };
 const DEFAULT_ENGINES: EngineConfig = {
-  imagine: '',
-  saved: '',
-  special_imagine: '',
-  special_saved: '',
+  imagine: { ...EMPTY_PAIR },
+  saved: { ...EMPTY_PAIR },
+  special_imagine: { ...EMPTY_PAIR },
+  /*
+   * Blank like the rest , NOT seeded with the pro id.
+   *
+   * A value here would only apply to accounts that have never saved the admin
+   * engines page: the moment they do, the stored document replaces DEFAULTS
+   * wholesale and an empty box writes an empty string over it. That is exactly
+   * what happened , the pro default was silently defeated by a blank the admin
+   * page had already saved.
+   *
+   * So the special-saved default lives where it cannot be overwritten by a
+   * blank: in gen.ts, as the fallback a blank RESOLVES to. See `heroDefault`.
+   */
+  special_saved: { ...EMPTY_PAIR },
   extract: '',
+};
+
+/**
+ * Read one shoot-type's pair out of a stored document.
+ *
+ * Tolerates a bare string, which is what the first version of this setting
+ * wrote before hero and poses were split: it meant "this engine, for the whole
+ * shoot", so it is read as both halves rather than thrown away.
+ */
+const pairOf = (v: unknown): EnginePair => {
+  if (typeof v === 'string') return { hero: v, pose: v };
+  const o = (v ?? {}) as Partial<EnginePair>;
+  return { hero: String(o.hero ?? ''), pose: String(o.pose ?? '') };
 };
 
 const DEFAULTS: SettingsDoc = {
@@ -242,8 +275,12 @@ export function shootCost(
 export function engineFor(
   s: SettingsDoc,
   job: keyof EngineConfig,
+  /** Which half of the shoot , ignored by `extract`, which has only one call. */
+  slot: keyof EnginePair = 'hero',
 ): string {
-  return String(s.engines?.[job] ?? '').trim();
+  const v = s.engines?.[job];
+  if (job === 'extract') return String(v ?? '').trim();
+  return pairOf(v)[slot].trim();
 }
 
 /** Which engine key a shoot falls under. */

@@ -80,17 +80,6 @@ interface Props {
    * permanently the moment BLOCK_RESTRICTED_GARMENTS is switched back on.
    */
   allowRestricted?: boolean;
-  /**
-   * Show "Saved model" but disabled, as coming soon.
-   *
-   * Set by the Special Category desk. A saved model there is refused by the
-   * image model every time , it will not put an identifiable person's
-   * photograph into intimate apparel , so the tab is greyed out rather than
-   * removed: taking it away entirely reads as "this feature does not exist
-   * here", when the truth is "not yet". Temporary; see the note where it is
-   * passed.
-   */
-  savedModelSoon?: boolean;
 }
 
 /**
@@ -120,11 +109,10 @@ export default function SetupPanel({
   hasShoot,
   onNewShoot,
   allowRestricted = false,
-  savedModelSoon = false,
 }: Props) {
   // "Extend" takes the model from the uploaded photo, so model choice is moot.
   const isExtend = setup.input_family === 'extend';
-  const usingSaved = modelSource === 'saved' && !isExtend && !savedModelSoon;
+  const usingSaved = modelSource === 'saved' && !isExtend;
   const showResHint = (setup.resolution === '2K' || setup.resolution === '4K') && !usingSaved;
 
   const isEnsemble = setup.ref_mode === 'ensemble';
@@ -242,39 +230,21 @@ export default function SetupPanel({
 
       <Field label="Model" dim={isExtend}>
         {!isExtend && (
-          <div className="mb-2.5 flex items-stretch gap-1.5 rounded-[10px] bg-surface2 p-1">
-            {(['imagine', 'saved'] as const).map((src) => {
-              const soon = savedModelSoon && src === 'saved';
-              // Never shows as selected while it is disabled, even if the desk
-              // is still holding 'saved' from before the tab was locked.
-              const on = modelSource === src && !soon;
-              return (
-                <button
-                  key={src}
-                  type="button"
-                  disabled={soon}
-                  aria-disabled={soon || undefined}
-                  onClick={() => onModelSource(src)}
-                  className={`flex flex-1 flex-col items-center justify-center whitespace-nowrap rounded-lg px-2 py-2 text-[11.5px] font-bold transition-colors ${
-                    soon
-                      ? 'cursor-not-allowed text-muted/60'
-                      : on
-                        ? 'bg-surface text-accent shadow-[0_2px_6px_rgba(0,0,0,.08)]'
-                        : 'text-muted hover:text-ink'
-                  }`}
-                >
-                  {src === 'imagine' ? '✨ Imagine' : '★ Saved model'}
-                  {/* Stacked under the label rather than beside it , at 336px
-                      the panel has no room for a pill next to "Saved model",
-                      and items-stretch keeps both tabs the same height. */}
-                  {soon && (
-                    <span className="mt-[2px] text-[8.5px] font-bold uppercase tracking-[0.06em]">
-                      coming soon
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+          <div className="mb-2.5 flex gap-1.5 rounded-[10px] bg-surface2 p-1">
+            {(['imagine', 'saved'] as const).map((src) => (
+              <button
+                key={src}
+                type="button"
+                onClick={() => onModelSource(src)}
+                className={`flex-1 whitespace-nowrap rounded-lg px-2 py-2 text-[11.5px] font-bold transition-colors ${
+                  modelSource === src
+                    ? 'bg-surface text-accent shadow-[0_2px_6px_rgba(0,0,0,.08)]'
+                    : 'text-muted hover:text-ink'
+                }`}
+              >
+                {src === 'imagine' ? '✨ Imagine' : '★ Saved model'}
+              </button>
+            ))}
           </div>
         )}
 
@@ -290,15 +260,6 @@ export default function SetupPanel({
         {isExtend && (
           <div className="mt-[5px] text-[10.5px] leading-[1.4] text-muted">
             Model comes from your uploaded photo in Extend mode.
-          </div>
-        )}
-
-        {/* "Coming soon" says when, not why. This says why, once, under the
-            control it applies to. */}
-        {savedModelSoon && !isExtend && (
-          <div className="mt-[5px] text-[10.5px] leading-[1.4] text-muted">
-            Saved models don&apos;t work for this category yet , the image model won&apos;t
-            put a specific person&apos;s photo in these garments. Imagine works normally.
           </div>
         )}
 

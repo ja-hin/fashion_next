@@ -1,6 +1,6 @@
 import { handler, json, requireAdmin, formData, str, num } from '@/lib/api';
 import { getSettings, updateSettings } from '@/lib/settings';
-import type { PriceGrid, Resolution, EngineConfig } from '@/lib/types';
+import type { PriceGrid, Resolution, EngineConfig, EnginePair } from '@/lib/types';
 
 export const runtime = 'nodejs';
 
@@ -69,22 +69,34 @@ export const POST = handler(async (req: Request) => {
    * value here and means "use the environment default", so unlike the price
    * cells a blank IS saved.
    */
-  const ENGINE_KEYS: Array<keyof EngineConfig> = [
-    'imagine',
-    'saved',
-    'special_imagine',
-    'special_saved',
-    'extract',
-  ];
-  const engines: EngineConfig = { ...(current.engines ?? {}) } as EngineConfig;
-  for (const k of ENGINE_KEYS) engines[k] = String(engines[k] ?? '');
+  const PAIR_KEYS = ['imagine', 'saved', 'special_imagine', 'special_saved'] as const;
+  const clean = (v: unknown) => (typeof v === 'string' ? v.trim().slice(0, 80) : '');
+  /* A stored bare string is the pre-split shape and meant "the whole shoot", so
+     it seeds both halves rather than being discarded. */
+  const asPair = (v: unknown): EnginePair =>
+    typeof v === 'string'
+      ? { hero: clean(v), pose: clean(v) }
+      : {
+          hero: clean((v as Partial<EnginePair>)?.hero),
+          pose: clean((v as Partial<EnginePair>)?.pose),
+        };
+
+  const engines: EngineConfig = {
+    imagine: asPair(current.engines?.imagine),
+    saved: asPair(current.engines?.saved),
+    special_imagine: asPair(current.engines?.special_imagine),
+    special_saved: asPair(current.engines?.special_saved),
+    extract: clean(current.engines?.extract),
+  };
+
   if (enginesRaw) {
     try {
       const parsed = JSON.parse(enginesRaw);
       if (parsed && typeof parsed === 'object') {
-        for (const k of ENGINE_KEYS) {
-          if (typeof parsed[k] === 'string') engines[k] = parsed[k].trim().slice(0, 80);
+        for (const k of PAIR_KEYS) {
+          if (parsed[k] !== undefined) engines[k] = asPair(parsed[k]);
         }
+        if (parsed.extract !== undefined) engines.extract = clean(parsed.extract);
       }
     } catch {
       // Bad JSON leaves the engines untouched rather than failing the save.

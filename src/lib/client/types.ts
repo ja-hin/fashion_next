@@ -23,8 +23,8 @@ export interface Me {
   /** Per-image credits on the Special Category desk, in place of `prices`. */
   special_prices?: { imagine: Record<string, number>; saved: Record<string, number> };
   /** Admin-chosen AI engine per job , blank means the server default. */
-  engines?: { imagine: string; saved: string; special_imagine: string; special_saved: string; extract: string };
-  engine_defaults?: { base: string; hero: string };
+  engines?: { imagine: { hero: string; pose: string }; saved: { hero: string; pose: string }; special_imagine: { hero: string; pose: string }; special_saved: { hero: string; pose: string }; extract: string };
+  engine_defaults?: { base: string; hero: string; pro: string; fashn: string; fashn_ready: boolean };
   /** On the free credits , generated images are served with the watermark. */
   watermark?: boolean;
 }

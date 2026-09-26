@@ -259,6 +259,14 @@ export interface ModelDoc {
   refs: ModelRef[];
   kept_batch?: string;
   /**
+   * The model's appearance written out, derived from their character sheet.
+   *
+   * Cached because it costs a vision call and never changes , the character
+   * sheet is what it describes, and that is fixed once the model is confirmed.
+   * Absent until the first shoot that needs it. See describePerson().
+   */
+  likeness?: string;
+  /**
    * Cast but not yet accepted.
    *
    * A model created from a description is generated first and looked at second,
@@ -338,16 +346,32 @@ export interface PriceGrid {
  * Set here rather than only in env because these ids change , Google renames
  * the preview models , and an owner should not need a redeploy to follow one.
  */
+/**
+ * Hero and poses are separate choices, because they always were.
+ *
+ * The hero is the one frame that decides the model, the lighting and the
+ * background for everything after it, so it runs on the heavier engine; the
+ * poses that follow are generated FROM it and run on the lighter one to keep a
+ * twelve-pose shoot affordable. Collapsing the two into one setting would make
+ * that tradeoff unavailable, which is the whole reason it exists.
+ */
+export interface EnginePair {
+  /** The first frame , the one the rest of the shoot is locked to. */
+  hero: string;
+  /** Every frame generated from that hero afterwards. */
+  pose: string;
+}
+
 export interface EngineConfig {
   /** Ordinary shoots on an imagined model. */
-  imagine: string;
+  imagine: EnginePair;
   /** Ordinary shoots anchored to a saved model. */
-  saved: string;
+  saved: EnginePair;
   /** Special Category shoots on an imagined model. */
-  special_imagine: string;
+  special_imagine: EnginePair;
   /** Special Category shoots anchored to a saved model. */
-  special_saved: string;
-  /** Garment extraction packshots , /api/ensemble/extract. */
+  special_saved: EnginePair;
+  /** Garment extraction packshots , one call, no hero/pose split. */
   extract: string;
 }
 

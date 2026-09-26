@@ -273,3 +273,137 @@ export function castSummary(p: CastPicks): string {
     .filter(Boolean)
     .join(' · ');
 }
+
+/**
+ * Does this description name an ethnicity or nationality of its own?
+ *
+ * Exists because of a real report: "create a russian model with blue eyes" cast
+ * an Indian woman. The ethnicity picker defaults to a value, and buildCastPrompt
+ * puts that value FIRST as the subject , "one Indian woman with … dark brown
+ * eyes" , with the free text appended after it. So the description was not
+ * ignored so much as outvoted, and on eye colour it was contradicted outright.
+ *
+ * The codebase already solved this shape of bug once: STYLES_NO_SKIN exists
+ * because a chosen skin tone fought the ethnicity phrase and which won was a
+ * coin toss. Same medicine , when the customer's own words name the person's
+ * origin, the picker stops asserting a different one.
+ *
+ * A word list rather than a model call, deliberately. This runs on every
+ * keystroke in the modal to drive a hint, and it must give the same answer in
+ * the browser and on the server or the note would promise something the prompt
+ * does not do. It is a heuristic and is allowed to miss , missing just means
+ * today's behaviour.
+ */
+const ETHNIC_WORDS: Record<string, string> = {
+  // Words that map onto a STYLES id , naming one of these AGREES with the
+  // picker when it is already set there, so the curated phrase is kept.
+  indian: 'indian',
+  'south asian': 'indian',
+  european: 'european',
+  western: 'european',
+  caucasian: 'european',
+  'east asian': 'east_asian',
+  'southeast asian': 'southeast_asian',
+  'middle eastern': 'middle_eastern',
+  african: 'african',
+  latina: 'latina',
+  latino: 'latina',
+  hispanic: 'latina',
+
+  // Everything else has no STYLES equivalent, so naming one always means the
+  // picker should stand aside and let the description describe the person.
+  russian: '',
+  ukrainian: '',
+  polish: '',
+  slavic: '',
+  german: '',
+  french: '',
+  italian: '',
+  spanish: '',
+  portuguese: '',
+  greek: '',
+  turkish: '',
+  swedish: '',
+  norwegian: '',
+  danish: '',
+  finnish: '',
+  dutch: '',
+  scandinavian: '',
+  nordic: '',
+  mediterranean: '',
+  british: '',
+  english: '',
+  irish: '',
+  scottish: '',
+  american: '',
+  canadian: '',
+  australian: '',
+  brazilian: '',
+  mexican: '',
+  colombian: '',
+  argentinian: '',
+  japanese: '',
+  korean: '',
+  chinese: '',
+  taiwanese: '',
+  thai: '',
+  vietnamese: '',
+  filipino: '',
+  filipina: '',
+  indonesian: '',
+  malaysian: '',
+  singaporean: '',
+  pakistani: '',
+  bangladeshi: '',
+  'sri lankan': '',
+  nepali: '',
+  afghan: '',
+  arab: '',
+  arabic: '',
+  persian: '',
+  iranian: '',
+  iraqi: '',
+  lebanese: '',
+  syrian: '',
+  israeli: '',
+  egyptian: '',
+  moroccan: '',
+  nigerian: '',
+  kenyan: '',
+  ethiopian: '',
+  ghanaian: '',
+  somali: '',
+  'south african': '',
+};
+
+/**
+ * The ethnicity a description names, if any.
+ *
+ * `style` is the STYLES id it corresponds to, or '' when the app has no
+ * equivalent (most nationalities). `found` is false when the text names none,
+ * which is the ordinary case and leaves the picker in charge.
+ *
+ * Longest phrases are matched first, so "south asian" is not read as "asian"
+ * and "east asian" is not read as "asian" either.
+ */
+export function ethnicityInText(text: string | undefined | null): {
+  found: boolean;
+  style: string;
+} {
+  const t = ` ${String(text ?? '').toLowerCase().replace(/[^a-z ]+/g, ' ')} `.replace(/\s+/g, ' ');
+  const words = Object.keys(ETHNIC_WORDS).sort((a, b) => b.length - a.length);
+  for (const w of words) {
+    if (t.includes(` ${w} `)) return { found: true, style: ETHNIC_WORDS[w] };
+  }
+  return { found: false, style: '' };
+}
+
+/**
+ * Does this description state an eye colour?
+ *
+ * Separate from the above because it is a separate contradiction: the Indian
+ * phrase asserts "dark brown eyes", so "blue eyes" loses even when the picker
+ * and the description agree on the ethnicity.
+ */
+export const mentionsEyeColour = (text: string | undefined | null): boolean =>
+  /\beyes?\b/i.test(String(text ?? ''));

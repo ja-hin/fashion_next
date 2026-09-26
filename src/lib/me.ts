@@ -7,7 +7,15 @@ import 'server-only';
 import { currentUser } from './auth';
 import { shouldWatermark } from './watermark';
 import { getSettings } from './settings';
-import { PROVIDER, VERSION, BASE_MODEL_ID, HERO_MODEL_ID } from './config';
+import {
+  PROVIDER,
+  VERSION,
+  BASE_MODEL_ID,
+  HERO_MODEL_ID,
+  PRO_MODEL_ID,
+  FASHN_API_KEY,
+  FASHN_ENGINE,
+} from './config';
 import { STYLES } from './prompts';
 
 export interface MePayload {
@@ -29,9 +37,9 @@ export interface MePayload {
   extract_price?: number;
   special_prices?: { imagine: Record<string, number>; saved: Record<string, number> };
   /** Admin-chosen engine per job. Model names, not secrets. */
-  engines?: { imagine: string; saved: string; special_imagine: string; special_saved: string; extract: string };
+  engines?: { imagine: { hero: string; pose: string }; saved: { hero: string; pose: string }; special_imagine: { hero: string; pose: string }; special_saved: { hero: string; pose: string }; extract: string };
   /** What each blank engine box falls back to, so the admin can see it. */
-  engine_defaults?: { base: string; hero: string };
+  engine_defaults?: { base: string; hero: string; pro: string; fashn: string; fashn_ready: boolean };
   /**
    * True while this account is on the free credits, so its images are served
    * with the brand watermark. Flips to false permanently on the first payment.
@@ -61,7 +69,13 @@ export async function getMePayload(): Promise<MePayload> {
     extract_price: s.extract_price,
     special_prices: s.special_prices,
     engines: s.engines,
-    engine_defaults: { base: BASE_MODEL_ID, hero: HERO_MODEL_ID },
+    engine_defaults: {
+      base: BASE_MODEL_ID,
+      hero: HERO_MODEL_ID,
+      pro: PRO_MODEL_ID,
+      fashn: FASHN_ENGINE,
+      fashn_ready: !!FASHN_API_KEY,
+    },
     watermark: shouldWatermark(u),
   };
 }

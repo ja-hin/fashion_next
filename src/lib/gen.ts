@@ -17,7 +17,8 @@ import { storage, shootKey, shootUrl } from './storage';
 import { writeDerivatives } from './derivatives';
 import { produce } from './gemini';
 import { getShoot, updateShoot, pushManifest, shootFilePrefix } from './shoots';
-import { latestCharsheetFrontFrame, loadModel } from './saved-models';
+import { latestCharsheetFrontFrame, loadModel, updateModel } from './saved-models';
+import { productToModel as fashnProductToModel } from './fashn';
 import { adjustBalance, getBalance } from './auth';
 import {
   getSettings,
@@ -30,7 +31,13 @@ import {
 } from './settings';
 import { logEvent } from './logs';
 import { pushResult, patchJob, finishJob } from './jobs';
-import { BASE_MODEL_ID, HERO_MODEL_ID } from './config';
+import {
+  BASE_MODEL_ID,
+  HERO_MODEL_ID,
+  PRO_MODEL_ID,
+  FASHN_API_KEY,
+  FASHN_ENGINE,
+} from './config';
 import {
   buildEnsemblePrompt,
   buildSameGarmentPrompt,
@@ -93,7 +100,34 @@ const DESCRIBED_MODEL_WARN =
  */
 async function savedModelWho(mid: string): Promise<string> {
   const rec = await loadModel(mid);
-  const tags = rec?.tags;
+  if (!rec) return '';
+
+  /*
+   * The likeness first , it is the whole difference between "looks like your
+   * model" and "a stranger who shares her ethnicity".
+   *
+   * Read from the character sheet once and cached on the model document: the
+   * sheet is fixed after the model is confirmed, so the description is too, and
+   * paying a vision call per shoot for an answer that cannot change would be
+   * waste. A failure here is not fatal , the tag phrase below still works.
+   */
+  if (rec.likeness) return rec.likeness;
+
+  try {
+    const frame = await latestCharsheetFrontFrame(mid);
+    if (frame) {
+      const { describePerson } = await import('./genie-director');
+      const likeness = await describePerson(frame);
+      if (likeness) {
+        await updateModel(mid, { likeness });
+        return likeness;
+      }
+    }
+  } catch (e) {
+    console.error('[gen] could not describe saved model , falling back to tags', e);
+  }
+
+  const tags = rec.tags;
   if (!tags?.ethnicity) return '';
   const look = String(tags.vibe ?? '')
     .replace(/\s*·\s*/g, ', ')
@@ -151,11 +185,46 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
    * The engine an admin picked for this kind of shoot, or '' to leave the
    * environment's own choice alone.
    *
-   * Applied to every image on the path, hero and poses alike. Setting "Imagine
-   * = flash-image" and getting it on the hero only would be the surprising
-   * reading , the admin named a shoot type, not a frame.
+   * Looked up once per image, because hero and poses are separate settings:
+   * the hero decides the model, lighting and background for the whole shoot and
+   * is worth the heavier engine, while the poses generated from it run on the
+   * lighter one. `o.isHero` is what this call is, so one lookup covers every
+   * produce() below it.
    */
-  const engine = engineFor(appSettings, engineKey(opts));
+  const chosen = engineFor(appSettings, engineKey(opts), o.isHero ? 'hero' : 'pose');
+  /*
+   * What a blank engine box falls back to, for THIS job.
+   *
+   * A saved model on the Special Category desk goes to FASHN when a key is
+   * configured: Gemini refuses to render an identifiable person's photograph in
+   * this category on every engine, while FASHN takes the identity as a real
+   * input. Without a key, the heaviest Gemini engine, which at least tries.
+   *
+   * Poses keep the light engine either way , they are generated FROM the hero
+   * once it exists, and the hero is the frame that gets refused.
+   *
+   * Resolved HERE rather than at the point of use, because the FASHN branch
+   * below has to see the default too , reading the raw setting there would mean
+   * an empty box silently never reaching FASHN at all.
+   *
+   * ANCHORED ONLY. It is deliberately not folded into `engine`: the saved-model
+   * path is the only one that ever named a hero engine of its own, and every
+   * other call has always passed nothing and let resolveModel pick. Applying a
+   * hero default to those would quietly move an ordinary imagined hero off
+   * flash-lite, which is a pricing change nobody asked for.
+   */
+  const anchoredEngine =
+    chosen ||
+    (o.isHero
+      ? opts.special && opts.model_id
+        ? FASHN_API_KEY
+          ? FASHN_ENGINE
+          : PRO_MODEL_ID
+        : HERO_MODEL_ID
+      : BASE_MODEL_ID);
+
+  /** What the non-anchored calls pass , the raw setting, '' meaning "default". */
+  const engine = chosen;
   const category = opts.category;
   // Child safety filters are NEVER relaxed, whatever the shoot was set to.
   const allowRev = !!opts.allow_revealing && !KID_CATS.has(category);
@@ -258,7 +327,11 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
       pose: o.pose,
       category,
       model: extra.modelOverride ?? opts.style ?? '-',
-      status: extra.warn ? 'fallback' : (extra.status ?? 'success'),
+      /* An explicit status wins over the generic 'fallback'. Both are set on
+         the described-model path , it carries a warning AND is its own kind of
+         outcome , and without this the two get conflated in Logs with the
+         consistency fallback, which is a different thing entirely. */
+      status: extra.status ?? (extra.warn ? 'fallback' : 'success'),
       cost,
       file: `${prefix}_${safeName(o.pose)}.jpg`,
       img: url,
@@ -294,7 +367,8 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
     // The hero shot uses the stronger flash-image model; extra poses use the
     // lighter flash-lite model to keep cost down , unless an admin has named an
     // engine for this kind of shoot, which overrides both.
-    const aiModel = engine || (o.isHero ? HERO_MODEL_ID : BASE_MODEL_ID);
+    // Already resolved, defaults and all , see `anchoredEngine` above.
+    const aiModel = anchoredEngine;
     let currentSeed = shoot.seed;
 
     for (let att = 1; att <= 3; att++) {
@@ -373,7 +447,8 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
         allowRevealing: allowRev,
         pose: o.pose,
         // Admin's engine for this shoot type, or the environment's default.
-        modelId: engine || undefined,
+        // Never the FASHN sentinel , that is not a Gemini id.
+        modelId: engine === FASHN_ENGINE ? undefined : engine,
         imageSize: res,
       });
       await saveAndCharge(out.image, { usage: { ...out.usage } });
@@ -471,9 +546,70 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
           return;
         }
 
+        /*
+         * FASHN, when this job is pointed at it.
+         *
+         * Handled before produceAnchored rather than inside it: nothing about
+         * that function applies , no prompt, no seed reroll, no Gemini engine ,
+         * and threading a second provider through it would make both harder to
+         * read. A failure here falls through to the same described-model
+         * fallback as a Gemini refusal, so the desk behaves the same way
+         * whichever provider is in front of it.
+         *
+         * ONE garment image: product-to-model takes a single product, not a
+         * manifest. The first reference is the one the shoot leads with , on
+         * this desk that is normally the extracted packshot, which already has
+         * every piece of the set in one frame.
+         */
+        if (anchoredEngine === FASHN_ENGINE) {
+          try {
+            const out = await fashnProductToModel({
+              garment: refBytes[0],
+              face: frontFrame,
+              resolution: res,
+              aspect: ar,
+              seed: shoot.seed,
+            });
+            await saveAndCharge(out.images[0], {
+              status: 'fashn',
+              modelOverride: opts.model_id,
+              usage: {
+                ai_model: `fashn/product-to-model/${out.cost.mode}-${out.cost.resolution}`,
+                // FASHN's own credits, not the customer's , recorded so the
+                // real cost of this path is visible next to what was charged.
+                out_tok: out.cost.credits,
+              },
+            });
+            return;
+          } catch (e) {
+            const msg = String((e as Error)?.message ?? e);
+            console.error('[gen] FASHN failed , falling back', e);
+            /* Logged, not just printed. A FASHN refusal used to reach the
+               terminal only , the row that landed in Logs was the fallback's
+               success, so the Logs tab said the shoot worked and never said
+               which provider had actually declined it or why. */
+            await logEvent({
+              type: 'image',
+              pid: o.pid,
+              pose: o.pose,
+              category,
+              model: opts.model_id || '-',
+              status: 'fashn_failed',
+              cost: 0,
+              file: '-',
+              error: msg.slice(0, 300),
+              user: opts.owner_email ?? '-',
+            });
+            // Deliberately falls through to the described-model path below,
+            // the same as a Gemini refusal. r stays null.
+          }
+        }
+
         let r: Awaited<ReturnType<typeof produceAnchored>> = null;
         try {
-          r = await produceAnchored(heroPrompt(true), null, frontFrame, refBytes);
+          if (anchoredEngine !== FASHN_ENGINE) {
+            r = await produceAnchored(heroPrompt(true), null, frontFrame, refBytes);
+          }
         } catch (e) {
           // produceAnchored only swallows IMAGE_OTHER; IMAGE_SAFETY is thrown.
           // Both are refusals and both belong in the fallback below , anything
@@ -502,11 +638,11 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
          * filter objects to is being handed a photograph of an identifiable
          * person together with intimate apparel, not the clothes themselves.
          *
-         * So the identity photo is dropped and the model's own tags are written
-         * into the prompt in its place: same ethnicity, same gender, same vibe,
-         * no face to match against. The customer gets their shoot and a warning
-         * that the face is not exact , which beats the alternative, which is
-         * nothing at all.
+         * So the identity photo is dropped and the model is DESCRIBED instead ,
+         * read off their own character sheet by a vision pass and cached. Words
+         * are not refused the way a photograph is, and they carry far more of
+         * the face than the three tags this used to fall back on. The customer
+         * gets their shoot and a warning that the face is not exact.
          *
          * Confined to allow_revealing shoots on purpose. Everywhere else the
          * anchored path works, and a silent swap to a described model would
@@ -522,8 +658,9 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
               ar,
               allowRevealing: allowRev,
               pose: o.pose,
-              // Admin's engine for this shoot type, or the environment's default.
-              modelId: engine || undefined,
+              // Admin's engine for this shoot type, or the environment's
+              // default. Never the FASHN sentinel , that is not a Gemini id.
+              modelId: engine === FASHN_ENGINE ? undefined : engine,
               imageSize: res,
             });
             await saveAndCharge(out.image, {
@@ -548,7 +685,8 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
         allowRevealing: allowRev,
         pose: o.pose,
         // Admin's engine for this shoot type, or the environment's default.
-        modelId: engine || undefined,
+        // Never the FASHN sentinel , that is not a Gemini id.
+        modelId: engine === FASHN_ENGINE ? undefined : engine,
         imageSize: res,
       });
       await saveAndCharge(out.image, { usage: { ...out.usage } });
@@ -604,7 +742,8 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
         allowRevealing: allowRev,
         pose: o.pose,
         // Admin's engine for this shoot type, or the environment's default.
-        modelId: engine || undefined,
+        // Never the FASHN sentinel , that is not a Gemini id.
+        modelId: engine === FASHN_ENGINE ? undefined : engine,
         imageSize: res,
       });
       await saveAndCharge(out.image, { usage: { ...out.usage } });
@@ -645,7 +784,8 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
         pose: o.pose,
         tries: 3,
         // Admin's engine for this shoot type, or the environment's default.
-        modelId: engine || undefined,
+        // Never the FASHN sentinel , that is not a Gemini id.
+        modelId: engine === FASHN_ENGINE ? undefined : engine,
         imageSize: res,
       });
       await saveAndCharge(out.image, { usage: { ...out.usage } });
@@ -699,7 +839,8 @@ export async function genOneImage(o: GenOneOpts): Promise<void> {
         allowRevealing: allowRev,
         pose: o.pose,
         // Admin's engine for this shoot type, or the environment's default.
-        modelId: engine || undefined,
+        // Never the FASHN sentinel , that is not a Gemini id.
+        modelId: engine === FASHN_ENGINE ? undefined : engine,
         imageSize: res,
       });
       await saveAndCharge(out.image, {

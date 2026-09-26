@@ -40,6 +40,8 @@ export default function AdminView({
   const [geniePrice, setGeniePrice] = useState(String(me.genie?.price ?? 0));
   const [videoPrice, setVideoPrice] = useState(String(me.video_price ?? 0));
   const [extractPrice, setExtractPrice] = useState(String(me.extract_price ?? 0));
+  /* Flat, keyed "imagine.hero" / "extract" , one input, one key. Rebuilt into
+     the nested shape on save, which keeps every onChange a one-liner. */
   const [engines, setEngines] = useState<Record<string, string>>({});
   const [flash, setFlash] = useState('');
 
@@ -72,7 +74,18 @@ export default function AdminView({
     }
     setPrices(grid);
     setSpecialPrices(special);
-    setEngines({ ...(me.engines ?? {}) });
+    const e = me.engines;
+    setEngines({
+      'imagine.hero': e?.imagine?.hero ?? '',
+      'imagine.pose': e?.imagine?.pose ?? '',
+      'saved.hero': e?.saved?.hero ?? '',
+      'saved.pose': e?.saved?.pose ?? '',
+      'special_imagine.hero': e?.special_imagine?.hero ?? '',
+      'special_imagine.pose': e?.special_imagine?.pose ?? '',
+      'special_saved.hero': e?.special_saved?.hero ?? '',
+      'special_saved.pose': e?.special_saved?.pose ?? '',
+      extract: e?.extract ?? '',
+    });
     setGeniePrice(String(me.genie?.price ?? 0));
     setVideoPrice(String(me.video_price ?? 0));
     setExtractPrice(String(me.extract_price ?? 0));
@@ -128,6 +141,18 @@ export default function AdminView({
 
     const payload = numbers(prices);
     const specialPayload = numbers(specialPrices);
+
+    const pair = (k: string) => ({
+      hero: engines[`${k}.hero`] ?? '',
+      pose: engines[`${k}.pose`] ?? '',
+    });
+    const enginePayload = {
+      imagine: pair('imagine'),
+      saved: pair('saved'),
+      special_imagine: pair('special_imagine'),
+      special_saved: pair('special_saved'),
+      extract: engines.extract ?? '',
+    };
     try {
       await postForm('/api/admin/settings', {
         genie_price: Number(geniePrice),
@@ -135,12 +160,12 @@ export default function AdminView({
         extract_price: extractPrice,
         prices: JSON.stringify(payload),
         special_prices: JSON.stringify(specialPayload),
-        engines: JSON.stringify(engines),
+        engines: JSON.stringify(enginePayload),
       });
       onMe({
         prices: payload,
         special_prices: specialPayload,
-        engines: engines as Me['engines'],
+        engines: enginePayload,
         genie: { ...(me.genie ?? { free: 0, max: 5 }), price: Number(geniePrice) },
         video_price: Number(videoPrice),
         extract_price: Number(extractPrice),
@@ -299,57 +324,128 @@ export default function AdminView({
       <div className="mb-[18px] max-w-[880px] rounded-card border border-line bg-surface p-[22px] shadow-card">
         <h3 className="mb-[5px] text-[15px] font-bold">AI engines</h3>
         <p className="mb-4 text-[12.5px] leading-[1.5] text-muted">
-          Which model runs each job. Leave a box empty to use the server default shown
-          under it , that is the behaviour with nothing set here, so an empty form changes
-          nothing. Ids are typed rather than picked from a list because Google renames
-          these; a wrong id fails the generation and shows up in Logs.
+          Which model runs each job. The hero is the frame that locks the model, lighting
+          and background , the poses after it are generated from that hero, which is why
+          they can run on a lighter engine. Leave a box empty to use the default shown in
+          it, so an empty form changes nothing. Ids are typed rather than picked from a
+          list because Google renames these; a wrong id fails the generation and shows up
+          in Logs.
         </p>
 
-        <div className="flex flex-wrap gap-[14px]">
-          {(
-            [
-              ['imagine', 'Generate , Imagine a model', 'base'],
-              ['saved', 'Generate , Saved model', 'hero'],
-              ['special_imagine', 'Special Category , Imagine', 'base'],
-              ['special_saved', 'Special Category , Saved model', 'hero'],
-              ['extract', 'Garment extraction', 'base'],
-            ] as const
-          ).map(([key, label, fallback]) => (
-            <div key={key} className="min-w-[240px] flex-1">
-              <label className="lbl">{label}</label>
-              <input
-                type="text"
-                list="engine-ids"
-                spellCheck={false}
-                placeholder="server default"
-                value={engines[key] ?? ''}
-                onChange={(e) => setEngines((g) => ({ ...g, [key]: e.target.value }))}
-              />
-              <div className="mt-1 text-[10.5px] leading-[1.4] text-muted">
-                default:{' '}
-                <span className="font-semibold">
-                  {fallback === 'hero'
-                    ? (me.engine_defaults?.hero ?? ',')
-                    : (me.engine_defaults?.base ?? ',')}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+        <table className="my-2 w-full border-collapse">
+          <thead>
+            <tr>
+              <th />
+              <th className="px-1.5 py-1 text-left text-[11px] font-bold text-muted">
+                Hero frame
+              </th>
+              <th className="px-1.5 py-1 text-left text-[11px] font-bold text-muted">
+                Extra poses
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {(
+              [
+                ['imagine', 'Generate , Imagine a model', 'hero'],
+                ['saved', 'Generate , Saved model', 'hero'],
+                ['special_imagine', 'Special Category , Imagine', 'hero'],
+                // This one falls back to the pro engine, not the ordinary hero
+                // engine , both flash engines refuse it. See gen.ts heroDefault.
+                ['special_saved', 'Special Category , Saved model', 'pro'],
+              ] as const
+            ).map(([key, label, heroFallback]) => (
+              <tr key={key}>
+                <td className="whitespace-nowrap py-[5px] pr-2.5 text-[12.5px] font-semibold">
+                  {label}
+                </td>
+                {(['hero', 'pose'] as const).map((slot) => (
+                  <td key={slot} className="px-1.5 py-[5px]">
+                    <input
+                      type="text"
+                      list="engine-ids"
+                      spellCheck={false}
+                      placeholder={
+                        slot === 'hero'
+                          ? ((heroFallback === 'pro'
+                              ? me.engine_defaults?.fashn_ready
+                                ? me.engine_defaults?.fashn
+                                : me.engine_defaults?.pro
+                              : me.engine_defaults?.hero) ?? 'server default')
+                          : (me.engine_defaults?.base ?? 'server default')
+                      }
+                      value={engines[`${key}.${slot}`] ?? ''}
+                      onChange={(ev) =>
+                        setEngines((g) => ({ ...g, [`${key}.${slot}`]: ev.target.value }))
+                      }
+                      className="w-full min-w-[190px]"
+                    />
+                  </td>
+                ))}
+              </tr>
+            ))}
+            <tr>
+              <td className="whitespace-nowrap py-[5px] pr-2.5 text-[12.5px] font-semibold">
+                Garment extraction
+              </td>
+              {/* One call, no hero/pose split , spans both columns rather than
+                  leaving an empty box that looks like something to fill in. */}
+              <td className="px-1.5 py-[5px]" colSpan={2}>
+                <input
+                  type="text"
+                  list="engine-ids"
+                  spellCheck={false}
+                  placeholder={me.engine_defaults?.base ?? 'server default'}
+                  value={engines.extract ?? ''}
+                  onChange={(ev) => setEngines((g) => ({ ...g, extract: ev.target.value }))}
+                  className="w-full"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
         {/* Suggestions, not a whitelist , the field still takes anything. */}
         <datalist id="engine-ids">
-          {[me.engine_defaults?.base, me.engine_defaults?.hero]
+          {[
+            me.engine_defaults?.base,
+            me.engine_defaults?.hero,
+            me.engine_defaults?.pro,
+            me.engine_defaults?.fashn_ready ? me.engine_defaults?.fashn : undefined,
+          ]
             .filter((v): v is string => !!v)
             .map((v) => (
               <option key={v} value={v} />
             ))}
         </datalist>
 
+        {/* The one non-Gemini value these boxes take. Said here rather than
+            left to be discovered, because "fashn" looks like a typo next to a
+            row of model ids. */}
+        <p className="mt-3 rounded-card border border-line bg-surface2 px-3 py-2 text-[11.5px] leading-[1.5] text-muted">
+          <b className="text-ink">Type <code>fashn</code></b> in any box to send that job to
+          FASHN instead of Gemini , a fashion-specific API that takes the saved model&apos;s
+          face as a real input, which is why it is the only path that keeps a saved model
+          recognisable on intimate apparel.{' '}
+          {me.engine_defaults?.fashn_ready ? (
+            <>
+              A key is configured, so <b className="text-ink">Special Category , Saved
+              model</b> already uses it when its box is left empty.
+            </>
+          ) : (
+            <>
+              No <code>FASHN_API_KEY</code> is set, so this does nothing yet , add one to
+              the server environment first.
+            </>
+          )}
+        </p>
+
         <p className="mt-3 text-[11.5px] leading-[1.45] text-muted">
           The lite engines only render 1K. A shoot set to 2K or 4K normally upgrades itself
           to the heavier one , naming an engine here turns that off, so pick one that can
-          produce the sizes you sell.
+          produce the sizes you sell. Today&apos;s defaults do this split already: the hero
+          on <span className="font-semibold">{me.engine_defaults?.hero ?? ','}</span>, poses
+          on <span className="font-semibold">{me.engine_defaults?.base ?? ','}</span>.
         </p>
 
         <button

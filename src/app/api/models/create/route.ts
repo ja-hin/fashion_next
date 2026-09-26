@@ -9,7 +9,13 @@ import { produce } from '@/lib/gemini';
 import { logEvent } from '@/lib/logs';
 import { PROVIDER } from '@/lib/config';
 import { buildCastPrompt, STYLES } from '@/lib/prompts';
-import { traitOption, castSummary, type CastPicks } from '@/lib/model-traits';
+import {
+  traitOption,
+  castSummary,
+  ethnicityInText,
+  mentionsEyeColour,
+  type CastPicks,
+} from '@/lib/model-traits';
 import type { ModelDoc, ModelRef, Resolution } from '@/lib/types';
 
 export const runtime = 'nodejs';
@@ -62,7 +68,22 @@ export const POST = handler(async (req: Request) => {
     vibe: str(fd, 'vibe'),
   };
   const free = str(fd, 'text');
-  const style = STYLES[str(fd, 'style')] ? str(fd, 'style') : '';
+  const picked = STYLES[str(fd, 'style')] ? str(fd, 'style') : '';
+
+  /*
+   * The description outranks the picker on who the person is.
+   *
+   * The picker has a default, so a customer who types "a russian model with
+   * blue eyes" and never touches it was having their subject replaced by one
+   * they did not choose , the prompt opened "one Indian woman …" and their
+   * sentence arrived afterwards as a note.
+   *
+   * Only stands aside when the description names a DIFFERENT origin. Saying
+   * "indian" with the picker on Indian still gets the curated phrase, which is
+   * better written than anything a customer types in passing.
+   */
+  const named = ethnicityInText(free);
+  const style = named.found && named.style !== picked ? '' : picked;
 
   /*
    * An optional mood reference.
@@ -84,6 +105,7 @@ export const POST = handler(async (req: Request) => {
   const prompt = buildCastPrompt({
     gender: picks.gender,
     ethnicity: style,
+    eyesDescribed: mentionsEyeColour(free),
     age: picks.age,
     skinPhrase: traitOption('skin', picks.skin)?.phrase,
     body: picks.body,
