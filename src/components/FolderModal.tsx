@@ -257,6 +257,44 @@ export default function FolderModal({
           />
         )}
 
+        {/* What the shoot was made FROM, before what it produced.
+            Small and set apart from the results grid on purpose , these are
+            the customer's own uploads, not generated work, and sizing them
+            like a result would invite them to be downloaded as one. */}
+        {refs.length > 0 && (
+          <div className="mb-5 rounded-card border border-line bg-surface2 p-3">
+            <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.08em] text-muted">
+              Input · {refs.length === 1 ? 'the garment' : `${refs.length} items`}
+            </div>
+            <div className="flex flex-wrap gap-2.5">
+              {refs.map((r) => (
+                <button
+                  key={r.file}
+                  type="button"
+                  title={`${r.role} , click to zoom`}
+                  onClick={() =>
+                    onZoom(
+                      refs.map((x) => ({ url: x.url, dl: x.url, name: x.file, pose: x.role })),
+                      refs.indexOf(r),
+                    )
+                  }
+                  className="w-[64px] text-left"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={imgSrc(r.url, 'thumb')}
+                    alt={r.role}
+                    className="h-[80px] w-[64px] rounded-lg border border-line bg-surface object-cover"
+                  />
+                  <span className="mt-1 block truncate text-[9.5px] font-semibold capitalize text-muted">
+                    {r.role}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-wrap items-start gap-4">
           {/* Clips first: on a shoot generated straight to video they are the
               only thing in here, and on a mixed shoot they are the newest work.

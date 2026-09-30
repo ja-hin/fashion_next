@@ -45,6 +45,9 @@ export default function SpecialPage() {
   const [tagOpen, setTagOpen] = useState(false);
   const [garmentPickerOpen, setGarmentPickerOpen] = useState(false);
   const [directVideo, setDirectVideo] = useState(false);
+  /* Dismissed by hand. Not persisted: it explains where THIS set of images
+     came from, so the next handoff has to be able to say it again. */
+  const [noteHidden, setNoteHidden] = useState(false);
 
   const usingSaved = desk.modelSource === 'saved' && desk.setup.input_family !== 'extend';
 
@@ -498,10 +501,10 @@ export default function SpecialPage() {
         {/* Says where these came from. Only while nothing has been generated:
             once the grid has results, the banner is answering a question the
             user stopped asking. */}
-        {desk.refs.length > 0 && !desk.shoot.pid && !desk.shoot.generating && (
+        {desk.refs.length > 0 && !noteHidden && !desk.shoot.pid && !desk.shoot.generating && (
           <div className="mb-5 flex items-start gap-2.5 rounded-card border border-brand-soft bg-brand-soft p-[13px] text-[12.5px] leading-[1.6] text-brand">
             <ShieldCheckIcon className="mt-[2px] h-4 w-4 flex-shrink-0" />
-            <div>
+            <div className="min-w-0 flex-1">
               <b>
                 {desk.refs.length} {desk.refs.length === 1 ? 'image was' : 'images were'} moved
                 here by detection.
@@ -515,6 +518,16 @@ export default function SpecialPage() {
                 </div>
               )}
             </div>
+            {/* Dismisses the note only , the images stay. Nothing here is an
+                action on the shoot, so it must not read as one. */}
+            <button
+              onClick={() => setNoteHidden(true)}
+              aria-label="Dismiss this note"
+              title="Dismiss"
+              className="-mr-1 -mt-1 flex h-[26px] w-[26px] flex-shrink-0 items-center justify-center rounded-full text-[15px] leading-none text-brand/60 transition hover:bg-brand/10 hover:text-brand"
+            >
+              ×
+            </button>
           </div>
         )}
 

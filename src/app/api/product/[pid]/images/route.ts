@@ -37,7 +37,18 @@ export const GET = handler(
      * have these , so "make another video" is still possible from them, which
      * is why they are listed rather than left as an internal detail.
      */
-    const refs = (shoot.refs ?? []).map((r) => ({
+    /*
+     * `shoot.refs` is ENSEMBLE-only. A same-garment shoot keeps its single
+     * upload in garment_file and has no refs at all, so reading refs alone
+     * reported "no input" for the commonest kind of shoot , and left the
+     * video-lock fallback above with nothing to offer.
+     */
+    const stored = shoot.refs?.length
+      ? shoot.refs
+      : shoot.garment_file
+        ? [{ file: shoot.garment_file, role: 'front' as const }]
+        : [];
+    const refs = stored.map((r) => ({
       file: r.file,
       url: shootUrl(pid, r.file),
       role: r.role,

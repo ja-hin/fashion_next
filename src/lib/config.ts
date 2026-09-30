@@ -149,7 +149,7 @@ export const INVOICE_SAC = env('INVOICE_SAC', '998314');
 export const INVOICE_PREFIX = env('INVOICE_PREFIX', 'INV');
 
 // ── Admin account (seeded on first boot if no admin exists) ─────────
-export const ADMIN_EMAIL = env('ADMIN_EMAIL', 'admin@vdofy.app');
+export const ADMIN_EMAIL = env('ADMIN_EMAIL', 'faishon.studio@3rdivisuals.com');
 export const ADMIN_PASSWORD = env('ADMIN_PASSWORD', 'vdofyadmin');
 
 // ── Wallet & limits ─────────────────────────────────────────────────

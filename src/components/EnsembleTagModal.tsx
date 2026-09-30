@@ -344,9 +344,17 @@ export default function EnsembleTagModal({
             */}
             <button
               onClick={() => {
-                const dropped = new Set(handoff);
-                for (const r of handoff) URL.revokeObjectURL(r.url);
-                const kept = refs.filter((r) => !dropped.has(r));
+                /* Matched by object URL, NOT identity , the same trap the
+                   handoff to the Special desk already documents. `handoff`
+                   holds COPIES: it is built by spreading each ref together with
+                   its detection patch, so those objects are equal to the ones
+                   in `refs` without being them. A Set of them matches nothing,
+                   the filter drops nothing, and the only visible effect is the
+                   revoke below killing thumbnails of images that stayed. */
+                const droppedUrls = new Set(handoff.map((r) => r.url));
+                const kept = refs.filter((r) => !droppedUrls.has(r.url));
+                // Revoked only once the filter above has actually removed them.
+                for (const url of droppedUrls) URL.revokeObjectURL(url);
                 onRefs(kept);
                 setHandoff(null);
                 // Everything was flagged, so there is nothing left to tag and

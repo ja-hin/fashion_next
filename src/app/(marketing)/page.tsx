@@ -96,8 +96,8 @@ const appLd = (packs: Pack[]) => ({
 
 const FAQS: Array<[string, string]> = [
   [
-    'How much does an AI photoshoot cost in India?',
-    'Faishon Studio produces on-model photos from ₹25 per photo on a prepaid credit wallet. A traditional ecommerce apparel photoshoot in India typically costs ₹250–₹2,500 per photo, plus model, studio and crew fees.',
+    'How long does an AI photoshoot take?',
+    'Just a couple of seconds. Generate professional, on-model product photos almost instantly—no studio, models, or lengthy photoshoot required.',
   ],
   [
     'Can I use AI-generated photos on Amazon, Flipkart, Myntra and Meesho?',
@@ -121,7 +121,7 @@ const FAQS: Array<[string, string]> = [
   ],
   [
     'Do I need a subscription?',
-    'No. Faishon Studio is prepaid: load an INR credit wallet (GST invoice available) and spend it whenever you shoot. Credits stay valid for 12 months.',
+    'No. Faishon Studio is prepaid: load your credit wallet (GST invoice available) and spend it whenever you shoot. Credits stay valid for 12 months.',
   ],
 ];
 
@@ -415,7 +415,7 @@ export default async function LandingPage() {
 
             <div className="hiw-view" id="hiwView">
               <div className="media" id="hiwMedia" />
-              <span className="hiw-cap" id="hiwCap">Anouk Steele · Studio white · Standing</span>
+              <span className="hiw-cap" id="hiwCap">Meera Raj · Studio white · Standing</span>
             </div>
           </div>
         </div>

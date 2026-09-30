@@ -189,6 +189,15 @@ export interface ResumePayload {
   hero_exists: boolean;
   images: ResumeImage[];
   videos?: VideoItem[];
+  /**
+   * The uploads this shoot was built FROM , what a reshoot starts over on.
+   * Absent on a shoot whose source files have since been deleted.
+   */
+  source?: {
+    refs: Array<{ file: string; role: string; url: string }>;
+    ref_mode: string;
+    category: string;
+  };
 }
 
 export interface LogRow {

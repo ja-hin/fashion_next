@@ -512,11 +512,8 @@ footer .logo-img{height:46px}
    trade a safe crop for a cut hem. */
 .frame img,.frame svg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .frame:not(.garment) img{object-position:50% 0%}
-.frame .fnum{position:absolute;top:6px;left:7px;font-family:var(--mono);font-size:.58rem;color:#fff;z-index:3;text-shadow:0 1px 3px rgba(0,0,0,.7)}
-.frame .fpose{position:absolute;bottom:6px;left:7px;font-family:var(--mono);font-size:.54rem;letter-spacing:.08em;color:#fff;text-transform:uppercase;z-index:3;text-shadow:0 1px 3px rgba(0,0,0,.7)}
 .frame.garment{outline:1.5px solid var(--flame);outline-offset:-1.5px}
 .frame .tag{position:absolute;top:6px;right:7px;z-index:3;font-family:var(--mono);font-size:.48rem;letter-spacing:.1em;background:var(--flame);color:#fff;padding:2px 5px;border-radius:2px;text-transform:uppercase}
-.frame .idc{position:absolute;top:6px;right:7px;z-index:3;width:8px;height:8px;border-radius:50%;background:#5FD3A3;box-shadow:0 0 0 3px rgba(95,211,163,.25)}
 /* A set whose frame is missing still holds its slot , the gap is the point,
    it shows which angles this shoot does not have. */
 .frame.missing{opacity:.28!important;transform:none!important}
@@ -597,7 +594,7 @@ footer .logo-img{height:46px}
   border-color .35s,opacity .9s}
 .plan.card-glow:hover{transform:translateY(-8px)}
 .plan.feat{border-color:rgba(228,87,46,.6);background:linear-gradient(180deg,rgba(228,87,46,.1),rgba(228,87,46,.02) 40%),var(--card)}
-.badge{position:absolute;top:-11px;left:26px;background:var(--flame);color:#fff;font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;padding:5px 11px;border-radius:2px}
+.badge{position:absolute;top:-11px;left:26px;background:var(--flame);color:#fff;font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;padding:5px 11px;border-radius:2px;z-index: 11;}
 .p-name{font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--flame);font-weight:700}
 .p-price{font-family:var(--serif);font-size:2.6rem;margin:18px 0 4px}
 .p-per{font-family:var(--mono);font-size:.74rem;color:var(--muted)}

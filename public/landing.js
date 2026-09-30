@@ -1062,8 +1062,10 @@ const STRIP_ITEMS=[
       const f0=document.createElement("div");
       f0.className="frame garment"+(reduceD?"":" pop");
       f0.appendChild(media(st.input??{},"garment","#221f19"));
-      f0.insertAdjacentHTML("beforeend",
-        `<span class="fnum">00</span><span class="tag">Input</span><span class="fpose">THE GARMENT</span>`);
+      /* The Input badge only. The frame numbers and pose captions are gone ,
+         the pictures say what they are, and the labels were reading as chrome
+         over the photography rather than telling anyone anything. */
+      f0.insertAdjacentHTML("beforeend", `<span class="tag">Input</span>`);
       framesBox.appendChild(f0);
 
       st.outs.forEach((u,k)=>{
@@ -1071,8 +1073,10 @@ const STRIP_ITEMS=[
         d.className="frame"+(u==null?" missing":"")+(reduceD||u==null?"":" pop");
         if(!reduceD&&u!=null)d.style.animationDelay=(0.1+k*0.13)+"s";
         d.appendChild(media(u??{},FALLBACK_POSES[k],BACKDROPS[k%BACKDROPS.length]));
-        d.insertAdjacentHTML("beforeend",
-          `<span class="fnum">${String(k+1).padStart(2,"0")}</span>${u!=null?'<span class="idc"></span>':''}<span class="fpose">${(st.labels??POSE_LABELS)[k]}</span>`);
+        /* Nothing overlaid on an output frame at all now , the picture is the
+           whole point of the cell. A missing frame still reads as missing: it
+           keeps its slot at .28 opacity (.frame.missing), which is the signal,
+           not the dot that used to sit on the others. */
         framesBox.appendChild(d);
       });
 
@@ -1167,8 +1171,11 @@ const STRIP_ITEMS=[
        {id:"dress",n:"Summer dress",  s:"Ghost mannequin → on-model",           c:"#3F7C6A",c2:"#2A5A4C"}
      ],
      models:[
-       {id:"anouk",n:"Anouk Steele",s:"#F0CDA8",s2:"#DDB78F",h:"#C9A227"},
-       {id:"meera",n:"Meera Raj",   s:"#C08552",s2:"#A96F3F",h:"#1E1712"}
+       /* Names swapped, ids NOT: the photo files are named dress-<id>-… and the
+          swatches describe the person in them, so both stay with their own
+          entry. Only the label the customer reads has changed hands. */
+       {id:"anouk",n:"Meera Raj",   s:"#F0CDA8",s2:"#DDB78F",h:"#C9A227"},
+       {id:"meera",n:"Anouk Steele",s:"#C08552",s2:"#A96F3F",h:"#1E1712"}
      ],
      poses:[
        {id:"standing",n:"Standing",p:"front"},
@@ -1577,7 +1584,14 @@ const STRIP_ITEMS=[
     {slug:"coord",      n:"Co-ords", pose:"walk",
      p:"Matched top and bottom, shot as one look, print-true across both pieces"},
     {slug:"athleisure", n:"Athleisure", pose:"mwalk",
-     p:"Movement-ready poses that show stretch, fit and function"}
+     p:"Movement-ready poses that show stretch, fit and function"},
+    /* Slugs match the filenames in /webassets/cats exactly, capital included ,
+       macOS does not care about case but the deploy host does, and a slug that
+       only resolves locally falls back to the croquis in production. */
+    {slug:"Intimate",   n:"Intimates", pose:"front",
+     p:"Everyday innerwear, shot clean and catalogue-safe"},
+    {slug:"lingerie",   n:"Lingerie", pose:"front",
+     p:"Lace and detail held true, framed for marketplace listings"}
   ];
   const N=CATS.length;
   let active=0;
@@ -1797,21 +1811,13 @@ const STRIP_ITEMS=[
      scrolled. */
   const stage=tile?tile.parentElement:null;
 
-  /* How far the panel rises as it opens. The padding below centres the tile in
-     the space UNDER the copy, which is right for the tile , but by the time the
-     panel has formed the veil has put the copy out of play, and a panel still
-     centred under it sits low with its bottom off the screen. Half the padding
-     is exactly the distance from that centre to the viewport's. */
-  let genieLift=0;
   function fitStage(){
     if(!stage||!copy)return;
     /* Below 960 the stage is bottom-aligned with its own padding (landing.css),
        so an inline top padding here would fight it. */
-    if(innerWidth<=960){stage.style.paddingTop="";genieLift=0;return;}
+    if(innerWidth<=960){stage.style.paddingTop="";return;}
     const gap=Math.max(28,Math.min(innerHeight*0.05,64));
-    const pad=Math.round(copy.offsetTop+copy.offsetHeight+gap);
-    stage.style.paddingTop=pad+"px";
-    genieLift=pad/2;
+    stage.style.paddingTop=Math.round(copy.offsetTop+copy.offsetHeight+gap)+"px";
   }
 
   fitStage();
@@ -1955,9 +1961,7 @@ const STRIP_ITEMS=[
 
     veil.style.opacity=em;
     modal.style.opacity=m;
-    /* Rises with the same easing it scales with, so it forms out of the smoke
-       where the tile was and settles at the centre of the screen. */
-    modal.style.transform=`translateY(${-genieLift*em}px) scale(${.72+.28*em})`;
+    modal.style.transform=`scale(${.72+.28*em})`;
     modal.style.filter=`blur(${(1-m)*10}px)`;
     modal.style.pointerEvents=m>.9?"auto":"none";
     modal.setAttribute("aria-hidden",String(m<.5));

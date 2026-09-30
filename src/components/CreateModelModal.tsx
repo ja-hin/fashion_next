@@ -347,8 +347,6 @@ export default function CreateModelModal({
               </div>
 
               {/* Collapsed by default , see the note at the top of the file. */}
-              {/* TEMP HIDDEN for live , the "Add details" option grid. Restore by deleting this `{false && (` line and its closing `)}` below. */}
-              {false && (
               <div className="mt-5 rounded-card border border-line">
                 <button
                   type="button"
@@ -459,10 +457,7 @@ export default function CreateModelModal({
                   </div>
                 )}
               </div>
-              )}
 
-              {/* TEMP HIDDEN for live , look reference. Restore by deleting this `{false && (` line and its closing `)}` below. */}
-              {false && (
               <div className="mt-4">
                 <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-muted">
                   Look reference · optional
@@ -519,7 +514,6 @@ export default function CreateModelModal({
                   </span>
                 </div>
               </div>
-              )}
             </>
           )}
 
