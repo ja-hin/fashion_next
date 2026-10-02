@@ -18,6 +18,8 @@ export interface Me {
   genie?: { free: number; price: number; max: number };
   /** Credits for one 10-second video. */
   video_price?: number;
+  /** The complimentary-credits offer , decided server-side, see lib/offer.ts. */
+  offer?: { show: boolean; reason: string; mark: number };
   /** Credits to extract the garments out of one photo , Special Category desk. */
   extract_price?: number;
   /** Per-image credits on the Special Category desk, in place of `prices`. */
@@ -247,6 +249,8 @@ export interface AdminUser {
   balance: number;
   created: string;
   active: boolean;
+  /** 'pending' (will show) | 'waiting' (dismissed) | 'done' (submitted). */
+  offer?: string;
 }
 
 /** One image in the lightbox carousel. */

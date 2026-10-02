@@ -409,6 +409,7 @@ export default function SpecialPage() {
 
         <div className={`min-h-0 flex-1 overflow-y-auto ${s.setupCollapsed ? 'hidden' : ''}`}>
           <SetupPanel
+            ensembleSoon
             setup={desk.setup}
             onSetup={desk.patchSetup}
             ensemble={desk.refs}

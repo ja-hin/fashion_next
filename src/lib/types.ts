@@ -34,6 +34,17 @@ export interface UserDoc {
   active: boolean;
 
   /**
+   * The complimentary-credits offer , see lib/offer.ts.
+   *
+   * `offer_seen` is when it was last shown and dismissed, so a returning
+   * low-balance account is reminded occasionally rather than on every page.
+   * `offer_submitted` is final: a customer who has told us about their business
+   * is never asked again, whatever their balance does.
+   */
+  offer_seen?: string;
+  offer_submitted?: string;
+
+  /**
    * When this account's first successful Razorpay payment was credited.
    *
    * Absent = still on the free credits, so their images are served with the
@@ -71,6 +82,8 @@ export interface PublicUser {
   balance: number;
   created: string;
   active: boolean;
+  /** 'pending' | 'waiting' | 'done' , see toPublicUser. */
+  offer?: string;
 }
 
 // ── password resets ─────────────────────────────────────────────────
@@ -508,6 +521,21 @@ export interface LeadDoc {
   /** Which page sent it , there is one form today, there may be more. */
   source: string;
   created: string; // ISO, seconds precision
+
+  /*
+   * Fields the in-app credits form adds. All optional, because the marketing
+   * contact form does not collect them and both kinds share this collection ,
+   * one list for the admin to work through, with `source` saying which is which.
+   */
+  /** Set when the enquiry came from a signed-in account. */
+  user_email?: string;
+  uid?: string;
+  /** Their balance at the moment they asked , the reason they were shown it. */
+  balance_at_ask?: number;
+  website?: string;
+  /** Where they sell today, e.g. Amazon, Myntra. */
+  channels?: string[];
+  use_case?: string;
   /** When the status last moved off `new`. */
   handled?: string;
 }

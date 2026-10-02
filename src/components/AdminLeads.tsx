@@ -121,6 +121,22 @@ export default function AdminLeads() {
                   <Td>
                     <div className="font-semibold">{l.name}</div>
                     {l.brand && <div className="text-[12px] text-muted">{l.brand}</div>}
+                    {/* In-app enquiries come from a signed-in account, so they
+                        carry context a website form cannot: who they are and
+                        how little was left when they asked. */}
+                    {l.source === 'credit-offer' && (
+                      <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                        <span className="rounded-[20px] bg-accent-soft px-1.5 py-[1px] text-[9.5px] font-bold uppercase tracking-[0.05em] text-accent">
+                          credit offer
+                        </span>
+                        {l.uid && <span className="text-[10px] text-muted">{l.uid}</span>}
+                        {typeof l.balance_at_ask === 'number' && (
+                          <span className="text-[10px] text-muted">
+                            {l.balance_at_ask} cr left
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </Td>
                   <Td>
                     {/* mailto rather than plain text: the reply is the whole
@@ -131,7 +147,23 @@ export default function AdminLeads() {
                     {l.phone && <div className="text-[12px] text-muted">{l.phone}</div>}
                   </Td>
                   <Td>{l.volume || ','}</Td>
-                  <Td className="max-w-[420px] whitespace-pre-wrap leading-[1.5]">{l.message}</Td>
+                  <Td className="max-w-[420px] whitespace-pre-wrap leading-[1.5]">
+                    {l.website && (
+                      <a
+                        href={l.website}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="block truncate text-[12px] font-semibold text-accent underline"
+                      >
+                        {l.website}
+                      </a>
+                    )}
+                    {l.use_case && <div className="text-[12px] text-muted">{l.use_case}</div>}
+                    {!!l.channels?.length && (
+                      <div className="text-[11.5px] text-muted">Sells on: {l.channels.join(', ')}</div>
+                    )}
+                    {l.message && <div className="mt-1">{l.message}</div>}
+                  </Td>
                   <Td>
                     <select
                       value={l.status}

@@ -176,6 +176,23 @@ export const CATEGORIES: Array<[string, string]> = [
   ['accessory', 'Accessory'],
 ];
 
+/**
+ * Categories withdrawn from the picker.
+ *
+ * Removed from the CHOICES, not from the vocabulary: shoots already generated
+ * under these still exist, the server still accepts them, GENDER_BY_CAT still
+ * maps them and the detector still returns them. Deleting them from CATEGORIES
+ * instead would leave an old shoot's category with no label to render.
+ *
+ * Empty this array to put them back , nothing else has to change.
+ */
+export const CATEGORIES_OFF: readonly string[] = ['kidswear', 'footwear', 'accessory'];
+
+/** What the Category picker offers today. */
+export const CATEGORIES_ON: Array<[string, string]> = CATEGORIES.filter(
+  ([v]) => !CATEGORIES_OFF.includes(v),
+);
+
 export const INPUT_FAMILIES: Array<[string, string]> = [
   ['garment_in', 'Try on a Model'],
   ['extend', 'Extend (same model)'],

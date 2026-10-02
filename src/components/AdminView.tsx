@@ -11,6 +11,7 @@ import {
   TrashIcon,
   ImagesIcon,
   PersonIcon,
+  CoinsIcon,
 } from './icons';
 import { useDialog } from './Dialog';
 import AdminPacks from './AdminPacks';
@@ -291,6 +292,38 @@ export default function AdminView({
                         className={iconBtn}
                       >
                         {u.active ? <PauseIcon /> : <PlayIcon className="h-4 w-4" />}
+                      </button>
+                      {/* The credits offer. One button, because the two useful
+                          actions are opposites: let them see it, or stop it.
+                          The colour says which state they are in now, so the
+                          admin is not guessing what the click will do. */}
+                      <button
+                        title={
+                          u.offer === 'done'
+                            ? 'Offer closed , click to show it again'
+                            : u.offer === 'waiting'
+                              ? 'Dismissed , click to show it again'
+                              : 'Will show on their next visit , click to silence it'
+                        }
+                        onClick={() =>
+                          act(
+                            () =>
+                              postForm('/api/admin/offer', {
+                                user_id: u.id,
+                                action: u.offer === 'pending' ? 'hide' : 'show',
+                              }),
+                            'Could not update the offer.',
+                          )
+                        }
+                        className={`${iconBtn} ${
+                          u.offer === 'pending'
+                            ? 'border-transparent bg-brand-soft text-brand'
+                            : u.offer === 'waiting'
+                              ? 'text-muted'
+                              : ''
+                        }`}
+                      >
+                        <CoinsIcon />
                       </button>
                       <button
                         title="Delete user"

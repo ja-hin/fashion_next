@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 import { DialogProvider } from './Dialog';
 import { StudioProvider, useStudio } from '@/lib/client/StudioContext';
 import TopBar from './TopBar';
@@ -7,6 +9,7 @@ import SideNav from './SideNav';
 import Lightbox from './Lightbox';
 import SaveModelModal from './SaveModelModal';
 import type { Me } from '@/lib/client/types';
+import CreditOfferBanner from './CreditOfferBanner';
 
 /**
  * The persistent studio chrome: top bar, the shared state provider, and the
@@ -33,6 +36,10 @@ export default function StudioShell({
 
 function Chrome({ children }: { children: React.ReactNode }) {
   const s = useStudio();
+  /* Dismissed for THIS page view. The server also records it (POST /api/offer)
+     so it stays quiet across reloads , this is only so the modal closes at
+     once rather than waiting on a round trip. */
+  const [offerClosed, setOfferClosed] = useState(false);
 
   return (
     <div className="flex h-screen flex-col">
@@ -54,6 +61,16 @@ function Chrome({ children }: { children: React.ReactNode }) {
         />
         {children}
       </div>
+
+      {/* Shown over everything, on whichever studio page they happen to be on ,
+          the offer is about the account, not about one screen. */}
+      {s.me.offer?.show && !offerClosed && (
+        <CreditOfferBanner
+          reason={s.me.offer.reason}
+          mark={s.me.offer.mark}
+          onClose={() => setOfferClosed(true)}
+        />
+      )}
 
       {s.saveModelPid && (
         <SaveModelModal

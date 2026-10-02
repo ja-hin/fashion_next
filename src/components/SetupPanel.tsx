@@ -1,11 +1,15 @@
 'use client';
 
+import { useState } from 'react';
 import { ethLabel, titleCase, imgSrc } from '@/lib/client/api';
 import { Field, Select } from './ui';
 import EnsembleUploader from './EnsembleUploader';
+import { ImagesIcon, VideoCameraIcon } from './icons';
 import type { EnsembleRef } from '@/lib/client/ensemble-types';
 import {
   CATEGORIES,
+  CATEGORIES_ON,
+  CATEGORIES_OFF,
   INPUT_FAMILIES,
   ETHNICITIES,
   FRAMINGS,
@@ -46,6 +50,14 @@ export const DEFAULT_SETUP: SetupState = {
 };
 
 interface Props {
+  /**
+   * Ensemble not available on this desk yet , shown, disabled, labelled.
+   *
+   * Hidden would be tidier and worse: the mode exists on Generate, so a desk
+   * that simply lacks the tab reads as a missing feature rather than one that
+   * is coming.
+   */
+  ensembleSoon?: boolean;
   setup: SetupState;
   onSetup: (patch: Partial<SetupState>) => void;
   /** Tagged references for both modes, in upload order. */
@@ -103,6 +115,7 @@ export default function SetupPanel({
   noModelError,
   heroCost,
   videoCost,
+  ensembleSoon,
   busy,
   onGenerate,
   onGenerateVideo,
@@ -114,6 +127,10 @@ export default function SetupPanel({
   const isExtend = setup.input_family === 'extend';
   const usingSaved = modelSource === 'saved' && !isExtend;
   const showResHint = (setup.resolution === '2K' || setup.resolution === '4K') && !usingSaved;
+
+  /* Which door this run goes out of. Local on purpose , it is a choice about
+     THIS click, not part of the saved shoot setup. */
+  const [outMode, setOutMode] = useState<'image' | 'video'>('image');
 
   const isEnsemble = setup.ref_mode === 'ensemble';
   /* Flagged by the classifier on upload , see /api/ensemble/detect. */
@@ -155,10 +172,13 @@ export default function SetupPanel({
           ] as const
         ).map(([value, label]) => {
           const on = setup.ref_mode === value;
+          const soon = ensembleSoon && value === 'ensemble';
           return (
             <button
               key={value}
               type="button"
+              disabled={soon}
+              title={soon ? 'Ensemble shoots are coming to this desk soon' : undefined}
               onClick={() =>
                 onSetup({
                   ref_mode: value,
@@ -170,9 +190,14 @@ export default function SetupPanel({
               }
               className={`flex-1 rounded-[7px] px-2 py-[7px] text-[12px] font-bold transition ${
                 on ? 'bg-surface text-ink shadow-card' : 'text-muted hover:text-ink'
-              }`}
+              } ${soon ? 'cursor-not-allowed opacity-45 hover:text-muted' : ''}`}
             >
               {label}
+              {soon && (
+                <span className="ml-1.5 rounded-[20px] bg-line px-1.5 py-[1px] text-[9px] font-bold uppercase tracking-[0.06em] text-muted">
+                  soon
+                </span>
+              )}
             </button>
           );
         })}
@@ -208,10 +233,19 @@ export default function SetupPanel({
       <div className="mb-[13px] flex gap-2.5">
         <div className="flex-1">
           <label className="lbl">Category</label>
+          {/* A shoot saved under a withdrawn category keeps showing it , it is
+              carried over by Continue, and an option the Select cannot find
+              renders as blank, which looks like data loss rather than a
+              category we stopped offering. It stays selectable until the
+              customer picks something else. */}
           <Select
             value={setup.category}
             onChange={(v) => onSetup({ category: v })}
-            options={CATEGORIES}
+            options={
+              CATEGORIES_OFF.includes(setup.category)
+                ? [...CATEGORIES_ON, ...CATEGORIES.filter(([v]) => v === setup.category)]
+                : CATEGORIES_ON
+            }
           />
         </div>
         <div className="flex-1">
@@ -354,40 +388,93 @@ export default function SetupPanel({
         </Field>
       </div>
 
+      {/* ── what this run produces ──────────────────────────────────────
+          One control with two states, not two buttons. The pill SLIDES, which
+          is what makes the two read as alternatives rather than as two separate
+          actions , the problem this replaced.
+
+          The pill is `bg-ink` with `text-surface`, NOT text-white: --ink is
+          near-black in the light theme and near-WHITE in the dark one (see
+          globals.css), so white text on it would vanish in dark mode. --surface
+          flips with it, which is why the pair is safe in both.
+
+          Two lines per side, because the price is the thing being compared ,
+          4 against 60 , and tabular figures let the eye do that straight down
+          rather than hunting along a label.
+
+          Video is never disabled: someone who came for a reel should be able to
+          say so before uploading, and the button below names what is missing. */}
+      <div className="relative mb-2.5 mt-2 flex rounded-[14px] bg-surface2 p-1.5 ring-1 ring-inset ring-line">
+        {/* Transform, not `left` , it animates on the compositor and never
+            reflows the labels it travels under. */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-y-1.5 left-1.5 w-[calc(50%-6px)] rounded-[11px] bg-ink shadow-[0_6px_16px_-8px_rgba(23,21,15,.55)] transition-transform duration-[340ms] ease-[cubic-bezier(.22,.9,.24,1)]"
+          style={{ transform: outMode === 'video' ? 'translateX(100%)' : 'translateX(0)' }}
+        />
+        {(
+          [
+            ['image', 'Image', heroCost, ImagesIcon],
+            ['video', 'Video', videoCost, VideoCameraIcon],
+          ] as const
+        ).map(([value, label, cost, Icon]) => {
+          const on = outMode === value;
+          return (
+            <button
+              key={value}
+              type="button"
+              role="tab"
+              aria-selected={on}
+              disabled={busy}
+              onClick={() => setOutMode(value)}
+              className="relative z-[1] flex flex-1 flex-col items-center gap-[4px] rounded-[11px] px-2 py-[10px] transition active:scale-[0.985] disabled:opacity-50"
+            >
+              <span className="flex items-center gap-1.5">
+                <Icon
+                  className={`h-[15px] w-[15px] transition-colors duration-200 ${
+                    on ? 'text-surface' : 'text-muted'
+                  }`}
+                />
+                <span
+                  className={`text-[13px] font-bold leading-none transition-colors duration-200 ${
+                    on ? 'text-surface' : 'text-muted'
+                  }`}
+                >
+                  {label}
+                </span>
+              </span>
+              <span
+                className={`text-[10.5px] font-semibold leading-none tabular-nums transition-colors duration-200 ${
+                  on ? 'text-surface/65' : 'text-muted/70'
+                }`}
+              >
+                {cost > 0 ? `${cost} credit${cost === 1 ? '' : 's'}` : 'free'}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       <button
-        onClick={onGenerate}
-        disabled={busy || restricted.length > 0}
-        className="mt-1.5 flex w-full items-center justify-center gap-2 rounded-[11px] bg-brand p-[13px] text-[14.5px] font-bold text-white transition hover:-translate-y-px hover:shadow-[0_10px_26px_rgba(225,29,42,.3)] disabled:translate-y-0 disabled:opacity-50 disabled:shadow-none"
+        onClick={outMode === 'video' ? onGenerateVideo : onGenerate}
+        disabled={busy || (outMode === 'video' ? !ensemble.length : restricted.length > 0)}
+        className="flex w-full items-center justify-center gap-2 rounded-[11px] bg-brand p-[13px] text-[14.5px] font-bold text-white transition hover:-translate-y-px hover:shadow-[0_10px_26px_rgba(225,29,42,.3)] disabled:translate-y-0 disabled:opacity-50 disabled:shadow-none"
       >
+        {/* No price here. The switch above already carries both numbers, side
+            by side where they can be compared , repeating the chosen one on the
+            button says nothing new and crowds the verb. */}
         {busy
           ? 'Generating…'
-          : restricted.length
-            ? 'Not permitted for this garment'
-            : ensemble.length
-            ? `Generate Hero image${ensemble.length === 1 ? '' : 's'}`
-            : 'Generate Hero image'}
-        {/* The hero is one image whatever the reference count, so the quote is
-            the single-image rate for the chosen resolution × model source. */}
-        {!busy && heroCost > 0 && ` · ${heroCost} credit${heroCost === 1 ? '' : 's'}`}
-      </button>
-
-      {/* The other door out of the same uploads. Secondary, because a hero is
-          the cheaper first step and the one most shoots want , but a customer
-          who only came for a reel should not have to buy a photo first.
-          Disabled until something has been uploaded: the garment photos ARE the
-          reference, so there is nothing to lock onto without them. */}
-      <button
-        onClick={onGenerateVideo}
-        disabled={busy || !ensemble.length}
-        title={
-          ensemble.length
-            ? 'Make a 10-second video from these photos'
-            : 'Upload a garment photo first'
-        }
-        className="mt-2 flex w-full items-center justify-center gap-2 rounded-[11px] border border-line p-[11px] text-[13px] font-bold text-ink transition hover:-translate-y-px hover:border-ink disabled:translate-y-0 disabled:opacity-50"
-      >
-        ▶ Generate video
-        {videoCost > 0 && ` · ${videoCost} credits`}
+          : outMode === 'video'
+            ? /* The garment photos ARE the video's reference, so there is
+                 nothing to lock onto yet. Named here, where the customer is
+                 looking, rather than by greying out the choice above. */
+              ensemble.length
+              ? 'Generate video'
+              : 'Upload a photo to make a video'
+            : restricted.length
+              ? 'Not permitted for this garment'
+              : `Generate Hero image${ensemble.length > 1 ? 's' : ''}`}
       </button>
 
       {/* <div className="mt-2.5 text-[11px] leading-[1.5] text-muted">

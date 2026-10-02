@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Faishon Studio — Complimentary Credits Lead Banner</title>
+  <style>
+    :root{
+      --ink:#18181b;
+      --muted:#71717a;
+      --soft:#a1a1aa;
+      --line:rgba(24,24,27,.10);
+      --paper:#ffffff;
+      --paper-2:#fbfbfc;
+      --accent:#e75f68;
+      --accent-dark:#cf4852;
+      --accent-soft:#fff2f3;
+      --success:#16794f;
+      --shadow:0 28px 80px rgba(24,24,27,.18), 0 8px 24px rgba(24,24,27,.08);
+      --radius:24px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink)}
+    body{background:transparent}
+
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+
+    /* Full-screen layer. Clicking outside NEVER dismisses the banner/modal. */
+    .fs-layer{
+      position:fixed;
+      inset:0;
+      z-index:99990;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      background:rgba(19,19,23,.16);
+      backdrop-filter:blur(5px);
+      -webkit-backdrop-filter:blur(5px);
+    }
+    .fs-layer.is-visible{display:flex}
+
+    .credit-banner{
+      width:min(620px,100%);
+      position:relative;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.8);
+      border-radius:28px;
+      background:
+        radial-gradient(circle at 90% 5%, rgba(231,95,104,.13), transparent 33%),
+        linear-gradient(180deg,#fff 0%,#fdfdfd 100%);
+      box-shadow:var(--shadow);
+      animation:riseIn .38s cubic-bezier(.2,.75,.25,1) both;
+    }
+
+    .credit-banner::before{
+      content:"";
+      display:block;
+      height:4px;
+      background:linear-gradient(90deg,var(--accent),#f39aa1 48%,#ffd1d4);
+    }
+
+    .banner-body{padding:30px 30px 28px}
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:16px;
+      padding:7px 11px;
+      border-radius:999px;
+      border:1px solid rgba(231,95,104,.18);
+      background:var(--accent-soft);
+      color:#9f3f47;
+      font-size:12px;
+      font-weight:750;
+      letter-spacing:.02em;
+    }
+    .eyebrow-dot{
+      width:7px;height:7px;border-radius:50%;
+      background:var(--accent);
+      box-shadow:0 0 0 4px rgba(231,95,104,.10);
+    }
+
+    h1,h2,p{margin:0}
+    .banner-title{
+      max-width:500px;
+      font-size:clamp(28px,5vw,39px);
+      line-height:1.06;
+      letter-spacing:-.038em;
+      font-weight:780;
+    }
+    .banner-copy{
+      margin-top:13px;
+      max-width:530px;
+      color:#52525b;
+      font-size:15px;
+      line-height:1.62;
+    }
+
+    .benefits{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:9px;
+      margin:23px 0 24px;
+    }
+    .benefit{
+      min-height:74px;
+      padding:13px 13px 12px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:rgba(255,255,255,.72);
+    }
+    .benefit b{display:block;font-size:13px;margin-bottom:5px}
+    .benefit span{display:block;color:var(--muted);font-size:12px;line-height:1.4}
+
+    .banner-actions{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .primary{
+      min-height:48px;
+      border:0;
+      border-radius:14px;
+      padding:0 19px;
+      background:var(--ink);
+      color:white;
+      font-weight:730;
+      box-shadow:0 8px 18px rgba(24,24,27,.14);
+      transition:transform .16s ease, box-shadow .16s ease, background .16s ease;
+    }
+    .primary:hover{transform:translateY(-1px);box-shadow:0 11px 24px rgba(24,24,27,.18)}
+    .primary:active{transform:translateY(0)}
+    .micro{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.4;
+    }
+
+    .close-btn{
+      position:absolute;
+      top:18px;
+      right:18px;
+      width:38px;
+      height:38px;
+      display:grid;
+      place-items:center;
+      border:1px solid var(--line);
+      border-radius:50%;
+      background:rgba(255,255,255,.8);
+      color:#52525b;
+      opacity:0;
+      pointer-events:none;
+      transform:scale(.92);
+      transition:opacity .22s ease, transform .22s ease, background .18s ease;
+    }
+    .close-btn.is-ready{
+      opacity:1;
+      pointer-events:auto;
+      transform:scale(1);
+    }
+    .close-btn:hover{background:#f5f5f5}
+    .close-btn svg{width:17px;height:17px}
+
+    /* Application modal */
+    .modal{
+      width:min(640px,100%);
+      max-height:min(88vh,780px);
+      overflow:auto;
+      border:1px solid rgba(255,255,255,.82);
+      border-radius:26px;
+      background:var(--paper);
+      box-shadow:var(--shadow);
+      animation:riseIn .32s cubic-bezier(.2,.75,.25,1) both;
+    }
+    .modal-head{
+      position:sticky;
+      top:0;
+      z-index:2;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:18px;
+      padding:25px 26px 18px;
+      background:rgba(255,255,255,.94);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--line);
+    }
+    .modal-kicker{
+      color:var(--accent-dark);
+      font-size:12px;
+      font-weight:760;
+      letter-spacing:.02em;
+      margin-bottom:6px;
+    }
+    .modal-title{
+      font-size:24px;
+      line-height:1.15;
+      letter-spacing:-.027em;
+      font-weight:780;
+    }
+    .modal-sub{
+      margin-top:7px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+    }
+    .modal-close{
+      flex:0 0 auto;
+      width:37px;height:37px;
+      display:grid;place-items:center;
+      border:1px solid var(--line);
+      border-radius:50%;
+      background:#fff;
+      color:#52525b;
+    }
+
+    form{padding:23px 26px 27px}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+    .field{margin-bottom:15px}
+    .label{
+      display:block;
+      margin-bottom:7px;
+      color:#3f3f46;
+      font-size:12px;
+      font-weight:730;
+    }
+    .required{color:var(--accent-dark)}
+    input,select,textarea{
+      width:100%;
+      border:1px solid #e4e4e7;
+      border-radius:13px;
+      background:#fff;
+      color:var(--ink);
+      outline:none;
+      transition:border .16s ease, box-shadow .16s ease;
+    }
+    input,select{height:47px;padding:0 13px}
+    textarea{min-height:105px;resize:vertical;padding:12px 13px;line-height:1.5}
+    input:focus,select:focus,textarea:focus{
+      border-color:rgba(231,95,104,.65);
+      box-shadow:0 0 0 4px rgba(231,95,104,.09);
+    }
+
+    .channels{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+    .channel{
+      position:relative;
+      display:inline-flex;
+      align-items:center;
+      min-height:36px;
+      padding:0 12px;
+      border:1px solid #e4e4e7;
+      border-radius:999px;
+      background:#fff;
+      color:#52525b;
+      font-size:12px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .channel input{position:absolute;opacity:0;pointer-events:none}
+    .channel:has(input:checked){
+      border-color:rgba(231,95,104,.42);
+      background:var(--accent-soft);
+      color:#983d45;
+      font-weight:700;
+    }
+
+    .identity-note{
+      margin:3px 0 17px;
+      padding:12px 13px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:var(--paper-2);
+      color:#62626b;
+      font-size:12px;
+      line-height:1.5;
+    }
+
+    .consent{
+      margin-top:4px;
+      padding:13px 14px;
+      border-radius:14px;
+      background:#fafafa;
+      border:1px solid var(--line);
+      color:#52525b;
+      font-size:12px;
+      line-height:1.52;
+    }
+    .consent b{color:var(--ink)}
+
+    .submit-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      margin-top:16px;
+    }
+    .submit-row .primary{min-width:180px}
+    .privacy{
+      color:#8a8a93;
+      font-size:11px;
+      line-height:1.45;
+      max-width:300px;
+    }
+
+    /* Success */
+    .success-card{
+      width:min(500px,100%);
+      padding:34px 30px 31px;
+      text-align:center;
+      border:1px solid rgba(255,255,255,.86);
+      border-radius:26px;
+      background:#fff;
+      box-shadow:var(--shadow);
+      animation:riseIn .32s cubic-bezier(.2,.75,.25,1) both;
+    }
+    .success-icon{
+      width:56px;height:56px;
+      margin:0 auto 16px;
+      display:grid;place-items:center;
+      border-radius:50%;
+      background:#eaf8f1;
+      color:var(--success);
+    }
+    .success-icon svg{width:26px;height:26px}
+    .success-card h2{font-size:25px;letter-spacing:-.028em}
+    .success-card p{
+      margin:10px auto 0;
+      max-width:390px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.55;
+    }
+    .countdown{
+      margin-top:15px;
+      color:#a1a1aa;
+      font-size:11px;
+    }
+
+    /* Optional coupon strip */
+    .coupon-row{
+      display:none;
+      margin-top:18px;
+      padding:12px;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      border:1px dashed rgba(231,95,104,.40);
+      border-radius:14px;
+      background:var(--accent-soft);
+    }
+    .coupon-row.is-visible{display:flex}
+    .coupon-row strong{display:block;font-size:12px}
+    .coupon-code{color:#983d45;font-size:14px;font-weight:820;letter-spacing:.05em}
+    .coupon-button{
+      min-height:36px;
+      border:1px solid rgba(231,95,104,.22);
+      border-radius:10px;
+      padding:0 11px;
+      background:#fff;
+      color:#983d45;
+      font-size:12px;
+      font-weight:720;
+    }
+
+    @keyframes riseIn{
+      from{opacity:0;transform:translateY(12px) scale(.985)}
+      to{opacity:1;transform:translateY(0) scale(1)}
+    }
+
+    @media (max-width:640px){
+      .banner-body{padding:26px 20px 22px}
+      .benefits{grid-template-columns:1fr}
+      .benefit{min-height:auto}
+      .grid-2{grid-template-columns:1fr}
+      .modal-head{padding:21px 20px 16px}
+      form{padding:19px 20px 22px}
+      .submit-row{align-items:stretch;flex-direction:column-reverse}
+      .submit-row .primary{width:100%}
+      .privacy{max-width:none}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Reusable first-stage credit invitation -->
+  <div class="fs-layer" id="bannerLayer" aria-hidden="true">
+    <section class="credit-banner" role="dialog" aria-modal="true" aria-labelledby="bannerTitle">
+      <button class="close-btn" id="bannerClose" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M6 6l12 12M18 6L6 18"/>
+        </svg>
+      </button>
+
+      <div class="banner-body">
+        <div class="eyebrow">
+          <span class="eyebrow-dot"></span>
+          <span id="bannerEyebrow">Private credit access</span>
+        </div>
+
+        <h1 class="banner-title" id="bannerTitle">Your first 25 credits are on us.</h1>
+        <p class="banner-copy" id="bannerCopy">
+          If you are a fashion brand or seller with regular image needs, you may qualify for additional complimentary credits and priority access.
+        </p>
+
+        <div class="benefits">
+          <div class="benefit">
+            <b>Built for brands</b>
+            <span>For regular catalogue, campaign and marketplace content.</span>
+          </div>
+          <div class="benefit">
+            <b>Complimentary credits</b>
+            <span>Selected business accounts may receive an additional credit allocation.</span>
+          </div>
+          <div class="benefit">
+            <b>Priority review</b>
+            <span>Tell us your use case and our team can take the discussion forward.</span>
+          </div>
+        </div>
+
+        <div class="coupon-row" id="couponRow">
+          <div>
+            <strong>Credit code available</strong>
+            <span class="coupon-code" id="couponCode">FASHION100</span>
+          </div>
+          <button class="coupon-button" id="couponButton" type="button">Copy code</button>
+        </div>
+
+        <div class="banner-actions">
+          <button class="primary" id="applyButton" type="button">Request complimentary credits</button>
+          <span class="micro" id="bannerMicrocopy">Limited approvals • For business accounts</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Qualification / lead capture modal -->
+  <div class="fs-layer" id="formLayer" aria-hidden="true">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="formTitle">
+      <header class="modal-head">
+        <div>
+          <div class="modal-kicker">COMPLIMENTARY CREDIT ACCESS</div>
+          <h2 class="modal-title" id="formTitle">Tell us a little about your business</h2>
+          <p class="modal-sub">A few quick details help us understand your usage and decide the right credit allocation.</p>
+        </div>
+        <button class="modal-close" id="formClose" type="button" aria-label="Close form">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M6 6l12 12M18 6L6 18"/>
+          </svg>
+        </button>
+      </header>
+
+      <form id="leadForm">
+        <div class="identity-note" id="identityNote">
+          You’re already signed in, so we won’t ask for your name, email address or phone number again.
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label class="label" for="company">Brand / company name <span class="required">*</span></label>
+            <input id="company" name="company" autocomplete="organization" required placeholder="e.g. North & Loom" />
+          </div>
+          <div class="field">
+            <label class="label" for="website">Website / store URL <span class="required">*</span></label>
+            <input id="website" name="website" type="url" required placeholder="https://yourbrand.com" />
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="label">Where do you currently sell?</span>
+          <div class="channels">
+            <label class="channel"><input type="checkbox" name="channels" value="Own website">Own website</label>
+            <label class="channel"><input type="checkbox" name="channels" value="Amazon">Amazon</label>
+            <label class="channel"><input type="checkbox" name="channels" value="Flipkart">Flipkart</label>
+            <label class="channel"><input type="checkbox" name="channels" value="Myntra">Myntra</label>
+            <label class="channel"><input type="checkbox" name="channels" value="Nykaa Fashion">Nykaa Fashion</label>
+            <label class="channel"><input type="checkbox" name="channels" value="Other">Other</label>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label class="label" for="volume">Approx. images needed per month <span class="required">*</span></label>
+            <select id="volume" name="monthlyImageVolume" required>
+              <option value="" selected disabled>Select a range</option>
+              <option>Under 50</option>
+              <option>50–100</option>
+              <option>101–250</option>
+              <option>251–500</option>
+              <option>501–1,000</option>
+              <option>1,000+</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="label" for="usecase">Primary use case <span class="required">*</span></label>
+            <select id="usecase" name="primaryUseCase" required>
+              <option value="" selected disabled>Select a use case</option>
+              <option>E-commerce catalogue</option>
+              <option>Marketplace listings</option>
+              <option>Campaign / social content</option>
+              <option>Product launch / lookbook</option>
+              <option>Multiple use cases</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="requirements">Anything specific you’d like us to know?</label>
+          <textarea id="requirements" name="requirements" placeholder="For example: number of SKUs, image styles, model diversity, campaign frequency, video needs, etc."></textarea>
+        </div>
+
+        <div class="consent">
+          <b>What happens next?</b> Once you submit, a member of the Faishon Studio team may contact you using the phone number or email address associated with your account to understand your requirements and take this discussion forward.
+          <br><br>
+          By submitting this request, you agree that we may contact you by phone or email regarding this credit request and your business requirements.
+        </div>
+
+        <div class="submit-row">
+          <div class="privacy">Your account contact details are used only to follow up on this request and related Faishon Studio services.</div>
+          <button class="primary" type="submit" id="submitButton">Submit request</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <!-- 3-second thank-you state -->
+  <div class="fs-layer" id="successLayer" aria-hidden="true">
+    <section class="success-card" role="status" aria-live="polite">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 6L9 17l-5-5"/>
+        </svg>
+      </div>
+      <h2>Request received.</h2>
+      <p>Thanks. We’ll review your details, and someone from our team may contact you by phone or email to understand your requirements and take the discussion forward.</p>
+      <div class="countdown">This message will close automatically.</div>
+    </section>
+  </div>
+
+  <script>
+  /*
+    ==============================================================
+    FAISHON STUDIO — REUSABLE CREDIT LEAD COMPONENT
+    ==============================================================
+
+    Integration examples:
+
+    1) Immediately after successful signup:
+       FaishonCredits.setUser({
+         id: "user_123",
+         name: "Rupam",
+         email: "name@example.com",
+         phone: "+91XXXXXXXXXX"
+       });
+       FaishonCredits.show("signup");
+
+    2) Whenever the app receives an updated credit balance:
+       FaishonCredits.evaluateCredits({
+         remaining: 5,
+         totalFreeOrGranted: 25
+       });
+
+       Default low-credit trigger = remaining <= 20% of total.
+
+    3) To test this standalone file:
+       - It automatically shows the signup version on first load.
+       - Add ?trigger=low to the file URL to preview the low-credit copy.
+       - Add ?reset=1 to clear the demo's local state.
+
+    IMPORTANT:
+    Replace CONFIG.submitEndpoint with your real API endpoint OR replace
+    sendLeadToBackend() with your own fetch / SDK call.
+  */
+
+  (() => {
+    const CONFIG = {
+      closeDelayMs: 4000,          // Cross appears after 4 seconds
+      successAutoCloseMs: 3000,    // Thank-you auto-closes after 3 seconds
+      lowCreditThresholdPct: 20,   // Trigger when <= 20% credits remain
+
+      // Optional. Keep "" to use the qualification form.
+      // If you later have a coupon, set e.g. "FASHION100".
+      couponCode: "",
+
+      // Your backend route can be inserted here.
+      submitEndpoint: "",
+
+      storagePrefix: "faishon_credit_lead_v1_"
+    };
+
+    const COPY = {
+      signup: {
+        eyebrow: "Private credit access",
+        title: "Your first 25 credits are on us.",
+        copy: "If you are a fashion brand or seller with regular image needs, you may qualify for additional complimentary credits and priority access.",
+        micro: "Limited approvals • For business accounts"
+      },
+      low: {
+        eyebrow: "Your credits are running low",
+        title: "Need more room to create?",
+        copy: "Business users with ongoing catalogue, marketplace or campaign requirements may qualify for additional complimentary credits.",
+        micro: "Request before your current credits run out"
+      },
+      manual: {
+        eyebrow: "Private credit access",
+        title: "Unlock additional creation credits.",
+        copy: "Tell us about your fashion content requirements. Selected business accounts may qualify for additional complimentary credits.",
+        micro: "Limited approvals • For business accounts"
+      }
+    };
+
+    const el = {
+      bannerLayer: document.getElementById("bannerLayer"),
+      bannerClose: document.getElementById("bannerClose"),
+      bannerEyebrow: document.getElementById("bannerEyebrow"),
+      bannerTitle: document.getElementById("bannerTitle"),
+      bannerCopy: document.getElementById("bannerCopy"),
+      bannerMicrocopy: document.getElementById("bannerMicrocopy"),
+      applyButton: document.getElementById("applyButton"),
+      couponRow: document.getElementById("couponRow"),
+      couponCode: document.getElementById("couponCode"),
+      couponButton: document.getElementById("couponButton"),
+
+      formLayer: document.getElementById("formLayer"),
+      formClose: document.getElementById("formClose"),
+      leadForm: document.getElementById("leadForm"),
+      identityNote: document.getElementById("identityNote"),
+
+      successLayer: document.getElementById("successLayer")
+    };
+
+    let currentTrigger = "manual";
+    let closeTimer = null;
+    let user = {
+      id: null,
+      name: "",
+      email: "",
+      phone: ""
+    };
+
+    function storageKey(name) {
+      return CONFIG.storagePrefix + name;
+    }
+
+    function hasSubmitted() {
+      return localStorage.getItem(storageKey("submitted")) === "1";
+    }
+
+    function wasDismissed(trigger) {
+      return localStorage.getItem(storageKey("dismissed_" + trigger)) === "1";
+    }
+
+    function setLayer(layer, visible) {
+      layer.classList.toggle("is-visible", visible);
+      layer.setAttribute("aria-hidden", visible ? "false" : "true");
+    }
+
+    function hideAll() {
+      setLayer(el.bannerLayer, false);
+      setLayer(el.formLayer, false);
+      setLayer(el.successLayer, false);
+      el.bannerClose.classList.remove("is-ready");
+      if (closeTimer) clearTimeout(closeTimer);
+    }
+
+    function applyCopy(trigger) {
+      const c = COPY[trigger] || COPY.manual;
+      el.bannerEyebrow.textContent = c.eyebrow;
+      el.bannerTitle.textContent = c.title;
+      el.bannerCopy.textContent = c.copy;
+      el.bannerMicrocopy.textContent = c.micro;
+    }
+
+    function setupCoupon() {
+      if (CONFIG.couponCode.trim()) {
+        el.couponCode.textContent = CONFIG.couponCode.trim();
+        el.couponRow.classList.add("is-visible");
+        el.applyButton.textContent = "Tell us about your requirements";
+      } else {
+        el.couponRow.classList.remove("is-visible");
+        el.applyButton.textContent = "Request complimentary credits";
+      }
+    }
+
+    function show(trigger = "manual", options = {}) {
+      currentTrigger = trigger;
+      const force = options.force === true;
+
+      if (!force) {
+        if (hasSubmitted()) return false;
+        if (wasDismissed(trigger)) return false;
+      }
+
+      hideAll();
+      applyCopy(trigger);
+      setupCoupon();
+      setLayer(el.bannerLayer, true);
+
+      // The close control cannot be used before this timer finishes.
+      closeTimer = setTimeout(() => {
+        el.bannerClose.classList.add("is-ready");
+      }, CONFIG.closeDelayMs);
+
+      return true;
+    }
+
+    function dismissBanner() {
+      if (!el.bannerClose.classList.contains("is-ready")) return;
+      localStorage.setItem(storageKey("dismissed_" + currentTrigger), "1");
+      hideAll();
+    }
+
+    function openForm() {
+      setLayer(el.bannerLayer, false);
+      setLayer(el.formLayer, true);
+
+      const known = [];
+      if (user.email) known.push("email");
+      if (user.phone) known.push("phone number");
+
+      if (known.length) {
+        el.identityNote.textContent =
+          "You’re already signed in, so we won’t ask for your name, " +
+          known.join(" or ") +
+          " again. We’ll use the contact details already associated with your account.";
+      } else {
+        el.identityNote.textContent =
+          "This component is designed to use the name, email address and phone number already stored in the signed-in user profile, so these fields are not requested again.";
+      }
+    }
+
+    function closeFormBackToBanner() {
+      setLayer(el.formLayer, false);
+      // Returning to the banner does NOT restart the 4-second lock.
+      setLayer(el.bannerLayer, true);
+      el.bannerClose.classList.add("is-ready");
+    }
+
+    function collectFormData(form) {
+      const fd = new FormData(form);
+      return {
+        trigger: currentTrigger,
+        account: {
+          userId: user.id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone
+        },
+        business: {
+          company: fd.get("company"),
+          website: fd.get("website"),
+          channels: fd.getAll("channels"),
+          monthlyImageVolume: fd.get("monthlyImageVolume"),
+          primaryUseCase: fd.get("primaryUseCase"),
+          requirements: fd.get("requirements") || ""
+        },
+        consent: {
+          contactByPhoneOrEmail: true,
+          capturedAt: new Date().toISOString()
+        },
+        creditContext: window.__faishonLastCreditContext || null
+      };
+    }
+
+    async function sendLeadToBackend(payload) {
+      // Hook for your SaaS backend.
+      // If no endpoint is configured, this prototype logs the payload
+      // and behaves as a successful submission.
+      if (!CONFIG.submitEndpoint) {
+        console.log("FAISHON CREDIT LEAD PAYLOAD:", payload);
+        return { ok: true, prototype: true };
+      }
+
+      const response = await fetch(CONFIG.submitEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) throw new Error("Lead submission failed");
+      return response.json().catch(() => ({ ok: true }));
+    }
+
+    async function submitLead(event) {
+      event.preventDefault();
+
+      const submitButton = document.getElementById("submitButton");
+      submitButton.disabled = true;
+      submitButton.textContent = "Submitting…";
+
+      const payload = collectFormData(el.leadForm);
+
+      try {
+        await sendLeadToBackend(payload);
+
+        localStorage.setItem(storageKey("submitted"), "1");
+        localStorage.setItem(storageKey("submitted_at"), new Date().toISOString());
+
+        setLayer(el.formLayer, false);
+        setLayer(el.bannerLayer, false);
+        setLayer(el.successLayer, true);
+
+        setTimeout(() => {
+          hideAll(); // Success + original banner both remain closed.
+          el.leadForm.reset();
+        }, CONFIG.successAutoCloseMs);
+      } catch (err) {
+        console.error(err);
+        alert("We couldn't submit your request. Please try again.");
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "Submit request";
+      }
+    }
+
+    function evaluateCredits({ remaining, totalFreeOrGranted, force = false }) {
+      const total = Number(totalFreeOrGranted);
+      const left = Number(remaining);
+      if (!Number.isFinite(total) || total <= 0 || !Number.isFinite(left)) return false;
+
+      const pct = (left / total) * 100;
+      window.__faishonLastCreditContext = {
+        remaining: left,
+        totalFreeOrGranted: total,
+        remainingPercent: Number(pct.toFixed(2))
+      };
+
+      if (pct <= CONFIG.lowCreditThresholdPct) {
+        return show("low", { force });
+      }
+      return false;
+    }
+
+    function setUser(userData = {}) {
+      user = { ...user, ...userData };
+    }
+
+    function resetDemoState() {
+      Object.keys(localStorage)
+        .filter(k => k.startsWith(CONFIG.storagePrefix))
+        .forEach(k => localStorage.removeItem(k));
+      hideAll();
+    }
+
+    // Clicking the backdrop intentionally does nothing.
+    [el.bannerLayer, el.formLayer, el.successLayer].forEach(layer => {
+      layer.addEventListener("click", (e) => {
+        if (e.target === layer) e.stopPropagation();
+      });
+    });
+
+    el.bannerClose.addEventListener("click", dismissBanner);
+    el.applyButton.addEventListener("click", openForm);
+    el.formClose.addEventListener("click", closeFormBackToBanner);
+    el.leadForm.addEventListener("submit", submitLead);
+
+    el.couponButton.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(CONFIG.couponCode);
+        const old = el.couponButton.textContent;
+        el.couponButton.textContent = "Copied";
+        setTimeout(() => el.couponButton.textContent = old, 1200);
+      } catch {
+        // Safe fallback for local file previews.
+        el.couponButton.textContent = "Code ready";
+      }
+    });
+
+    // Expose a small public API for your website.
+    window.FaishonCredits = {
+      show,
+      evaluateCredits,
+      setUser,
+      hide: hideAll,
+      resetDemoState,
+      config: CONFIG
+    };
+
+    // --------------------------------------------------------------
+    // STANDALONE PREVIEW
+    // --------------------------------------------------------------
+    const params = new URLSearchParams(location.search);
+
+    if (params.get("reset") === "1") resetDemoState();
+
+    // Example signed-in user context; replace in your application.
+    setUser({
+      id: "demo_user_001",
+      name: "Demo User",
+      email: "demo@brand.com",
+      phone: "+91 98XXXXXX00"
+    });
+
+    // Force preview so the file is easy to inspect every time it is opened.
+    // Remove {force:true} in production.
+    setTimeout(() => {
+      if (params.get("trigger") === "low") {
+        window.__faishonLastCreditContext = {
+          remaining: 5,
+          totalFreeOrGranted: 25,
+          remainingPercent: 20
+        };
+        show("low", { force: true });
+      } else {
+        show("signup", { force: true });
+      }
+    }, 450);
+  })();
+  </script>
+</body>
+</html>

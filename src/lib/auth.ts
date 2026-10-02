@@ -48,6 +48,14 @@ export function toPublicUser(u: UserDoc): PublicUser {
     balance: Number(u.balance ?? 0),
     created: u.created ?? '',
     active: u.active !== false,
+    /*
+     * Where this account stands with the credits offer , so the admin's button
+     * is a decision rather than a guess.
+     *   done    , submitted the form (or an admin silenced it). Never shown.
+     *   waiting , dismissed; comes back by itself once they are low again.
+     *   pending , has not seen it; shows on their next page load.
+     */
+    offer: u.offer_submitted ? 'done' : u.offer_seen ? 'waiting' : 'pending',
   };
 }
 

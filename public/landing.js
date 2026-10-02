@@ -1588,10 +1588,10 @@ const STRIP_ITEMS=[
     /* Slugs match the filenames in /webassets/cats exactly, capital included ,
        macOS does not care about case but the deploy host does, and a slug that
        only resolves locally falls back to the croquis in production. */
-    {slug:"Intimate",   n:"Intimates", pose:"front",
-     p:"Everyday innerwear, shot clean and catalogue-safe"},
-    {slug:"lingerie",   n:"Lingerie", pose:"front",
-     p:"Lace and detail held true, framed for marketplace listings"}
+    {slug:"lingerie",   n:"Intimates", pose:"front",
+     p:"Lace and detail held true, framed for marketplace listings"},
+    {slug:"Intimate",   n:"Lingerie", pose:"front",
+     p:"Everyday innerwear, shot clean and catalogue-safe"}
   ];
   const N=CATS.length;
   let active=0;
@@ -1811,13 +1811,32 @@ const STRIP_ITEMS=[
      scrolled. */
   const stage=tile?tile.parentElement:null;
 
+  /* How far the panel rises as it opens, so it finishes in the middle of the
+     screen rather than wherever the TILE had to sit.
+
+     The two layouts put the tile in different places for good reasons , under
+     the copy on desktop, bottom-aligned on a phone where the copy is five lines
+     deep , and the panel forms out of the tile, so it inherits that spot. Once
+     the veil is up the copy is out of play and the panel should be centred in
+     both.
+
+     MEASURED rather than derived from the padding: offsetTop/offsetHeight are
+     layout values the per-frame transform cannot skew, so one formula covers
+     desktop, phone, and the band between them where neither rule applies. */
+  let genieLift=0;
   function fitStage(){
     if(!stage||!copy)return;
     /* Below 960 the stage is bottom-aligned with its own padding (landing.css),
        so an inline top padding here would fight it. */
-    if(innerWidth<=960){stage.style.paddingTop="";return;}
-    const gap=Math.max(28,Math.min(innerHeight*0.05,64));
-    stage.style.paddingTop=Math.round(copy.offsetTop+copy.offsetHeight+gap)+"px";
+    if(innerWidth<=960){stage.style.paddingTop="";}
+    else{
+      const gap=Math.max(28,Math.min(innerHeight*0.05,64));
+      stage.style.paddingTop=Math.round(copy.offsetTop+copy.offsetHeight+gap)+"px";
+    }
+    /* Never negative , lifting is the only correction wanted. A panel that
+       already sits above centre is a short viewport, and pushing it DOWN would
+       run its foot off the screen. */
+    genieLift=modal?Math.max(0,(modal.offsetTop+modal.offsetHeight/2)-stage.offsetHeight/2):0;
   }
 
   fitStage();
@@ -1961,7 +1980,9 @@ const STRIP_ITEMS=[
 
     veil.style.opacity=em;
     modal.style.opacity=m;
-    modal.style.transform=`scale(${.72+.28*em})`;
+    /* Rises on the same easing it scales with, so it forms out of the smoke
+       where the tile was and settles at the centre of the screen. */
+    modal.style.transform=`translateY(${-genieLift*em}px) scale(${.72+.28*em})`;
     modal.style.filter=`blur(${(1-m)*10}px)`;
     modal.style.pointerEvents=m>.9?"auto":"none";
     modal.setAttribute("aria-hidden",String(m<.5));

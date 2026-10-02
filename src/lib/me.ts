@@ -17,6 +17,7 @@ import {
   FASHN_ENGINE,
 } from './config';
 import { STYLES } from './prompts';
+import { offerState } from './offer';
 
 export interface MePayload {
   authed: boolean;
@@ -34,6 +35,12 @@ export interface MePayload {
   genie?: { free: number; price: number; max: number };
   /** Credits for one 10-second video. */
   video_price?: number;
+  /**
+   * The complimentary-credits offer , whether to show it, and why.
+   * Decided server-side so the rule lives in one place and the client cannot
+   * be talked into showing it by editing local state.
+   */
+  offer?: { show: boolean; reason: string; mark: number };
   extract_price?: number;
   special_prices?: { imagine: Record<string, number>; saved: Record<string, number> };
   /** Admin-chosen engine per job. Model names, not secrets. */
@@ -66,6 +73,7 @@ export async function getMePayload(): Promise<MePayload> {
     prices: s.prices,
     genie: { free: s.genie_free, price: s.genie_price, max: s.genie_max },
     video_price: s.video_price,
+    offer: offerState(u),
     extract_price: s.extract_price,
     special_prices: s.special_prices,
     engines: s.engines,
