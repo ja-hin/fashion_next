@@ -224,15 +224,15 @@ export default function ModelFolderModal({
 
   return (
     <div
-      className="fixed inset-0 z-[55] flex items-center justify-center bg-black/50 p-[30px]"
+      className="fixed inset-0 z-[55] flex items-center justify-center bg-black/50 p-4 sm:p-[30px]"
       onClick={onClose}
     >
       <div
-        className="flex max-h-[86vh] min-h-[520px] w-full max-w-[1000px] overflow-hidden rounded-2xl bg-surface shadow-pop"
+        className="flex max-h-[92vh] w-full max-w-[1000px] flex-col overflow-hidden overflow-y-auto rounded-2xl bg-surface shadow-pop sm:max-h-[86vh] sm:min-h-[520px] sm:flex-row sm:overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── side panel ── */}
-        <div className="flex w-[270px] flex-shrink-0 flex-col border-r border-line bg-surface2 p-[22px_20px]">
+        <div className="flex w-full flex-shrink-0 flex-col border-b border-line bg-surface2 p-[18px_16px] sm:w-[270px] sm:border-b-0 sm:border-r sm:p-[22px_20px]">
           <div className="mb-[14px] aspect-[4/5] w-full overflow-hidden rounded-xl bg-line">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -321,7 +321,7 @@ export default function ModelFolderModal({
         </div>
 
         {/* ── main panel ── */}
-        <div className="flex-1 overflow-auto p-[22px_24px]">
+        <div className="min-w-0 flex-1 p-[18px_16px] sm:overflow-auto sm:p-[22px_24px]">
           <div className="mb-[14px] flex items-center text-[13px] font-bold uppercase tracking-[0.03em] text-muted">
             Reference images
             <button
@@ -337,7 +337,7 @@ export default function ModelFolderModal({
             {regularRefs.map((r, i) => (
               <div
                 key={r.file}
-                className="relative w-[148px] overflow-hidden rounded-[11px] border border-line bg-surface"
+                className="relative w-[calc(50%-7px)] overflow-hidden rounded-[11px] border border-line bg-surface sm:w-[148px]"
               >
                 {r.primary && (
                   <span className="absolute left-1.5 top-1.5 z-[2] rounded-[5px] bg-accent/90 px-1.5 py-0.5 text-[8.5px] font-bold text-white">

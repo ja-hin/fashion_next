@@ -1916,6 +1916,7 @@ const STRIP_ITEMS=[
   const SOURCES=[
     ASSET_DIR+"genie-demo.mp4",
     ASSET_DIR+"genie-demo.webm",
+    "/1.mp4",
     encodeURI("/omni_f22e5154--BG Tokyo.mp4"),
   ];
 
@@ -1926,6 +1927,17 @@ const STRIP_ITEMS=[
       vid=document.createElement("video");
       vid.src=hit;vid.loop=true;vid.muted=true;vid.playsInline=true;vid.preload="metadata";
       vid.setAttribute("playsinline","");
+      /* The panel is a 16:9 box and the media is `cover`, so a PORTRAIT clip
+         would be cropped to a thin horizontal band , the middle of the model,
+         head and feet gone. Measured rather than assumed, so whatever file is
+         dropped in here gets a frame that fits it.
+
+         fitStage() is re-run because the modal has just changed height, and the
+         rise that centres it is measured from that height. */
+      vid.addEventListener("loadedmetadata",()=>{
+        if(vid.videoHeight>vid.videoWidth)modal.classList.add("is-portrait");
+        fitStage();
+      },{once:true});
       media.appendChild(vid);
 
       /* Autoplay only survives muted, so the only control worth having is the
@@ -2043,8 +2055,7 @@ const STRIP_ITEMS=[
     {file:"Insta Reel.mp4",     t:"Instagram reel", s:"Trendy rapid cuts · social-first vertical"},
     {file:"Slow-mo Glam.mp4",   t:"Slow-mo glam",   s:"Luxurious slow motion · fabric and hair flow"},
     {file:"Golden Hour-2.mp4",  t:"Golden hour",    s:"Warm sunset backlight · aspirational"},
-    {file:"Street Style.mp4",   t:"Street style",   s:"Edgy urban · dynamic and cool"},
-    {file:"Editorial-2.mp4",    t:"Editorial, take two", s:"The same brief, a second read"}
+    {file:"Street Style.mp4",   t:"Street style",   s:"Edgy urban · dynamic and cool"}
   ];
   const N=CLIPS.length;
   /* Derived, not fixed: the fan should occupy the same arc whatever the clip

@@ -217,7 +217,23 @@ export async function produce(opts: {
     } catch (e) {
       last = e;
       const msg = String((e as Error)?.message ?? e);
-      const transient = msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED');
+      /*
+       * Worth retrying because the request was fine and the service was not.
+       *
+       * 503/UNAVAILABLE ("experiencing high demand") is the most obviously
+       * retryable answer Google gives and was missing here , a rate limit got
+       * three attempts while a capacity blip got one and surfaced as a failed
+       * generation. 500/INTERNAL is included on the same grounds: it is their
+       * end, and the identical request often succeeds seconds later.
+       */
+      const transient =
+        msg.includes('429') ||
+        msg.includes('RESOURCE_EXHAUSTED') ||
+        msg.includes('503') ||
+        msg.includes('UNAVAILABLE') ||
+        msg.includes('500') ||
+        msg.includes('INTERNAL') ||
+        msg.includes('overloaded');
       const softBlock = msg.includes('IMAGE_OTHER');
       if ((transient || (softBlock && retryBlock)) && attempt < tries - 1) {
         await sleep(3000 * (attempt + 1));

@@ -127,14 +127,28 @@ export const POST = handler(
           error: msg,
           user: user.email,
         });
+        /*
+         * Two very different failures reached the customer as the same raw
+         * string , one a 200-character JSON blob from Google. Separated here
+         * because the right response differs: one is "try again in a minute",
+         * the other is "this will not work, change the photo".
+         *
+         * produce() has already retried both , three attempts for a capacity
+         * error, three for a soft content block , so by this point the answer
+         * is settled either way.
+         */
+        const busy =
+          msg.includes('503') || msg.includes('UNAVAILABLE') || msg.includes('overloaded');
+        const refused = msg.includes('IMAGE_OTHER') || msg.includes('SAFETY');
+        const nice = busy
+          ? 'The image service is busy right now. Nothing was charged , please try again in a minute.'
+          : refused
+            ? `This model's reference photo was refused on the '${slotLabel}' angle. Try a clearer, front-facing photo of the face, or pick a different reference image.`
+            : `Character sheet generation failed on angle '${slotLabel}': ${msg}`;
+
         // Nothing generated at all → fail cleanly. Some frames already done →
         // stop here and keep what we have rather than rolling everything back.
-        if (!frameBytes.length) {
-          throw new HttpError(
-            502,
-            `Character sheet generation failed on angle '${slotLabel}': ${msg}`,
-          );
-        }
+        if (!frameBytes.length) throw new HttpError(502, nice);
         break;
       }
 

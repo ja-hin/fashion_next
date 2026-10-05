@@ -31,7 +31,7 @@ import type { UserDoc } from './types';
 export const LOW_CREDIT_MARK = 125;
 
 /** Long enough that a dismissal means something, short enough to still help. */
-const QUIET_DAYS = 7;
+const QUIET_DAYS = 1;
 
 export interface OfferState {
   show: boolean;

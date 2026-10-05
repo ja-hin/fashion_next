@@ -96,7 +96,11 @@ export default function GalleryView({
   const isEmpty = !loading && groups.length === 0;
 
   return (
-    <div className="animate-fade-up">
+    /* `min-w-0` for the same reason as LogsView: the page renders this inside a
+       `flex justify-center` <main>, which makes it a flex item, and a flex
+       item's default `min-width:auto` will not shrink below its content , so
+       the whole page scrolled sideways on a phone. */
+    <div className="w-full min-w-0 animate-fade-up">
       <div className="mb-[22px] flex flex-wrap items-center gap-3">
         <SearchBox
           value={q}

@@ -181,6 +181,101 @@ export default function AdminView({
   const iconBtn =
     'flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-surface2 text-muted hover:bg-line hover:text-ink';
 
+  /* The row's action buttons, shared by the desktop table and the phone cards
+     below it. Extracted rather than written twice: six buttons duplicated in
+     two places is six chances for the two to drift apart. */
+  const rowActions = (u: AdminUser) => (
+                <div className="flex items-center gap-1.5">
+                  <Link
+                    title={`See everything ${u.uid || u.email} has generated`}
+                    href={`/gallery?user=${encodeURIComponent(u.uid || u.id)}`}
+                    className={iconBtn}
+                  >
+                    <ImagesIcon />
+                  </Link>
+                  <Link
+                    title={`See the models ${u.uid || u.email} has saved`}
+                    href={`/models?user=${encodeURIComponent(u.uid || u.id)}`}
+                    className={iconBtn}
+                  >
+                    <PersonIcon />
+                  </Link>
+                  <button
+                    title={u.is_admin ? 'Revoke admin' : 'Make admin'}
+                    onClick={() =>
+                      act(
+                        () =>
+                          postForm('/api/admin/user/role', {
+                            user_id: u.id,
+                            is_admin: u.is_admin ? 0 : 1,
+                          }),
+                        'Could not update role.',
+                      )
+                    }
+                    className={`${iconBtn} ${
+                      u.is_admin ? 'border-transparent bg-accent-soft text-accent' : ''
+                    }`}
+                  >
+                    <ShieldCheckIcon />
+                  </button>
+                  <button
+                    title={u.active ? 'Pause login' : 'Resume login'}
+                    onClick={() =>
+                      act(
+                        () =>
+                          postForm('/api/admin/user/active', {
+                            user_id: u.id,
+                            active: u.active ? 0 : 1,
+                          }),
+                        'Could not update.',
+                      )
+                    }
+                    className={iconBtn}
+                  >
+                    {u.active ? <PauseIcon /> : <PlayIcon className="h-4 w-4" />}
+                  </button>
+                  {/* The credits offer. One button, because the two useful
+                      actions are opposites: let them see it, or stop it.
+                      The colour says which state they are in now, so the
+                      admin is not guessing what the click will do. */}
+                  <button
+                    title={
+                      u.offer === 'done'
+                        ? 'Offer closed , click to show it again'
+                        : u.offer === 'waiting'
+                          ? 'Dismissed , click to show it again'
+                          : 'Will show on their next visit , click to silence it'
+                    }
+                    onClick={() =>
+                      act(
+                        () =>
+                          postForm('/api/admin/offer', {
+                            user_id: u.id,
+                            action: u.offer === 'pending' ? 'hide' : 'show',
+                          }),
+                        'Could not update the offer.',
+                      )
+                    }
+                    className={`${iconBtn} ${
+                      u.offer === 'pending'
+                        ? 'border-transparent bg-brand-soft text-brand'
+                        : u.offer === 'waiting'
+                          ? 'text-muted'
+                          : ''
+                    }`}
+                  >
+                    <CoinsIcon />
+                  </button>
+                  <button
+                    title="Delete user"
+                    onClick={() => removeUser(u.id, u.email)}
+                    className={`${iconBtn} hover:border-transparent hover:bg-brand hover:text-white`}
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                  </button>
+                </div>
+  );
+
   return (
     <div className="animate-fade-up">
       <div className="mb-4 rounded-card border border-line bg-surface p-[22px] shadow-card">
@@ -190,7 +285,10 @@ export default function AdminView({
         </p>
 
         <TableWrap>
-          <table className="w-full border-collapse text-[13px]">
+          {/* Seven columns measure ~960px , on a phone that is a sideways drag,
+              not a table. The list below takes over, same split as Billing and
+              Logs. */}
+          <table className="hidden w-full border-collapse text-[13px] sm:table">
             <thead>
               <tr>
                 <Th>User ID</Th>
@@ -243,97 +341,7 @@ export default function AdminView({
                       </button>
                     </div>
                   </Td>
-                  <Td>
-                    <div className="flex items-center gap-1.5">
-                      <Link
-                        title={`See everything ${u.uid || u.email} has generated`}
-                        href={`/gallery?user=${encodeURIComponent(u.uid || u.id)}`}
-                        className={iconBtn}
-                      >
-                        <ImagesIcon />
-                      </Link>
-                      <Link
-                        title={`See the models ${u.uid || u.email} has saved`}
-                        href={`/models?user=${encodeURIComponent(u.uid || u.id)}`}
-                        className={iconBtn}
-                      >
-                        <PersonIcon />
-                      </Link>
-                      <button
-                        title={u.is_admin ? 'Revoke admin' : 'Make admin'}
-                        onClick={() =>
-                          act(
-                            () =>
-                              postForm('/api/admin/user/role', {
-                                user_id: u.id,
-                                is_admin: u.is_admin ? 0 : 1,
-                              }),
-                            'Could not update role.',
-                          )
-                        }
-                        className={`${iconBtn} ${
-                          u.is_admin ? 'border-transparent bg-accent-soft text-accent' : ''
-                        }`}
-                      >
-                        <ShieldCheckIcon />
-                      </button>
-                      <button
-                        title={u.active ? 'Pause login' : 'Resume login'}
-                        onClick={() =>
-                          act(
-                            () =>
-                              postForm('/api/admin/user/active', {
-                                user_id: u.id,
-                                active: u.active ? 0 : 1,
-                              }),
-                            'Could not update.',
-                          )
-                        }
-                        className={iconBtn}
-                      >
-                        {u.active ? <PauseIcon /> : <PlayIcon className="h-4 w-4" />}
-                      </button>
-                      {/* The credits offer. One button, because the two useful
-                          actions are opposites: let them see it, or stop it.
-                          The colour says which state they are in now, so the
-                          admin is not guessing what the click will do. */}
-                      <button
-                        title={
-                          u.offer === 'done'
-                            ? 'Offer closed , click to show it again'
-                            : u.offer === 'waiting'
-                              ? 'Dismissed , click to show it again'
-                              : 'Will show on their next visit , click to silence it'
-                        }
-                        onClick={() =>
-                          act(
-                            () =>
-                              postForm('/api/admin/offer', {
-                                user_id: u.id,
-                                action: u.offer === 'pending' ? 'hide' : 'show',
-                              }),
-                            'Could not update the offer.',
-                          )
-                        }
-                        className={`${iconBtn} ${
-                          u.offer === 'pending'
-                            ? 'border-transparent bg-brand-soft text-brand'
-                            : u.offer === 'waiting'
-                              ? 'text-muted'
-                              : ''
-                        }`}
-                      >
-                        <CoinsIcon />
-                      </button>
-                      <button
-                        title="Delete user"
-                        onClick={() => removeUser(u.id, u.email)}
-                        className={`${iconBtn} hover:border-transparent hover:bg-brand hover:text-white`}
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </Td>
+                  <Td>{rowActions(u)}</Td>
                 </tr>
               ))}
               {users.length === 0 && (
@@ -345,6 +353,54 @@ export default function AdminView({
               )}
             </tbody>
           </table>
+
+          {/* One card per account. Identity first, then the two things an admin
+              came to do , add credits, and the row actions. */}
+          <div className="divide-y divide-line sm:hidden">
+            {users.map((u) => (
+              <div key={u.id} className="p-3.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-mono text-[12.5px] font-bold">{u.uid || '—'}</span>
+                  {u.is_admin && (
+                    <span className="rounded-[20px] bg-[rgba(31,122,77,.12)] px-[9px] py-[3px] text-[10px] font-bold text-green">
+                      Admin
+                    </span>
+                  )}
+                  {!u.active && (
+                    <span className="rounded-[5px] bg-amber-soft px-1.5 py-0.5 text-[9px] font-bold text-amber">
+                      Paused
+                    </span>
+                  )}
+                  <span className="ml-auto font-mono text-[13px] font-bold">
+                    {fmt(u.balance)} cr
+                  </span>
+                </div>
+
+                <div className="mt-1.5 text-[12.5px] font-semibold">{u.name || '—'}</div>
+                <div className="truncate font-mono text-[11.5px] text-muted">{u.email}</div>
+
+                <div className="mt-2.5 flex items-center gap-1.5">
+                  <input
+                    type="number"
+                    value={topups[u.id] ?? '50'}
+                    onChange={(e) => setTopups((p) => ({ ...p, [u.id]: e.target.value }))}
+                    className="w-[78px]"
+                  />
+                  <button
+                    onClick={() => topUp(u.id)}
+                    className="rounded-[9px] bg-ink px-3 py-[7px] text-[13px] font-bold text-surface"
+                  >
+                    Add
+                  </button>
+                </div>
+
+                <div className="mt-2.5">{rowActions(u)}</div>
+              </div>
+            ))}
+            {users.length === 0 && (
+              <div className="px-4 py-6 text-center text-[12.5px] text-muted">No users yet.</div>
+            )}
+          </div>
         </TableWrap>
       </div>
 
@@ -365,78 +421,82 @@ export default function AdminView({
           in Logs.
         </p>
 
-        <table className="my-2 w-full border-collapse">
-          <thead>
-            <tr>
-              <th />
-              <th className="px-1.5 py-1 text-left text-[11px] font-bold text-muted">
-                Hero frame
-              </th>
-              <th className="px-1.5 py-1 text-left text-[11px] font-bold text-muted">
-                Extra poses
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {(
-              [
-                ['imagine', 'Generate , Imagine a model', 'hero'],
-                ['saved', 'Generate , Saved model', 'hero'],
-                ['special_imagine', 'Special Category , Imagine', 'hero'],
-                // This one falls back to the pro engine, not the ordinary hero
-                // engine , both flash engines refuse it. See gen.ts heroDefault.
-                ['special_saved', 'Special Category , Saved model', 'pro'],
-              ] as const
-            ).map(([key, label, heroFallback]) => (
-              <tr key={key}>
-                <td className="whitespace-nowrap py-[5px] pr-2.5 text-[12.5px] font-semibold">
-                  {label}
-                </td>
-                {(['hero', 'pose'] as const).map((slot) => (
-                  <td key={slot} className="px-1.5 py-[5px]">
-                    <input
-                      type="text"
-                      list="engine-ids"
-                      spellCheck={false}
-                      placeholder={
-                        slot === 'hero'
-                          ? ((heroFallback === 'pro'
-                              ? me.engine_defaults?.fashn_ready
-                                ? me.engine_defaults?.fashn
-                                : me.engine_defaults?.pro
-                              : me.engine_defaults?.hero) ?? 'server default')
-                          : (me.engine_defaults?.base ?? 'server default')
-                      }
-                      value={engines[`${key}.${slot}`] ?? ''}
-                      onChange={(ev) =>
-                        setEngines((g) => ({ ...g, [`${key}.${slot}`]: ev.target.value }))
-                      }
-                      className="w-full min-w-[190px]"
-                    />
-                  </td>
-                ))}
+        {/* A four-column grid will not fit a phone and must not be cut off.
+            Scrolls inside its own card, so the page itself stays still. */}
+        <div className="overflow-x-auto">
+          <table className="my-2 w-full border-collapse">
+            <thead>
+              <tr>
+                <th />
+                <th className="px-1.5 py-1 text-left text-[11px] font-bold text-muted">
+                  Hero frame
+                </th>
+                <th className="px-1.5 py-1 text-left text-[11px] font-bold text-muted">
+                  Extra poses
+                </th>
               </tr>
-            ))}
-            <tr>
-              <td className="whitespace-nowrap py-[5px] pr-2.5 text-[12.5px] font-semibold">
-                Garment extraction
-              </td>
-              {/* One call, no hero/pose split , spans both columns rather than
-                  leaving an empty box that looks like something to fill in. */}
-              <td className="px-1.5 py-[5px]" colSpan={2}>
-                <input
-                  type="text"
-                  list="engine-ids"
-                  spellCheck={false}
-                  placeholder={me.engine_defaults?.base ?? 'server default'}
-                  value={engines.extract ?? ''}
-                  onChange={(ev) => setEngines((g) => ({ ...g, extract: ev.target.value }))}
-                  className="w-full"
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {(
+                [
+                  ['imagine', 'Generate , Imagine a model', 'hero'],
+                  ['saved', 'Generate , Saved model', 'hero'],
+                  ['special_imagine', 'Special Category , Imagine', 'hero'],
+                  // This one falls back to the pro engine, not the ordinary hero
+                  // engine , both flash engines refuse it. See gen.ts heroDefault.
+                  ['special_saved', 'Special Category , Saved model', 'pro'],
+                ] as const
+              ).map(([key, label, heroFallback]) => (
+                <tr key={key}>
+                  <td className="whitespace-nowrap py-[5px] pr-2.5 text-[12.5px] font-semibold">
+                    {label}
+                  </td>
+                  {(['hero', 'pose'] as const).map((slot) => (
+                    <td key={slot} className="px-1.5 py-[5px]">
+                      <input
+                        type="text"
+                        list="engine-ids"
+                        spellCheck={false}
+                        placeholder={
+                          slot === 'hero'
+                            ? ((heroFallback === 'pro'
+                                ? me.engine_defaults?.fashn_ready
+                                  ? me.engine_defaults?.fashn
+                                  : me.engine_defaults?.pro
+                                : me.engine_defaults?.hero) ?? 'server default')
+                            : (me.engine_defaults?.base ?? 'server default')
+                        }
+                        value={engines[`${key}.${slot}`] ?? ''}
+                        onChange={(ev) =>
+                          setEngines((g) => ({ ...g, [`${key}.${slot}`]: ev.target.value }))
+                        }
+                        className="w-full min-w-[190px]"
+                      />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+              <tr>
+                <td className="whitespace-nowrap py-[5px] pr-2.5 text-[12.5px] font-semibold">
+                  Garment extraction
+                </td>
+                {/* One call, no hero/pose split , spans both columns rather than
+                    leaving an empty box that looks like something to fill in. */}
+                <td className="px-1.5 py-[5px]" colSpan={2}>
+                  <input
+                    type="text"
+                    list="engine-ids"
+                    spellCheck={false}
+                    placeholder={me.engine_defaults?.base ?? 'server default'}
+                    value={engines.extract ?? ''}
+                    onChange={(ev) => setEngines((g) => ({ ...g, extract: ev.target.value }))}
+                    className="w-full"
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
         {/* Suggestions, not a whitelist , the field still takes anything. */}
         <datalist id="engine-ids">
@@ -491,47 +551,51 @@ export default function AdminView({
       </div>
 
       <div className="flex max-w-[880px] flex-wrap gap-[18px]">
-        <div className="min-w-[300px] flex-1 rounded-card border border-line bg-surface p-[22px] shadow-card">
+        <div className="min-w-0 flex-1 sm:min-w-[300px] rounded-card border border-line bg-surface p-[22px] shadow-card">
           <h3 className="mb-[5px] text-[15px] font-bold">Credits &amp; pricing</h3>
           <p className="mb-4 text-[12.5px] leading-[1.5] text-muted">
             Credits deducted per generated image, by shoot type and resolution.
           </p>
 
-          <table className="my-2 w-full border-collapse">
-            <thead>
-              <tr>
-                <th />
-                {RES.map((r) => (
-                  <th key={r} className="px-1.5 py-1 text-[11px] font-bold text-muted">
-                    {r}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {MODES.map((m) => (
-                <tr key={m}>
-                  <td className="whitespace-nowrap py-[5px] pr-1.5 text-[13px] font-semibold">
-                    {m === 'imagine' ? 'Imagine a model' : 'Saved model'}
-                  </td>
+          {/* A four-column grid will not fit a phone and must not be cut off.
+              Scrolls inside its own card, so the page itself stays still. */}
+          <div className="overflow-x-auto">
+            <table className="my-2 w-full border-collapse">
+              <thead>
+                <tr>
+                  <th />
                   {RES.map((r) => (
-                    <td key={r} className="px-1.5 py-[5px] text-center">
-                      <input
-                        type="number"
-                        step="0.5"
-                        min="0"
-                        value={prices[m]?.[r] ?? ''}
-                        onChange={(e) =>
-                          setPrices((p) => ({ ...p, [m]: { ...p[m], [r]: e.target.value } }))
-                        }
-                        className="w-16 text-center"
-                      />
-                    </td>
+                    <th key={r} className="px-1.5 py-1 text-[11px] font-bold text-muted">
+                      {r}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {MODES.map((m) => (
+                  <tr key={m}>
+                    <td className="whitespace-nowrap py-[5px] pr-1.5 text-[13px] font-semibold">
+                      {m === 'imagine' ? 'Imagine a model' : 'Saved model'}
+                    </td>
+                    {RES.map((r) => (
+                      <td key={r} className="px-1.5 py-[5px] text-center">
+                        <input
+                          type="number"
+                          step="0.5"
+                          min="0"
+                          value={prices[m]?.[r] ?? ''}
+                          onChange={(e) =>
+                            setPrices((p) => ({ ...p, [m]: { ...p[m], [r]: e.target.value } }))
+                          }
+                          className="w-16 text-center"
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           <button
             onClick={saveSettings}
@@ -542,7 +606,7 @@ export default function AdminView({
           {flash && <div className="mt-2.5 text-[12.5px] font-semibold text-green">{flash}</div>}
         </div>
 
-        <div className="min-w-[300px] flex-1 rounded-card border border-line bg-surface p-[22px] shadow-card">
+        <div className="min-w-0 flex-1 sm:min-w-[300px] rounded-card border border-line bg-surface p-[22px] shadow-card">
           <h3 className="mb-[5px] text-[15px] font-bold">Prompt Genie</h3>
           <p className="mb-4 text-[12.5px] leading-[1.5] text-muted">
             Credits charged each time Genie improves a prompt.
@@ -566,7 +630,7 @@ export default function AdminView({
           {flash && <div className="mt-2.5 text-[12.5px] font-semibold text-green">{flash}</div>}
         </div>
 
-        <div className="min-w-[300px] flex-1 rounded-card border border-line bg-surface p-[22px] shadow-card">
+        <div className="min-w-0 flex-1 sm:min-w-[300px] rounded-card border border-line bg-surface p-[22px] shadow-card">
           <h3 className="mb-[5px] text-[15px] font-bold">Video</h3>
           <p className="mb-4 text-[12.5px] leading-[1.5] text-muted">
             Credits charged for one 10-second video. Shown on the Generate button and charged
@@ -595,7 +659,7 @@ export default function AdminView({
             desk costs. Splitting the per-image rate from the extraction rate
             meant an admin pricing that desk had to find two boxes in two
             places and remember both were involved. */}
-        <div className="min-w-[300px] flex-1 rounded-card border border-line bg-surface p-[22px] shadow-card">
+        <div className="min-w-0 flex-1 sm:min-w-[300px] rounded-card border border-line bg-surface p-[22px] shadow-card">
           <h3 className="mb-[5px] flex items-center gap-2 text-[15px] font-bold">
             Special Category
             <span className="rounded-full border border-brand/40 px-1.5 py-[1px] text-[8px] font-bold uppercase tracking-[0.06em] text-brand">
@@ -609,41 +673,45 @@ export default function AdminView({
           </p>
 
           <label className="lbl">Credits per image</label>
-          <table className="mb-3 mt-1 w-full border-collapse">
-            <thead>
-              <tr>
-                <th />
-                {RES.map((r) => (
-                  <th key={r} className="px-1.5 py-1 text-[11px] font-bold text-muted">
-                    {r}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {MODES.map((m) => (
-                <tr key={m}>
-                  <td className="whitespace-nowrap py-[5px] pr-1.5 text-[13px] font-semibold">
-                    {m === 'imagine' ? 'Imagine a model' : 'Saved model'}
-                  </td>
+          {/* A four-column grid will not fit a phone and must not be cut off.
+              Scrolls inside its own card, so the page itself stays still. */}
+          <div className="overflow-x-auto">
+            <table className="mb-3 mt-1 w-full border-collapse">
+              <thead>
+                <tr>
+                  <th />
                   {RES.map((r) => (
-                    <td key={r} className="px-1.5 py-[5px] text-center">
-                      <input
-                        type="number"
-                        step="0.5"
-                        min="0"
-                        value={specialPrices[m]?.[r] ?? ''}
-                        onChange={(e) =>
-                          setSpecialPrices((p) => ({ ...p, [m]: { ...p[m], [r]: e.target.value } }))
-                        }
-                        className="w-16 text-center"
-                      />
-                    </td>
+                    <th key={r} className="px-1.5 py-1 text-[11px] font-bold text-muted">
+                      {r}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {MODES.map((m) => (
+                  <tr key={m}>
+                    <td className="whitespace-nowrap py-[5px] pr-1.5 text-[13px] font-semibold">
+                      {m === 'imagine' ? 'Imagine a model' : 'Saved model'}
+                    </td>
+                    {RES.map((r) => (
+                      <td key={r} className="px-1.5 py-[5px] text-center">
+                        <input
+                          type="number"
+                          step="0.5"
+                          min="0"
+                          value={specialPrices[m]?.[r] ?? ''}
+                          onChange={(e) =>
+                            setSpecialPrices((p) => ({ ...p, [m]: { ...p[m], [r]: e.target.value } }))
+                          }
+                          className="w-16 text-center"
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           {/* Worth saying, or the row reads as a rate that is quietly in use. */}
           <p className="mb-4 text-[11.5px] leading-[1.45] text-muted">
             Saved models are disabled on that desk for now, so the second row is set up

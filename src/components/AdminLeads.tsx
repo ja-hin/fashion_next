@@ -103,7 +103,9 @@ export default function AdminLeads() {
         </EmptyState>
       ) : (
         <TableWrap>
-          <table className="w-full border-collapse text-[13px]">
+          {/* Six columns, one of which is a full enquiry message , it does not fit
+              a phone and should not be dragged sideways. Cards below. */}
+          <table className="hidden w-full border-collapse text-[13px] sm:table">
             <thead>
               <tr>
                 <Th>Received</Th>
@@ -186,6 +188,77 @@ export default function AdminLeads() {
               ))}
             </tbody>
           </table>
+
+          {/* One card per enquiry. Status and the reply link lead, because the
+              only two questions here are "has anyone dealt with this" and "how
+              do I answer it". */}
+          <div className="divide-y divide-line sm:hidden">
+            {shown.map((l) => (
+              <div key={l._id} className="p-3.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={`rounded-[20px] px-2 py-[3px] text-[10px] font-bold uppercase ${TONE[l.status]}`}
+                  >
+                    {l.status}
+                  </span>
+                  {l.source === 'credit-offer' && (
+                    <span className="rounded-[20px] bg-accent-soft px-2 py-[3px] text-[10px] font-bold uppercase text-accent">
+                      credit offer
+                    </span>
+                  )}
+                  <span className="ml-auto font-mono text-[11px] text-muted">
+                    {fmtLogDate(l.created)}
+                  </span>
+                </div>
+
+                <div className="mt-2 text-[13px] font-bold">{l.name}</div>
+                {l.brand && <div className="text-[12px] text-muted">{l.brand}</div>}
+
+                <a
+                  className="mt-1 block truncate text-[12.5px] font-semibold text-brand"
+                  href={`mailto:${l.email}`}
+                >
+                  {l.email}
+                </a>
+                {l.phone && <div className="text-[12px] text-muted">{l.phone}</div>}
+
+                <div className="mt-1.5 flex flex-wrap gap-x-2.5 gap-y-1 text-[11.5px] text-muted">
+                  {l.volume && <span>{l.volume}</span>}
+                  {l.use_case && <span>{l.use_case}</span>}
+                  {typeof l.balance_at_ask === 'number' && <span>{l.balance_at_ask} cr left</span>}
+                </div>
+
+                {l.website && (
+                  <a
+                    href={l.website}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="mt-1 block truncate text-[12px] font-semibold text-accent underline"
+                  >
+                    {l.website}
+                  </a>
+                )}
+
+                {l.message && (
+                  <div className="mt-2 whitespace-pre-wrap text-[12.5px] leading-[1.5]">
+                    {l.message}
+                  </div>
+                )}
+
+                <select
+                  value={l.status}
+                  onChange={(e) => setStatus(l._id, e.target.value as LeadStatus)}
+                  className="mt-2.5 w-full"
+                >
+                  {STATUSES.map((st) => (
+                    <option key={st} value={st}>
+                      {st}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
         </TableWrap>
       )}
     </div>

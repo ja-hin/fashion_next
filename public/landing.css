@@ -1449,6 +1449,11 @@ body.mnav-open .mnav-sheet{transform:none}
 .gm-dot{width:8px;height:8px;border-radius:50%;background:var(--genie-2);
   box-shadow:0 0 0 4px color-mix(in srgb,var(--genie-2) 24%,transparent)}
 .gm-media{position:relative;aspect-ratio:16/9;background:#0e0d0b;overflow:hidden}
+/* A portrait clip gets a portrait panel. The width cap flips with it: at 9/16 the
+   height is width x 1.78, so the same viewport allows a much narrower panel , the
+   landscape formula would size it taller than the screen and .pin would clip it. */
+.genie-modal.is-portrait{width:min(360px,calc(100vw - 40px),calc((100svh - 240px) * 9 / 16))}
+.genie-modal.is-portrait .gm-media{aspect-ratio:9/16}
 .gm-media video,.gm-media img{width:100%;height:100%;object-fit:cover}
 /* A portrait still cropped to 16/9 loses the face on a centre crop, and the
    face is the whole point of an on-model frame. */
